@@ -4,7 +4,16 @@ import React, { ReactNode } from 'react';
 
 import { EditableLabel } from './EditableLabel';
 
+interface TabDescriptor {
+  key: string;
+  title: string;
+  mutable: boolean;
+  onClose?: () => void;
+  onRename?: (newName: string) => void;
+}
+
 interface Props {
+  tabs: TabDescriptor[];
   children: ReactNode;
 }
 
@@ -23,7 +32,7 @@ export class TabContainer extends React.Component<Props, State> {
   render() {
     return (
       <div className="TabContainer">
-        <div className="TabStrip">{this.renderTabs_()}</div>
+        {this.renderTabs_()}
         <div className="ContentArea">{this.renderActiveTabContent_()}</div>
       </div>
     );
@@ -31,37 +40,37 @@ export class TabContainer extends React.Component<Props, State> {
 
   renderTabs_() {
     const children = React.Children.toArray(this.props.children);
-    return children.map((child, i) => {
-      if (!React.isValidElement(child)) {
-        return null;
-      }
-
-      const active = this.state.activeTab === i;
-      const z = children.length - i;
-      return (
-        <div
-          key={i}
-          style={{ zIndex: active ? children.length : z }}
-          className={`${active ? 'Tab Active' : 'Tab Inactive'}
-                      ${child.props.removable ? 'Removable' : 'Permanent'}`}
-          onClick={_ => this.setActiveTab_(i)}
-        >
-          {child.props.renameable ? (
-            <EditableLabel
-              value={child.props.title}
-              onChange={child.props.onRename}
-            />
-          ) : (
-            child.props.title
-          )}
-          {child.props.removable && (
-            <button className="RemoveButton" onClick={child.props.onClose}>
-              x
-            </button>
-          )}
-        </div>
-      );
-    });
+    return (
+      <div className="TabStrip">
+        {this.props.tabs.map((tab, i) => {
+          const active = this.state.activeTab === i;
+          const z = this.props.tabs.length - i;
+          return (
+            <div
+              key={tab.key + tab.title}
+              style={{ zIndex: active ? children.length : z }}
+              className={`${active ? 'Tab Active' : 'Tab Inactive'}
+                          ${tab.mutable ? 'Removable' : 'Permanent'}`}
+              onClick={_ => this.setActiveTab_(i)}
+            >
+              {tab.mutable ? (
+                <EditableLabel
+                  value={tab.title}
+                  onChange={tab.onRename ?? (() => ({}))}
+                />
+              ) : (
+                tab.title
+              )}
+              {tab.mutable && (
+                <button className="RemoveButton" onClick={tab.onClose}>
+                  x
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
   }
 
   setActiveTab_(tab: number) {
@@ -81,22 +90,5 @@ export class TabContainer extends React.Component<Props, State> {
     }
 
     return children[tab];
-  }
-}
-
-interface TabProps {
-  title: string;
-  removable?: boolean;
-  renameable?: boolean;
-  onClose?: () => void;
-  onRename?: (newName: string) => void;
-}
-
-export class Tab extends React.Component<TabProps> {
-  render() {
-    if (this.props.children) {
-      return this.props.children;
-    }
-    return <div />;
   }
 }

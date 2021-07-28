@@ -5,7 +5,7 @@ import React from 'react';
 import { Blueprint } from '../gpu/Blueprint';
 import { BlueprintEditor } from './BlueprintEditor';
 import { CodeEditor } from './CodeEditor';
-import { TabContainer, Tab } from './TabContainer';
+import { TabContainer } from './TabContainer';
 
 interface Props {
   blueprint: Blueprint;
@@ -16,33 +16,35 @@ interface Props {
 
 export class Editor extends React.Component<Props> {
   render() {
+    const shaders = Object.entries(this.props.blueprint.shaders);
     return (
       <div className="Editor">
-        <TabContainer>
-          <Tab title="Blueprint">
-            <BlueprintEditor
-              blueprint={this.props.blueprint}
-              onChange={this.props.onBlueprintChange}
+        <TabContainer
+          tabs={[
+            { key: 'Blueprint', title: 'Blueprint', mutable: false },
+            ...shaders.map(([id, shader]) => ({
+              key: id,
+              title: shader.name,
+              mutable: true,
+              onClose: () => this.removeShader_(id),
+              onRename: (newName: string) => this.renameShader_(id, newName),
+            })),
+          ]}
+        >
+          <BlueprintEditor
+            blueprint={this.props.blueprint}
+            onChange={this.props.onBlueprintChange}
+          />
+          {shaders.map(([id, shader]) => (
+            <CodeEditor
+              key={id}
+              compilationInfo={this.props.compilationInfo[id]}
+              contents={shader.code}
+              onChange={code => {
+                shader.code = code;
+                this.props.onBlueprintChange();
+              }}
             />
-          </Tab>
-          {Object.entries(this.props.blueprint.shaders).map(([id, shader]) => (
-            <Tab
-              key={shader.name}
-              title={shader.name}
-              removable={true}
-              renameable={true}
-              onClose={() => this.removeShader_(id)}
-              onRename={newName => this.renameShader_(id, newName)}
-            >
-              <CodeEditor
-                compilationInfo={this.props.compilationInfo[id]}
-                contents={shader.code}
-                onChange={code => {
-                  shader.code = code;
-                  this.props.onBlueprintChange();
-                }}
-              />
-            </Tab>
           ))}
         </TabContainer>
       </div>
