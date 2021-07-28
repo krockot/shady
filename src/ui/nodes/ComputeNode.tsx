@@ -15,7 +15,7 @@ export const ComputeNode = makeNodeType<ComputeNodeDescriptor>({
             value={data.descriptor.shader}
             onChange={e => data.onChange({ shader: e.currentTarget.value })}
           >
-            <option value=''></option>
+            <option value=""></option>
             {Object.entries(data.blueprint.shaders).map(([id, shader]) => (
               <option key={id} value={id}>
                 {shader.name}
