@@ -17,6 +17,7 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
               data.onChange({ vertexShader: e.currentTarget.value })
             }
           >
+            <option value=""></option>
             {Object.entries(data.blueprint.shaders).map(([id, shader]) => (
               <option key={id} value={id}>
                 {shader.name}
@@ -40,6 +41,7 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
               })
             }
           >
+            <option value=""></option>
             {Object.entries(data.blueprint.shaders).map(([id, shader]) => (
               <option key={id} value={id}>
                 {shader.name}
