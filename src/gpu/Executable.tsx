@@ -359,15 +359,15 @@ export class Executable {
     }
 
     const device = this.gpu_.device!;
-    const data = new ArrayBuffer(20);
+    const data = new ArrayBuffer(24);
     const floats = new Float32Array(data);
     const uints = new Uint32Array(data);
     floats[0] = (uniforms['time'] as number) ?? 0;
     floats[1] = (uniforms['timeDelta'] as number) ?? 0;
     uints[2] = (uniforms['frame'] as number) ?? 0;
-    uints[3] = uniforms['resolution']?.width ?? 1;
-    uints[4] = uniforms['resolution']?.height ?? 1;
-    device.queue.writeBuffer(this.builtinUniforms_, 0, data, 0, 20);
+    uints[4] = uniforms['resolution']?.width ?? 1;
+    uints[5] = uniforms['resolution']?.height ?? 1;
+    device.queue.writeBuffer(this.builtinUniforms_, 0, data, 0, 24);
   }
 
   execute(texture: GPUTexture) {
