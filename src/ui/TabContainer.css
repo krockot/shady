@@ -1,0 +1,82 @@
+.TabContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
+}
+
+.TabContainer .TabStrip {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+.TabContainer .Tab .EditableLabel input {
+  max-width: 6em;
+}
+
+.TabContainer .Tab {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  user-select: none;
+  padding: 0;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  padding-left: 1em;
+  padding: 2px 2px 2px 1em;
+  height: 16px;
+}
+
+.TabContainer .Tab .RemoveButton {
+  width: 12px;
+  height: 12px;
+  margin: 3px 0 0 6px;
+  line-height: 0px;
+  padding: 0 0 2px 0;
+  background: transparent;
+  font-weight: bold;
+  border: none;
+}
+
+.TabContainer .Permanent {
+  padding-right: 1em;
+}
+
+.TabContainer .Inactive {
+  border: solid #444;
+  border-width: 1px 1px 2px 1px;
+  background-image: linear-gradient(20deg, #bbb, #889);
+}
+
+.TabContainer .Inactive:hover {
+  border: solid #777;
+  border-width: 1px 1px 2px 1px;
+  background-image: linear-gradient(20deg, #ccc, #99a);
+  color: #222;
+}
+
+.TabContainer .Active {
+  border: solid #888;
+  border-width: 1px 1px 2px 1px;
+  background-image: linear-gradient(20deg, #fff, #ccd);
+  height: 18px;
+  margin: 0 -6px 0 -6px;
+}
+
+.TabContainer .Active:first-child {
+  margin: 0 -6px 0 0;
+}
+
+.TabContainer .Active:last-child {
+  margin: 0 0 0 -6px;
+}
+
+.TabContainer .ContentArea {
+  flex: 1 1 auto;
+  background-color: white;
+  width: 100%;
+  overflow: scroll;
+}

@@ -1,0 +1,89 @@
+.ControlPanel {
+  margin-left: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+}
+
+.ControlPanel .Toggle {
+  width: 32px;
+  height: 32px;
+}
+
+.ControlPanel .DisplayOptionsPanel {
+  position: absolute;
+  bottom: 60px;
+  z-index: 1;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border: solid gray 1px;
+  background: #fff;
+  padding: 1em;
+  border-radius: 4px;
+}
+
+.ControlPanel .LoadBlueprintPanel {
+  position: absolute;
+  left: 120px;
+  bottom: 60px;
+  z-index: 1;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  border: solid gray 1px;
+  background: #fff;
+  padding: 1em;
+  border-radius: 4px;
+}
+
+.ControlPanel .LoadBlueprintPanel h1 {
+  margin: 0;
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.ControlPanel .LoadBlueprintPanel .LoadMenuItem {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 4px;
+  box-sizing: border-box;
+  border: solid #999 2px;
+  padding: 3px;
+  background-color: #eee;
+}
+
+.ControlPanel .LoadBlueprintPanel .LoadMenuItem:hover {
+  background-color: #efe;
+}
+
+.ControlPanel .LoadBlueprintPanel .LoadMenuItem .LoadMenuName {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  font-size: 1.4em;
+}
+
+.ControlPanel .LoadBlueprintPanel .LoadMenuItem .LoadMenuRemove {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  line-height: 0;
+}
+
+.ControlPanel .DisplayOptionsPanel h1 {
+  margin: 0;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.ControlPanel .DisplayOptionsPanel h2 {
+  font-weight: bold;
+  font-size: 1em;
+}

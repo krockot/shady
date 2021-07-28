@@ -1,0 +1,16 @@
+.LabeledField {
+  margin: 4px 4px 0 4px;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-end;
+}
+
+.LabeledField > .Label {
+  font-weight: bold;
+  margin-right: 1em;
+}
+
+.LabeledField > .Field {
+  flex: 1 1;
+}

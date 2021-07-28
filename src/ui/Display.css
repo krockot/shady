@@ -1,0 +1,21 @@
+.Display {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.Display .CanvasWrapper {
+  display: flex;
+  box-sizing: border-box;
+  border-radius: 8px;
+}
+
+.Display .CanvasWrapper canvas {
+  position: absolute;
+  border-radius: 8px;
+  background-color: black;
+  image-rendering: pixelated;
+}

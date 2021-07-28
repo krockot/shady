@@ -1,0 +1,54 @@
+.Node {
+  padding: 4px 0px 2px 0px;
+  background-color: #ded;
+  border: solid #777 1px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.Node select {
+  text-align: right;
+}
+
+.Node-buffer {
+  background-color: #eed;
+}
+
+.Node-render {
+  background-color: #edd;
+}
+
+.Node-compute {
+  background-color: #dee;
+}
+
+.Node-binding {
+  background-color: #ded;
+}
+
+.Node > .Title {
+  width: 100%;
+  padding: 3px 0 3px 0;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.Node .RemoveButton {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 20px;
+}
+
+.Node > .Content {
+  border-radius: 3px;
+  background-color: #ffffffa0;
+  text-align: right;
+  margin: 4px;
+}

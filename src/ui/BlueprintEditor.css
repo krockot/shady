@@ -1,0 +1,33 @@
+.BlueprintEditor {
+  width: 100%;
+  height: 100%;
+  border: solid 2px #888;
+  box-sizing: border-box;
+  border-radius: 4px;
+  background-color: #2e3540;
+}
+
+.BlueprintEditor .Toolbar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 10;
+}
+
+.BlueprintEditor .Toolbar button {
+  min-width: 3em;
+  height: 3em;
+}
+
+.BlueprintEditor .react-flow__handle {
+  width: 8px;
+  height: 8px;
+}
+
+.BlueprintEditor .react-flow__handle-connecting {
+  background: #f66;
+}
+
+.BlueprintEditor .react-flow__handle-valid {
+  background: #5d9;
+}

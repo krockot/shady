@@ -1,0 +1,44 @@
+.CodeEditor {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.CodeEditor .CodeMirror {
+  position: absolute;
+  height: 100%;
+}
+
+.CodeEditor .MarkedText-info {
+  text-decoration: #22e double underline;
+}
+
+.CodeEditor .MarkedText-warning {
+  text-decoration: #aa2 double underline;
+}
+
+.CodeEditor .MarkedText-error {
+  text-decoration: #d22 double underline;
+}
+
+.CodeEditor .GutterMessages {
+  width: 16px;
+}
+
+.CodeEditor .Marker {
+  margin: 6px;
+  width: 8px;
+  height: 8px;
+}
+
+.CodeEditor .Marker-info {
+  background-color: #22e;
+}
+
+.CodeEditor .Marker-warning {
+  background-color: #aa2;
+}
+
+.CodeEditor .Marker-error {
+  background-color: #d22;
+}
