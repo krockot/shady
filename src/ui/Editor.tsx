@@ -3,6 +3,7 @@ import './Editor.css';
 import React from 'react';
 
 import { Blueprint } from '../gpu/Blueprint';
+import { BUILTIN_UNIFORMS_WGSL } from '../gpu/BuiltinUniforms';
 import { BlueprintEditor } from './BlueprintEditor';
 import { CodeEditor } from './CodeEditor';
 import { TabContainer } from './TabContainer';
@@ -22,6 +23,7 @@ export class Editor extends React.Component<Props> {
         <TabContainer
           tabs={[
             { key: 'Blueprint', title: 'Blueprint', mutable: false },
+            { key: 'Uniforms', title: 'Uniforms', mutable: false },
             ...shaders.map(([id, shader]) => ({
               key: id,
               title: shader.name,
@@ -35,11 +37,18 @@ export class Editor extends React.Component<Props> {
             blueprint={this.props.blueprint}
             onChange={this.props.onBlueprintChange}
           />
+          <CodeEditor
+            key="Uniforms"
+            contents={BUILTIN_UNIFORMS_WGSL}
+            mutable={false}
+            onChange={() => ({})}
+          />
           {shaders.map(([id, shader]) => (
             <CodeEditor
               key={id}
               compilationInfo={this.props.compilationInfo[id]}
               contents={shader.code}
+              mutable={true}
               onChange={code => {
                 shader.code = code;
                 this.props.onBlueprintChange();

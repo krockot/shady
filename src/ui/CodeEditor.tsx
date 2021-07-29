@@ -10,8 +10,9 @@ import { BUILTIN_UNIFORMS_WGSL } from '../gpu/BuiltinUniforms';
 const BUILTIN_WGSL_NUM_LINES = BUILTIN_UNIFORMS_WGSL.split(/\r\n|\r|\n/).length;
 
 interface Props {
-  compilationInfo: GPUCompilationInfo;
+  compilationInfo?: GPUCompilationInfo;
   contents: string;
+  mutable: boolean;
   onChange: (contents: string) => void;
 }
 
@@ -35,6 +36,7 @@ export class CodeEditor extends React.Component<Props> {
             keyMap: 'sublime',
             mode: 'rust',
             gutters: ['GutterMessages'],
+            readOnly: !this.props.mutable,
           }}
         />
       </div>
@@ -53,7 +55,7 @@ export class CodeEditor extends React.Component<Props> {
     this.isDecorating_ = true;
     e.getAllMarks().forEach(m => m.clear());
     e.clearGutter('GutterMessages');
-    for (const m of this.props.compilationInfo.messages) {
+    for (const m of this.props.compilationInfo?.messages ?? []) {
       const className = `MarkedText-${m.type}`;
       const line = m.lineNum - BUILTIN_WGSL_NUM_LINES;
       e.markText(

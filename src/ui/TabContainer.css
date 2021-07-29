@@ -51,11 +51,19 @@
   background-image: linear-gradient(20deg, #bbb, #889);
 }
 
+.TabContainer .Inactive.Permanent {
+  background-image: linear-gradient(20deg, #88b, #449);
+}
+
 .TabContainer .Inactive:hover {
   border: solid #777;
   border-width: 1px 1px 2px 1px;
   background-image: linear-gradient(20deg, #ccc, #99a);
   color: #222;
+}
+
+.TabContainer .Inactive.Permanent:hover {
+  background-image: linear-gradient(20deg, #aab, #779);
 }
 
 .TabContainer .Active {
@@ -64,6 +72,10 @@
   background-image: linear-gradient(20deg, #fff, #ccd);
   height: 18px;
   margin: 0 -6px 0 -6px;
+}
+
+.TabContainer .Active.Permanent {
+  background-image: linear-gradient(20deg, #ddf, #dde);
 }
 
 .TabContainer .Active:first-child {
