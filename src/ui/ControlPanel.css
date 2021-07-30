@@ -10,7 +10,7 @@
   height: 32px;
 }
 
-.ControlPanel .DisplayOptionsPanel {
+.ControlPanel .OptionsPanel {
   position: absolute;
   bottom: 60px;
   z-index: 1;
@@ -77,13 +77,13 @@
   line-height: 0;
 }
 
-.ControlPanel .DisplayOptionsPanel h1 {
+.ControlPanel .OptionsPanel h1 {
   margin: 0;
   font-weight: bold;
   font-size: 1.2em;
 }
 
-.ControlPanel .DisplayOptionsPanel h2 {
+.ControlPanel .OptionsPanel h2 {
   font-weight: bold;
   font-size: 1em;
 }

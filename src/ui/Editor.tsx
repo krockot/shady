@@ -13,6 +13,8 @@ interface Props {
   onBlueprintChange: () => void;
 
   compilationInfo: Record<string, GPUCompilationInfo>;
+
+  codeMirrorTheme: string;
 }
 
 export class Editor extends React.Component<Props> {
@@ -42,6 +44,7 @@ export class Editor extends React.Component<Props> {
             contents={BUILTIN_UNIFORMS_WGSL}
             mutable={false}
             onChange={() => ({})}
+            theme={this.props.codeMirrorTheme}
           />
           {shaders.map(([id, shader]) => (
             <CodeEditor
@@ -53,6 +56,7 @@ export class Editor extends React.Component<Props> {
                 shader.code = code;
                 this.props.onBlueprintChange();
               }}
+              theme={this.props.codeMirrorTheme}
             />
           ))}
         </TabContainer>

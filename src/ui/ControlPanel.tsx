@@ -2,8 +2,10 @@ import './ControlPanel.css';
 
 import React from 'react';
 
-import { DisplayConfig } from './Display';
 import { Blueprint } from '../gpu/Blueprint';
+import { CODE_MIRROR_THEMES } from './CodeMirrorThemes';
+import { DisplayConfig } from './Display';
+import { LabeledField } from './LabeledField';
 
 interface Props {
   displayConfig: DisplayConfig;
@@ -12,10 +14,12 @@ interface Props {
   onSaveBlueprint: (name: string) => void;
   onLoadBlueprint: (name: string) => void;
   onDeleteBlueprint: (name: string) => void;
+  codeMirrorTheme: string;
+  onCodeMirrorThemeChange: (name: string) => void;
 }
 
 interface State {
-  displayOptionsVisible: boolean;
+  optionsVisible: boolean;
   loadMenuVisible: boolean;
 }
 
@@ -28,7 +32,7 @@ export class ControlPanel extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      displayOptionsVisible: false,
+      optionsVisible: false,
       loadMenuVisible: false,
     };
 
@@ -55,14 +59,22 @@ export class ControlPanel extends React.Component<Props, State> {
 
     return (
       <div className="ControlPanel">
-        <button className="Toggle" onClick={this.toggleDisplayOptions_}>
+        <button
+          className="Toggle"
+          title="Options"
+          onClick={this.toggleOptions_}
+        >
           ⚙️
         </button>
-        <button className="Toggle" onClick={this.enterFullscreen_}>
+        <button
+          className="Toggle"
+          title="Toggle Fullscreen"
+          onClick={this.enterFullscreen_}
+        >
           🖥️
         </button>
-        {this.state.displayOptionsVisible && (
-          <div className="DisplayOptionsPanel">
+        {this.state.optionsVisible && (
+          <div className="OptionsPanel">
             <h1>Display Options</h1>
             <h2>Aspect Ratio</h2>
             {makeAspectOption('None')}
@@ -117,12 +129,33 @@ export class ControlPanel extends React.Component<Props, State> {
                 onChange={this.updateResolution_}
               />
             </label>
+            <h1>Editor Options</h1>
+            <LabeledField label="Theme">
+              <select
+                value={this.props.codeMirrorTheme}
+                onChange={e =>
+                  this.props.onCodeMirrorThemeChange(e.currentTarget.value)
+                }
+              >
+                {CODE_MIRROR_THEMES.map(theme => {
+                  return <option value={theme}>{theme}</option>;
+                })}
+              </select>
+            </LabeledField>
           </div>
         )}
-        <button className="Toggle" onClick={this.saveBlueprint_}>
+        <button
+          className="Toggle"
+          onClick={this.saveBlueprint_}
+          title="Save Blueprint"
+        >
           💾
         </button>
-        <button className="Toggle" onClick={this.toggleLoadBlueprintPanel_}>
+        <button
+          className="Toggle"
+          onClick={this.toggleLoadBlueprintPanel_}
+          title="Load Blueprint"
+        >
           📂
         </button>
         {this.state.loadMenuVisible && (
@@ -178,9 +211,9 @@ export class ControlPanel extends React.Component<Props, State> {
     }));
   };
 
-  toggleDisplayOptions_ = () => {
+  toggleOptions_ = () => {
     this.setState((state, props) => ({
-      displayOptionsVisible: !state.displayOptionsVisible,
+      optionsVisible: !state.optionsVisible,
     }));
   };
 
@@ -190,7 +223,7 @@ export class ControlPanel extends React.Component<Props, State> {
 
   setAspectRatio_ = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.props.onDisplayConfigChange({ aspect: e.currentTarget.value });
-    this.toggleDisplayOptions_();
+    this.toggleOptions_();
   };
 
   updateResolution_ = (e: React.ChangeEvent<HTMLInputElement>) => {

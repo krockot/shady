@@ -19,6 +19,7 @@ interface PersistableState {
   blueprint: Blueprint;
   savedBlueprints: Record<string, Blueprint>;
   displayConfig: DisplayConfig;
+  codeMirrorTheme: string;
 }
 
 const DEFAULT_STATE: PersistableState = {
@@ -32,6 +33,7 @@ const DEFAULT_STATE: PersistableState = {
     aspect: '1:1',
     resolution: { mode: 'pixel', pixelSize: 1 },
   },
+  codeMirrorTheme: 'monokai',
 };
 
 interface State extends PersistableState {
@@ -118,6 +120,10 @@ class App extends React.Component<Props, State> {
     });
   };
 
+  onCodeMirrorThemeChange_ = (name: string) => {
+    this.setState({ codeMirrorTheme: name });
+  };
+
   render() {
     const renderDisplay = (canvas: HTMLCanvasElement) => {
       let resolution: { width: number; height: number };
@@ -150,6 +156,7 @@ class App extends React.Component<Props, State> {
               compilationInfo={this.state.compilationInfo}
               blueprint={this.state.blueprint}
               onBlueprintChange={this.onBlueprintChange_}
+              codeMirrorTheme={this.state.codeMirrorTheme}
             />
           </div>
         </div>
@@ -161,6 +168,8 @@ class App extends React.Component<Props, State> {
             onSaveBlueprint={this.onSaveBlueprint_}
             onLoadBlueprint={this.onLoadBlueprint_}
             onDeleteBlueprint={this.onDeleteBlueprint_}
+            codeMirrorTheme={this.state.codeMirrorTheme}
+            onCodeMirrorThemeChange={this.onCodeMirrorThemeChange_}
           />
         </div>
       </div>

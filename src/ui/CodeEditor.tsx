@@ -1,6 +1,6 @@
 import './CodeEditor.css';
+
 import 'codemirror/keymap/sublime';
-import 'codemirror/theme/nord.css';
 
 import CodeMirror from '@uiw/react-codemirror';
 import React from 'react';
@@ -14,6 +14,7 @@ interface Props {
   contents: string;
   mutable: boolean;
   onChange: (contents: string) => void;
+  theme: string;
 }
 
 export class CodeEditor extends React.Component<Props> {
@@ -32,7 +33,7 @@ export class CodeEditor extends React.Component<Props> {
           onChange={this.onChange_}
           onUpdate={this.onUpdate_}
           options={{
-            theme: 'nord',
+            theme: this.props.theme,
             keyMap: 'sublime',
             mode: 'rust',
             gutters: ['GutterMessages'],
