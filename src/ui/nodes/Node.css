@@ -1,6 +1,6 @@
 .Node {
   padding: 4px 0px 2px 0px;
-  background-color: #ded;
+  background-color: #888;
   border: solid #777 1px;
   border-radius: 12px;
   display: flex;
@@ -13,19 +13,19 @@
 }
 
 .Node-buffer {
-  background-color: #eed;
+  background-color: #9e9;
 }
 
 .Node-render {
-  background-color: #edd;
+  background-color: #eaa;
 }
 
 .Node-compute {
-  background-color: #dee;
+  background-color: #ccf;
 }
 
-.Node-binding {
-  background-color: #ded;
+.Node-texture {
+  background-color: #ee9;
 }
 
 .Node > .Title {
