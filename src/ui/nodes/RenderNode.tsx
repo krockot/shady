@@ -4,6 +4,23 @@ import { EditableLabel } from '../EditableLabel';
 import { LabeledField } from '../LabeledField';
 import { makeNodeType } from './NodeTypeFactory';
 
+function colorValue(c: GPUColorDict): string {
+  const p = (x: number) => `${x < 16 ? '0' : ''}${x.toString(16)}`;
+  const cp = [c.r, c.g, c.b].map(c => p(c * 255));
+  return `#${cp.join('')}`;
+}
+
+function parseColor(value: string): GPUColorDict {
+  const parseComponent = (index: number) =>
+    parseInt(value.slice(index, index + 2), 16) / 255;
+  return {
+    r: parseComponent(1),
+    g: parseComponent(3),
+    b: parseComponent(5),
+    a: 1,
+  };
+}
+
 export const RenderNode = makeNodeType<RenderNodeDescriptor>({
   title: 'Render Pass',
   render: data => {
@@ -93,6 +110,24 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
               data.onChange({
                 numInstances: Math.max(e.currentTarget.valueAsNumber, 0),
               })
+            }
+          />
+        </LabeledField>
+        <LabeledField label="Clear">
+          <input
+            type="checkbox"
+            checked={data.descriptor.clear ?? false}
+            onChange={e => data.onChange({ clear: !data.descriptor.clear })}
+          />
+        </LabeledField>
+        <LabeledField label="Clear Color">
+          <input
+            type="color"
+            value={colorValue(
+              data.descriptor.clearColor ?? { r: 0, g: 0, b: 0, a: 1 }
+            )}
+            onChange={e =>
+              data.onChange({ clearColor: parseColor(e.currentTarget.value) })
             }
           />
         </LabeledField>

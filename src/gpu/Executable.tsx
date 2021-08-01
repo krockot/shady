@@ -14,10 +14,17 @@ export interface CompileResult {
   messages: string[];
 }
 
-interface CompiledComputeStage {
+interface CompiledComputePass {
+  type: 'compute';
   descriptor: ComputeNodeDescriptor;
   bindGroups: GPUBindGroup[];
   pipeline: GPUComputePipeline;
+}
+
+interface CompiledRenderPass {
+  type: 'render';
+  descriptor: RenderNodeDescriptor;
+  bundle: GPURenderBundle;
 }
 
 export class Executable {
@@ -27,8 +34,8 @@ export class Executable {
   private shaderInfo_: Record<string, GPUCompilationInfo>;
   private builtinUniforms_: null | GPUBuffer;
   private buffers_: Record<string, GPUBuffer>;
-  private renderBundles_: Record<string, GPURenderBundle>;
-  private computeStages_: Record<string, CompiledComputeStage>;
+  private renderPasses_: Record<string, CompiledRenderPass>;
+  private computePasses_: Record<string, CompiledComputePass>;
 
   constructor(
     gpu: Gpu,
@@ -42,8 +49,8 @@ export class Executable {
     this.shaderInfo_ = shaderInfo;
     this.builtinUniforms_ = null;
     this.buffers_ = {};
-    this.renderBundles_ = {};
-    this.computeStages_ = {};
+    this.renderPasses_ = {};
+    this.computePasses_ = {};
   }
 
   get gpu() {
@@ -336,7 +343,11 @@ export class Executable {
         }
       });
       encoder.draw(node.numVertices, node.numInstances);
-      this.renderBundles_[id] = encoder.finish();
+      this.renderPasses_[id] = {
+        type: 'render',
+        descriptor: node,
+        bundle: encoder.finish(),
+      };
     }
 
     for (const [id, node] of Object.entries(computes)) {
@@ -353,7 +364,12 @@ export class Executable {
           entryPoint: node.entryPoint,
         },
       });
-      this.computeStages_[id] = { descriptor: node, bindGroups, pipeline };
+      this.computePasses_[id] = {
+        type: 'compute',
+        descriptor: node,
+        bindGroups,
+        pipeline,
+      };
     }
 
     return messages;
@@ -387,25 +403,24 @@ export class Executable {
     // TODO: Do something less cheesy than simply interleaving compute and
     // render passes arbitrarily.
 
-    const stages: (CompiledComputeStage | GPURenderBundle)[] = [];
-    const computeStages = Object.values(this.computeStages_);
-    const renderBundles = Object.values(this.renderBundles_);
-    while (computeStages.length || renderBundles.length) {
-      if (computeStages.length) {
-        stages.push(computeStages.shift()!);
+    const passes: (CompiledComputePass | CompiledRenderPass)[] = [];
+    const computePasses = Object.values(this.computePasses_);
+    const renderPasses = Object.values(this.renderPasses_);
+    while (computePasses.length || renderPasses.length) {
+      if (computePasses.length) {
+        passes.push(computePasses.shift()!);
       }
-      if (renderBundles.length) {
-        stages.push(renderBundles.shift()!);
+      if (renderPasses.length) {
+        passes.push(renderPasses.shift()!);
       }
     }
 
-    for (const stage of stages) {
-      if (stage.hasOwnProperty('descriptor')) {
-        const computeStage = stage as CompiledComputeStage;
+    for (const pass of passes) {
+      if (pass.type === 'compute') {
         const computePass = encoder.beginComputePass();
-        const dispatchSize = computeStage.descriptor.dispatchSize;
-        computePass.setPipeline(computeStage.pipeline);
-        computeStage.bindGroups.forEach((group, i) => {
+        const dispatchSize = pass.descriptor.dispatchSize;
+        computePass.setPipeline(pass.pipeline);
+        pass.bindGroups.forEach((group, i) => {
           if (group) {
             computePass.setBindGroup(i, group);
           }
@@ -413,18 +428,20 @@ export class Executable {
         computePass.dispatch(dispatchSize.x, dispatchSize.y, dispatchSize.z);
         computePass.endPass();
       } else {
-        const bundle = stage as GPURenderBundle;
+        const loadValue = pass.descriptor.clear
+          ? pass.descriptor.clearColor ?? { r: 0, g: 0, b: 0, a: 1 }
+          : ('load' as const);
         const renderPass = encoder.beginRenderPass({
           colorAttachments: [
             {
               // @ts-ignore
               view: texture.createView(),
-              loadValue: [0, 0, 0, 1],
+              loadValue,
               storeOp: 'store' as const,
             },
           ],
         });
-        renderPass.executeBundles([bundle]);
+        renderPass.executeBundles([pass.bundle]);
         renderPass.endPass();
       }
     }

@@ -38,6 +38,9 @@ export interface RenderNodeDescriptor extends PipelineNodeDescriptor {
   indexed: boolean;
   numVertices: number;
   numInstances: number;
+
+  clear?: boolean;
+  clearColor?: GPUColorDict;
 }
 
 export interface ComputeNodeDescriptor extends PipelineNodeDescriptor {
