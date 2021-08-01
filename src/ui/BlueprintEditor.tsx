@@ -43,6 +43,21 @@ function getUnusedKey<T extends Record<string, any>>(
 }
 
 export class BlueprintEditor extends React.Component<Props> {
+  private isMounted_: boolean;
+
+  constructor(props: Props) {
+    super(props);
+    this.isMounted_ = false;
+  }
+
+  componentDidMount() {
+    this.isMounted_ = true;
+  }
+
+  componentWillUnmount() {
+    this.isMounted_ = false;
+  }
+
   render() {
     return (
       <div className="BlueprintEditor">
@@ -69,6 +84,10 @@ export class BlueprintEditor extends React.Component<Props> {
   }
 
   update_ = () => {
+    if (!this.isMounted_) {
+      return;
+    }
+
     this.setState({
       elements: buildGraphFromBlueprint(this.props.blueprint, this.update_),
     });

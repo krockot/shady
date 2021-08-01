@@ -4,6 +4,7 @@ import React from 'react';
 
 interface Props {
   value: string;
+  enabled?: boolean;
   emptyText?: string;
   onChange: (value: string) => void;
 }
@@ -23,49 +24,53 @@ export class EditableLabel extends React.Component<Props, State> {
   }
 
   render() {
+    const isEmpty = this.state.value === '';
+    const isEditing = this.state.isEditing;
+    const editingClass = isEditing ? 'Editing' : 'NotEditing';
+    const emptyClass = isEmpty ? 'Empty' : 'NotEmpty';
+    const defaultValue = !isEmpty
+      ? this.state.value
+      : this.props.emptyText ?? '';
     return (
-      <div className="EditableLabel">
-        {this.state.isEditing ? (
-          <input
-            className="LabelText"
-            type="text"
-            onChange={this.onChange_}
-            onKeyDown={this.onKeyDown_}
-            onBlur={this.onFocusOut_}
-            value={this.state.value}
-            autoFocus
-          />
-        ) : (
-          <div
-            className={`Label ${this.state.value === '' ? 'Empty' : ''}`}
-            onClick={this.onClick_}
-          >
-            {this.state.value !== ''
-              ? this.state.value
-              : this.props.emptyText ?? ''}
-          </div>
-        )}
-      </div>
+      <input
+        className={`EditableLabel ${editingClass} ${emptyClass}`}
+        type="text"
+        onKeyDown={this.onKeyDown_}
+        onBlur={this.onFocusOut_}
+        defaultValue={defaultValue}
+        readOnly={!isEditing}
+        onClick={this.onClick_}
+        autoFocus
+      />
     );
   }
 
-  onClick_ = () => {
+  onClick_ = (e: React.MouseEvent<HTMLInputElement>) => {
+    if (this.props.enabled === false) {
+      return;
+    }
     this.setState({ isEditing: true });
   };
 
-  onChange_ = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.currentTarget.value;
-    this.setState({ value });
+  commit_ = (untrimmedValue: string) => {
+    const value = untrimmedValue.trim();
+    if (value === '') {
+      this.setState({ isEditing: false });
+      return;
+    }
+    this.setState({ value, isEditing: false });
     this.props.onChange(value);
   };
 
-  onKeyDown_ = (e: React.KeyboardEvent) => {
+  onKeyDown_ = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
+      this.commit_(e.currentTarget.value);
+    } else if (e.key === 'Escape') {
       this.setState({ isEditing: false });
     }
   };
 
-  onFocusOut_ = () => {
-    this.setState({ isEditing: false });
+  onFocusOut_ = (e: React.FocusEvent<HTMLInputElement>) => {
+    this.commit_(e.currentTarget.value);
   };
 }

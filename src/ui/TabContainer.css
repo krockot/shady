@@ -14,23 +14,26 @@
   height: 2em;
 }
 
-.TabContainer .Tab .EditableLabel input {
-  max-width: 6em;
-}
-
 .TabContainer .Tab {
-  position: relative;
-  display: flex;
-  flex-direction: row;
+  font-family: 'Rubik', sans-serif;
   user-select: none;
-  padding: 0;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  padding-left: 1em;
+  border-radius: 6px 6px 0 0;
   padding: 2px 2px 2px 1em;
   height: 2em;
   line-height: 1.8em;
+  font-size: 14px;
   box-sizing: border-box;
+  max-width: 10em;
+}
+
+.TabContainer .Tab .EditableLabel {
+  text-align: left;
+  display: inline;
+  line-height: 1em;
+  font-size: 14px;
+  font-family: 'Rubik', sans-serif;
+  appearance: textfield;
+  width: calc(100% - 24px);
 }
 
 .TabContainer .Tab .RemoveButton {

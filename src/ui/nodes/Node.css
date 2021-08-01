@@ -52,3 +52,8 @@
   text-align: right;
   margin: 4px;
 }
+
+.Node .EditableLabel {
+  max-width: 8em;
+  text-align: right;
+}

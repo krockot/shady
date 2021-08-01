@@ -53,14 +53,11 @@ export class TabContainer extends React.Component<Props, State> {
                           ${tab.mutable ? 'Removable' : 'Permanent'}`}
               onClick={_ => this.setActiveTab_(i)}
             >
-              {tab.mutable && active ? (
-                <EditableLabel
-                  value={tab.title}
-                  onChange={tab.onRename ?? (() => ({}))}
-                />
-              ) : (
-                tab.title
-              )}
+              <EditableLabel
+                enabled={tab.mutable && active}
+                value={tab.title}
+                onChange={tab.onRename ?? (() => ({}))}
+              />
               {tab.mutable && (
                 <button className="RemoveButton" onClick={tab.onClose}>
                   x
