@@ -150,6 +150,7 @@ export class BlueprintEditor extends React.Component<Props> {
       vertexEntryPoint: '',
       fragmentShader: '',
       fragmentEntryPoint: '',
+      topology: 'triangle-list',
       numVertices: 4,
       numInstances: 1,
       indexed: false,

@@ -138,7 +138,11 @@ export class ControlPanel extends React.Component<Props, State> {
                 }
               >
                 {CODE_MIRROR_THEMES.map(theme => {
-                  return <option value={theme}>{theme}</option>;
+                  return (
+                    <option key={theme} value={theme}>
+                      {theme}
+                    </option>
+                  );
                 })}
               </select>
             </LabeledField>

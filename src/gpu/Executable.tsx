@@ -304,6 +304,11 @@ export class Executable {
       }
 
       const { layout, bindGroups } = compileBindings(id);
+      const topology = node.topology ?? 'triangle-list';
+      const stripIndexFormat =
+        topology === 'line-strip' || topology === 'triangle-strip'
+          ? 'uint32'
+          : undefined;
       const pipeline = device.createRenderPipeline({
         layout,
         vertex: {
@@ -311,7 +316,8 @@ export class Executable {
           entryPoint: node.vertexEntryPoint,
         },
         primitive: {
-          topology: 'triangle-list',
+          topology,
+          stripIndexFormat,
           cullMode: 'none',
         },
         fragment: {

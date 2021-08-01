@@ -34,6 +34,7 @@ export interface RenderNodeDescriptor extends PipelineNodeDescriptor {
   fragmentShader: string;
   fragmentEntryPoint: string;
 
+  topology?: GPUPrimitiveTopology;
   indexed: boolean;
   numVertices: number;
   numInstances: number;

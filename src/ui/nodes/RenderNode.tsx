@@ -56,6 +56,22 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
             onChange={value => data.onChange({ fragmentEntryPoint: value })}
           />
         </LabeledField>
+        <LabeledField label="Topology">
+          <select
+            value={data.descriptor.topology ?? 'triangle-list'}
+            onChange={e =>
+              data.onChange({
+                topology: e.currentTarget.value as GPUPrimitiveTopology,
+              })
+            }
+          >
+            <option value="point-list">Point List</option>
+            <option value="line-list">Line List</option>
+            <option value="line-strip">Line Strip</option>
+            <option value="triangle-list">Triangle List</option>
+            <option value="triangle-strip">Triangle Strip</option>
+          </select>
+        </LabeledField>
         <LabeledField label="# Vertices">
           <input
             type="number"
