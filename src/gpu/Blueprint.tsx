@@ -76,8 +76,11 @@ export interface BufferNodeDescriptor extends NodeDescriptorBase {
 
 export interface TextureNodeDescriptor extends NodeDescriptorBase {
   type: 'texture';
-  sourceType: 'image' | 'buffer';
-  source: number;
+  imageId?: string;
+  size: GPUExtent3DDict;
+  format: GPUTextureFormat;
+  mipLevelCount: number;
+  sampleCount: number;
 }
 
 export interface SamplerNodeDescriptor extends NodeDescriptorBase {
