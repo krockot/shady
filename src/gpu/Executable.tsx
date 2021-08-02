@@ -37,6 +37,9 @@ export class Executable {
   private renderPasses_: Record<string, CompiledRenderPass>;
   private computePasses_: Record<string, CompiledComputePass>;
 
+  private outputDepthStencilTexture_: null | GPUTexture;
+  private outputDepthStencilTextureSize_: GPUExtent3DDict;
+
   constructor(
     gpu: Gpu,
     blueprint: Blueprint,
@@ -51,6 +54,8 @@ export class Executable {
     this.buffers_ = {};
     this.renderPasses_ = {};
     this.computePasses_ = {};
+    this.outputDepthStencilTexture_ = null;
+    this.outputDepthStencilTextureSize_ = { width: 0, height: 0 };
   }
 
   get gpu() {
@@ -332,9 +337,15 @@ export class Executable {
           module: this.shaders_[node.fragmentShader],
           entryPoint: node.fragmentEntryPoint,
         },
+        depthStencil: {
+          format: 'depth24plus-stencil8',
+          depthWriteEnabled: true,
+          depthCompare: 'less',
+        },
       });
       const encoder = device.createRenderBundleEncoder({
         colorFormats: [outputFormat],
+        depthStencilFormat: 'depth24plus-stencil8',
       });
       encoder.setPipeline(pipeline);
       bindGroups.forEach((group, i) => {
@@ -392,7 +403,7 @@ export class Executable {
     device.queue.writeBuffer(this.builtinUniforms_, 0, data, 0, 24);
   }
 
-  execute(texture: GPUTexture) {
+  execute(texture: GPUTexture, {width, height}: GPUExtent3DDict) {
     if (!this.gpu_.isAcquired) {
       return;
     }
@@ -413,6 +424,23 @@ export class Executable {
       if (renderPasses.length) {
         passes.push(renderPasses.shift()!);
       }
+    }
+
+    // TODO: configurable depth/stencil state
+    if (this.outputDepthStencilTexture_ === null ||
+        this.outputDepthStencilTextureSize_.width !== width ||
+        this.outputDepthStencilTextureSize_.height !== height) {
+      if (this.outputDepthStencilTexture_ !== null) {
+        this.outputDepthStencilTexture_.destroy();
+        this.outputDepthStencilTexture_ = null;
+      }
+
+      this.outputDepthStencilTexture_ = device.createTexture({
+        size: {width, height},
+        format: 'depth24plus-stencil8',
+        usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      });
+      this.outputDepthStencilTextureSize_ = {width, height};
     }
 
     for (const pass of passes) {
@@ -440,6 +468,13 @@ export class Executable {
               storeOp: 'store' as const,
             },
           ],
+          depthStencilAttachment: {
+            view: this.outputDepthStencilTexture_.createView(),
+            depthLoadValue: pass.descriptor.clear ? 1 : 'load',
+            depthStoreOp: 'store',
+            stencilLoadValue: 1,
+            stencilStoreOp: 'store',
+          }
         });
         renderPass.executeBundles([pass.bundle]);
         renderPass.endPass();

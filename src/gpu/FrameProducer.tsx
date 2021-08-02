@@ -3,11 +3,6 @@ import { Blueprint } from './Blueprint';
 import { CompileResult, Executable } from './Executable';
 import { Gpu } from './Gpu';
 
-interface Resolution {
-  width: number;
-  height: number;
-}
-
 const getContextFromCanvas = (
   canvas: HTMLCanvasElement
 ): null | GPUCanvasContext => {
@@ -25,7 +20,7 @@ export class FrameProducer {
   private preferredTargetTextureFormat_: GPUTextureFormat;
 
   private lastUsedContext_?: GPUCanvasContext;
-  private lastUsedResolution_?: Resolution;
+  private lastUsedResolution_?: GPUExtent3DDict;
 
   private startTime_?: number;
   private lastFrameTime_?: number;
@@ -73,7 +68,7 @@ export class FrameProducer {
     this.executable_ = null;
   }
 
-  render(canvas: HTMLCanvasElement, resolution: Resolution) {
+  render(canvas: HTMLCanvasElement, resolution: GPUExtent3DDict) {
     if (!this.gpu_ || !this.gpu_.isAcquired) {
       return null;
     }
@@ -134,7 +129,7 @@ export class FrameProducer {
 
     // @ts-ignore
     const target = context.getCurrentTexture() as GPUTexture;
-    this.executable_.execute(target);
+    this.executable_.execute(target, resolution);
   }
 
   onGpuAcquired_ = () => {
