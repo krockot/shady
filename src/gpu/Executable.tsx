@@ -356,7 +356,7 @@ export class Executable {
         depthStencil: {
           format: 'depth24plus-stencil8',
           depthWriteEnabled: true,
-          depthCompare: 'less',
+          depthCompare: node.depthTest ?? 'always',
         },
       });
       const encoder = device.createRenderBundleEncoder({

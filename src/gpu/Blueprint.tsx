@@ -41,6 +41,8 @@ export interface RenderNodeDescriptor extends PipelineNodeDescriptor {
 
   clear?: boolean;
   clearColor?: GPUColorDict;
+
+  depthTest?: GPUCompareFunction;
 }
 
 export interface ComputeNodeDescriptor extends PipelineNodeDescriptor {

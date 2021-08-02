@@ -131,6 +131,25 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
             }
           />
         </LabeledField>
+        <LabeledField label="Depth Test">
+          <select
+            value={data.descriptor.depthTest ?? 'always'}
+            onChange={e =>
+              data.onChange({
+                depthTest: e.currentTarget.value as GPUCompareFunction,
+              })
+            }
+          >
+            <option value="never">Never Pass</option>
+            <option value="less">&lt;</option>
+            <option value="less-equal">&lt;=</option>
+            <option value="equal">=</option>
+            <option value="greater-equal">&gt;=</option>
+            <option value="greater">&gt;</option>
+            <option value="not-equal">≠</option>
+            <option value="always">Always Pass</option>
+          </select>
+        </LabeledField>
       </div>
     );
   },
