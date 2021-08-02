@@ -8,20 +8,13 @@ import ReactFlow, {
   Node,
 } from 'react-flow-renderer';
 
-import {
-  BindingNodeDescriptor,
-  Blueprint,
-  NodeDescriptor,
-  PipelineNodeDescriptor,
-} from '../gpu/Blueprint';
-import { BindingNode } from './nodes/BindingNode';
+import { Blueprint, EdgeDescriptor, NodeDescriptor } from '../gpu/Blueprint';
 import { BufferBindingEdge } from './nodes/BufferBindingEdge';
 import { BufferNode } from './nodes/BufferNode';
 import { ComputeNode } from './nodes/ComputeNode';
 import { RenderNode } from './nodes/RenderNode';
 
 const NODE_TYPES = {
-  binding: BindingNode,
   buffer: BufferNode,
   compute: ComputeNode,
   render: RenderNode,
@@ -111,18 +104,7 @@ export class BlueprintEditor extends React.Component<Props> {
       (target.type === 'compute' || target.type === 'render') &&
       source.type === 'buffer'
     ) {
-      const [id, node] = this.addBinding_();
-      node.resourceId = connection.source!;
-      node.passes = [connection.target!];
-      target.bindings.push(id);
-      this.props.onChange();
-      return;
-    }
-
-    if (source.type === 'binding') {
-      const pipeline = target as PipelineNodeDescriptor;
-      source.passes.push(connection.target!);
-      pipeline.bindings.push(connection.source!);
+      this.addBufferBinding_(connection.source!, connection.target!);
       this.props.onChange();
       return;
     }
@@ -155,7 +137,18 @@ export class BlueprintEditor extends React.Component<Props> {
       ...node,
     } as NodeDescriptor;
     this.update_();
-    return [id, nodes[id]];
+  };
+
+  addEdge_ = (type: string, edge: Partial<EdgeDescriptor>) => {
+    const edges = this.props.blueprint.edges ?? {};
+    this.props.blueprint.edges = edges;
+
+    const id = getUnusedKey(edges, type);
+    edges[id] = {
+      type,
+      ...edge,
+    } as EdgeDescriptor;
+    this.update_();
   };
 
   addBuffer_ = () => {
@@ -166,14 +159,14 @@ export class BlueprintEditor extends React.Component<Props> {
     });
   };
 
-  addBinding_ = () => {
-    return this.addNode_('binding', {
-      bindingType: 'storage',
+  addBufferBinding_ = (bufferId: string, passId: string) => {
+    this.addEdge_('buffer-binding', {
+      bindingType: 'storage-read',
       group: 0,
       binding: 1,
-      resourceId: '',
-      passes: [],
-    }) as [string, BindingNodeDescriptor];
+      bufferId,
+      passId,
+    });
   };
 
   addRenderPass_ = () => {
@@ -188,7 +181,6 @@ export class BlueprintEditor extends React.Component<Props> {
       indexed: false,
       clear: true,
       clearColor: { r: 0, g: 0, b: 0, a: 1 },
-      bindings: [],
     });
   };
 
@@ -197,7 +189,6 @@ export class BlueprintEditor extends React.Component<Props> {
       shader: '',
       entryPoint: '',
       dispatchSize: { x: 1, y: 1, z: 1 },
-      bindings: [],
     });
   };
 }
@@ -208,65 +199,53 @@ function buildGraphFromBlueprint(
 ): FlowElement[] {
   const elements: FlowElement[] = [];
   Object.entries(blueprint.nodes).forEach(([id, node]) => {
-    if (node.type !== 'binding') {
-      elements.push({
-        id: id,
-        type: node.type,
-        data: {
-          blueprint,
-          descriptor: node,
-          onChange: (update: any) => {
-            Object.assign(blueprint.nodes[id], update);
-            onChange();
-          },
-          destroy: () => {
-            delete blueprint.nodes[id];
-            for (const node of Object.values(blueprint.nodes)) {
-              if (node.type === 'binding') {
-                if (node.resourceId === id) {
-                  node.resourceId = '';
-                }
-                node.passes = node.passes.filter(passId => passId !== id);
-              }
-            }
-            onChange();
-          },
+    elements.push({
+      id,
+      type: node.type,
+      data: {
+        blueprint,
+        descriptor: node,
+        onChange: (update: any) => {
+          Object.assign(blueprint.nodes[id], update);
+          onChange();
         },
-        position: node.position,
-      });
-    } else {
-      if (node.resourceId) {
-        node.passes.forEach(passId => {
-          elements.push({
-            id: `${node.resourceId}-${passId}`,
-            source: node.resourceId,
-            target: passId,
-            type: 'bufferBinding',
-            data: {
-              blueprint,
-              descriptor: node,
-              onChange: (update: any) => {
-                Object.assign(blueprint.nodes[id], update);
-                onChange();
-              },
-              destroy: () => {
-                const pass = blueprint.nodes[passId];
-                if (pass.type === 'compute' || pass.type === 'render') {
-                  pass.bindings = pass.bindings.filter(
-                    bindingId => bindingId !== id
-                  );
-                }
-                node.passes = node.passes.filter(pid => pid !== passId);
-                if (node.passes.length === 0) {
-                  delete blueprint.nodes[id];
-                }
-                onChange();
-              },
-            },
-          });
-        });
-      }
-    }
+        destroy: () => {
+          delete blueprint.nodes[id];
+          for (const [id, edge] of Object.entries(blueprint.edges ?? {})) {
+            if (
+              blueprint.edges &&
+              (edge.bufferId === id || edge.passId === id)
+            ) {
+              delete blueprint.edges[id];
+            }
+          }
+          onChange();
+        },
+      },
+      position: node.position,
+    });
   });
+
+  Object.entries(blueprint.edges ?? {}).forEach(([id, edge]) => {
+    elements.push({
+      id,
+      source: edge.bufferId,
+      target: edge.passId,
+      type: 'bufferBinding',
+      data: {
+        blueprint,
+        descriptor: edge,
+        onChange: (update: any) => {
+          Object.assign(blueprint.edges[id], update);
+          onChange();
+        },
+        destroy: () => {
+          delete blueprint.edges[id];
+          onChange();
+        },
+      },
+    });
+  });
+
   return elements;
 }

@@ -1,6 +1,6 @@
 import {
   Blueprint,
-  BindingNodeDescriptor,
+  BufferBindingEdgeDescriptor,
   BufferNodeDescriptor,
   RenderNodeDescriptor,
   ComputeNodeDescriptor,
@@ -151,19 +151,23 @@ export class Executable {
       bindings: Map<number, string>;
     }
 
+    const bufferBindingsByPass: Record<string, BufferBindingEdgeDescriptor[]> =
+      {};
+    Object.entries(this.blueprint_.edges ?? {}).forEach(([id, edge]) => {
+      if (!bufferBindingsByPass[edge.passId]) {
+        bufferBindingsByPass[edge.passId] = [];
+      }
+      bufferBindingsByPass[edge.passId].push(edge);
+    });
+
     const pipelineBindGroups: Record<string, PipelineBindGroup[]> = {};
     const bufferUsageFlags: Record<string, GPUBufferUsageFlags> = {};
     const collectResourceUsage = (
       pipelineId: string,
-      visibility: GPUShaderStageFlags,
-      bindings: string[]
+      visibility: GPUShaderStageFlags
     ) => {
-      for (const id of bindings) {
-        const descriptor = this.blueprint_.nodes[id] as BindingNodeDescriptor;
-        if (!descriptor.resourceId || descriptor.passes.length === 0) {
-          continue;
-        }
-
+      for (const edge of bufferBindingsByPass[pipelineId] ?? []) {
+        const descriptor = edge as BufferBindingEdgeDescriptor;
         let usageFlags = 0;
         const entry: GPUBindGroupLayoutEntry = {
           binding: descriptor.binding,
@@ -176,7 +180,7 @@ export class Executable {
         const bindGroup = groups[group] ?? { layout: [], bindings: new Map() };
         groups[group] = bindGroup;
         bindGroup.layout.push(entry);
-        bindGroup.bindings.set(descriptor.binding, descriptor.resourceId);
+        bindGroup.bindings.set(descriptor.binding, edge.bufferId);
 
         switch (descriptor.bindingType) {
           case 'storage-read':
@@ -193,19 +197,11 @@ export class Executable {
             usageFlags = GPUBufferUsage.UNIFORM;
             entry.buffer = { type: 'uniform' };
             break;
-
-          case 'sampler':
-            entry.sampler = {};
-            break;
-
-          case 'texture':
-            entry.texture = {};
-            break;
         }
 
         if (usageFlags !== 0) {
-          bufferUsageFlags[descriptor.resourceId] =
-            (bufferUsageFlags[descriptor.resourceId] ?? 0) | usageFlags;
+          bufferUsageFlags[edge.bufferId] =
+            (bufferUsageFlags[edge.bufferId] ?? 0) | usageFlags;
         }
       }
     };
@@ -223,14 +219,13 @@ export class Executable {
           renders[id] = node;
           collectResourceUsage(
             id,
-            GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-            node.bindings
+            GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT
           );
           break;
 
         case 'compute':
           computes[id] = node;
-          collectResourceUsage(id, GPUShaderStage.COMPUTE, node.bindings);
+          collectResourceUsage(id, GPUShaderStage.COMPUTE);
           break;
       }
     }

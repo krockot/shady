@@ -39,9 +39,9 @@ export const INSTANCES: Blueprint = {
       vertexEntryPoint: 'main',
       fragmentShader: 'fragment1',
       fragmentEntryPoint: 'main',
-      bindings: [],
     },
   },
+  edges: {},
   shaders: {
     vertex1: {
       name: 'Vertex',

@@ -1,5 +1,6 @@
 export interface Blueprint {
   nodes: Record<string, NodeDescriptor>;
+  edges?: Record<string, EdgeDescriptor>;
   shaders: Record<string, Shader>;
 }
 
@@ -13,6 +14,8 @@ export type NodeDescriptor =
   | SamplerNodeDescriptor
   | BindingNodeDescriptor;
 
+export type EdgeDescriptor = BufferBindingEdgeDescriptor;
+
 export interface NodeDescriptorBase {
   type: 'buffer' | 'render' | 'compute' | 'texture' | 'sampler' | 'binding';
   name: string;
@@ -20,7 +23,7 @@ export interface NodeDescriptorBase {
 }
 
 export interface PipelineNodeDescriptor extends NodeDescriptorBase {
-  bindings: string[];
+  bindings?: string[];
 }
 
 export interface RenderNodeDescriptor extends PipelineNodeDescriptor {
@@ -94,4 +97,57 @@ export interface SamplerNodeDescriptor extends NodeDescriptorBase {
 interface Shader {
   name: string;
   code: string;
+}
+
+export interface EdgeDescriptorBase {
+  type: 'buffer-binding';
+}
+
+type BufferBindingType = 'storage-read' | 'storage' | 'uniform';
+
+export interface BufferBindingEdgeDescriptor extends EdgeDescriptorBase {
+  bindingType: BufferBindingType;
+  bufferId: string;
+  passId: string;
+  group: number;
+  binding: number;
+}
+
+function migrateBindingsToEdges(blueprint: Blueprint) {
+  if (!blueprint.edges) {
+    blueprint.edges = {};
+  }
+  const nodesToRemove = Object.entries(blueprint.nodes).filter(
+    ([, node]) => node.type === 'binding'
+  ) as [string, BindingNodeDescriptor][];
+  nodesToRemove.forEach(([id, node]) => {
+    delete blueprint.nodes[id];
+    for (let i = 1; ; ++i) {
+      const edgeId = `binding${i}`;
+      if (blueprint.edges!.hasOwnProperty(edgeId)) {
+        continue;
+      }
+      node.passes.forEach(passId => {
+        blueprint.edges![edgeId] = {
+          type: 'buffer-binding',
+          bindingType: node.bindingType as BufferBindingType,
+          bufferId: node.resourceId,
+          passId,
+          group: node.group,
+          binding: node.binding,
+        };
+      });
+      return;
+    }
+  });
+  Object.entries(blueprint.nodes).forEach(([id, node]) => {
+    if (node.type !== 'compute' && node.type !== 'render') {
+      return;
+    }
+    delete node.bindings;
+  });
+}
+
+export function canonicalize(blueprint: Blueprint) {
+  migrateBindingsToEdges(blueprint);
 }

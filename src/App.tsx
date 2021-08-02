@@ -4,6 +4,7 @@ import React from 'react';
 
 import { LocalPersistent } from './base/LocalPersistent';
 import { deepCopy } from './base/Util';
+import { canonicalize } from './gpu/Blueprint';
 import { ShaderCompilationInfo } from './gpu/Executable';
 import { FrameProducer } from './gpu/FrameProducer';
 import { ControlPanel } from './ui/ControlPanel';
@@ -84,6 +85,7 @@ class App extends React.Component<Props, State> {
       return;
     }
 
+    canonicalize(blueprint);
     this.setState({ blueprint });
   };
 
