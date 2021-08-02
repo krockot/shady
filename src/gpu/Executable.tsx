@@ -8,9 +8,24 @@ import {
 import { Gpu } from './Gpu';
 import { BUILTIN_UNIFORMS_WGSL } from './BuiltinUniforms';
 
+export type ShaderCompilationMessageType = 'info' | 'warning' | 'error';
+
+export interface ShaderCompilationMessage {
+  message: string;
+  type: ShaderCompilationMessageType;
+  lineNum: number;
+  linePos: number;
+  offset: number;
+  length: number;
+}
+
+export interface ShaderCompilationInfo {
+  messages: ShaderCompilationMessage[];
+}
+
 export interface CompileResult {
   executable?: Executable;
-  shaderInfo: Record<string, GPUCompilationInfo>;
+  shaderInfo: Record<string, ShaderCompilationInfo>;
   messages: string[];
 }
 
@@ -31,7 +46,7 @@ export class Executable {
   private gpu_: Gpu;
   private blueprint_: Blueprint;
   private shaders_: Record<string, GPUShaderModule>;
-  private shaderInfo_: Record<string, GPUCompilationInfo>;
+  private shaderInfo_: Record<string, ShaderCompilationInfo>;
   private builtinUniforms_: null | GPUBuffer;
   private buffers_: Record<string, GPUBuffer>;
   private renderPasses_: Record<string, CompiledRenderPass>;
@@ -44,7 +59,7 @@ export class Executable {
     gpu: Gpu,
     blueprint: Blueprint,
     shaders: Record<string, GPUShaderModule>,
-    shaderInfo: Record<string, GPUCompilationInfo>
+    shaderInfo: Record<string, ShaderCompilationInfo>
   ) {
     this.gpu_ = gpu;
     this.blueprint_ = blueprint;
@@ -94,10 +109,11 @@ export class Executable {
     }
 
     let fail: boolean = false;
-    const shaderInfo: Record<string, GPUCompilationInfo> = {};
+    const shaderInfo: Record<string, ShaderCompilationInfo> = {};
     for (const [id, m] of Object.entries(modules)) {
       const info = await m.compilationInfo();
-      shaderInfo[id] = info;
+      shaderInfo[id] = { messages: info.messages.map(m => ({ ...m })) };
+
       for (const message of info.messages) {
         if (message.type === 'error' && usedShaders[id]) {
           fail = true;
@@ -403,7 +419,7 @@ export class Executable {
     device.queue.writeBuffer(this.builtinUniforms_, 0, data, 0, 24);
   }
 
-  execute(texture: GPUTexture, {width, height}: GPUExtent3DDict) {
+  execute(texture: GPUTexture, { width, height }: GPUExtent3DDict) {
     if (!this.gpu_.isAcquired) {
       return;
     }
@@ -427,20 +443,22 @@ export class Executable {
     }
 
     // TODO: configurable depth/stencil state
-    if (this.outputDepthStencilTexture_ === null ||
-        this.outputDepthStencilTextureSize_.width !== width ||
-        this.outputDepthStencilTextureSize_.height !== height) {
+    if (
+      this.outputDepthStencilTexture_ === null ||
+      this.outputDepthStencilTextureSize_.width !== width ||
+      this.outputDepthStencilTextureSize_.height !== height
+    ) {
       if (this.outputDepthStencilTexture_ !== null) {
         this.outputDepthStencilTexture_.destroy();
         this.outputDepthStencilTexture_ = null;
       }
 
       this.outputDepthStencilTexture_ = device.createTexture({
-        size: {width, height},
+        size: { width, height },
         format: 'depth24plus-stencil8',
         usage: GPUTextureUsage.RENDER_ATTACHMENT,
       });
-      this.outputDepthStencilTextureSize_ = {width, height};
+      this.outputDepthStencilTextureSize_ = { width, height };
     }
 
     for (const pass of passes) {
@@ -474,7 +492,7 @@ export class Executable {
             depthStoreOp: 'store',
             stencilLoadValue: 1,
             stencilStoreOp: 'store',
-          }
+          },
         });
         renderPass.executeBundles([pass.bundle]);
         renderPass.endPass();

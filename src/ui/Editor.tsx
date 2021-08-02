@@ -4,6 +4,7 @@ import React from 'react';
 
 import { Blueprint } from '../gpu/Blueprint';
 import { BUILTIN_UNIFORMS_WGSL } from '../gpu/BuiltinUniforms';
+import { ShaderCompilationInfo } from '../gpu/Executable';
 import { BlueprintEditor } from './BlueprintEditor';
 import { CodeEditor } from './CodeEditor';
 import { TabContainer } from './TabContainer';
@@ -12,7 +13,7 @@ interface Props {
   blueprint: Blueprint;
   onBlueprintChange: () => void;
 
-  compilationInfo: Record<string, GPUCompilationInfo>;
+  compilationInfo: Record<string, ShaderCompilationInfo>;
 
   codeMirrorTheme: string;
 }

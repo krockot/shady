@@ -1,5 +1,7 @@
 import { Debouncer } from './Debouncer';
 
+import localForage from 'localforage';
+
 const DEFAULT_DEBOUNCE_MS = 100;
 
 interface Options<Type> {
@@ -31,27 +33,49 @@ export class LocalPersistent<Type> {
   private cachedValue_: Type;
   private debouncer_: Debouncer;
 
-  constructor(options: Options<Type>) {
-    this.key_ = options.key;
-
-    const serializedValue = localStorage[this.key_];
-    let cachedValue = {};
-    if (serializedValue) {
-      cachedValue = JSON.parse(serializedValue) ?? {};
-    }
-    this.cachedValue_ = deepUpdate(cachedValue, options.default) as Type;
-
-    this.debouncer_ = new Debouncer(options.debounceMs ?? DEFAULT_DEBOUNCE_MS);
+  constructor(key: string, initialValue: Type, debounceMs: number) {
+    this.key_ = key;
+    this.cachedValue_ = initialValue;
+    this.debouncer_ = new Debouncer(debounceMs);
   }
 
   set value(value: Type) {
     this.cachedValue_ = value;
-    this.debouncer_.invoke(
-      () => (localStorage[this.key_] = JSON.stringify(value))
-    );
+    this.debouncer_.invoke(() => localForage.setItem(this.key_, value));
   }
 
   get value(): Type {
     return this.cachedValue_;
   }
+}
+
+function loadValueFromLocalStorage<Type>(key: string): null | Type {
+  const serializedValue = localStorage[key];
+  let cachedValue = null;
+  if (serializedValue) {
+    cachedValue = JSON.parse(serializedValue) ?? null;
+  }
+  if (cachedValue !== null) {
+    return cachedValue as Type;
+  }
+  return null;
+}
+
+export async function restoreLocalPersistent<Type>(
+  options: Options<Type>
+): Promise<LocalPersistent<Type>> {
+  const asyncCachedValue = localForage.getItem(options.key);
+  const cachedLegacyValue = loadValueFromLocalStorage<Type>(options.key);
+  const cachedValue = (await asyncCachedValue) as null | Type;
+  let restoredValue: null | Partial<Type> = null;
+  if (cachedValue !== null) {
+    restoredValue = cachedValue;
+  } else {
+    restoredValue = cachedLegacyValue ?? {};
+  }
+  return new LocalPersistent<Type>(
+    options.key,
+    deepUpdate(restoredValue, options.default),
+    options.debounceMs ?? DEFAULT_DEBOUNCE_MS
+  );
 }

@@ -1,14 +1,14 @@
 type Closure = () => void;
 
 export class Debouncer {
-  private minDelayMs: number;
-  private lastInvocationMs: null | number;
-  private pendingInvocation: null | ReturnType<typeof setTimeout>;
+  private minDelayMs_: number;
+  private lastInvocationMs_: null | number;
+  private pendingInvocation_: null | ReturnType<typeof setTimeout>;
 
   constructor(minDelayMs: number) {
-    this.minDelayMs = minDelayMs;
-    this.lastInvocationMs = null;
-    this.pendingInvocation = null;
+    this.minDelayMs_ = minDelayMs;
+    this.lastInvocationMs_ = null;
+    this.pendingInvocation_ = null;
   }
 
   invoke(f: Closure) {
@@ -21,30 +21,30 @@ export class Debouncer {
   }
 
   private clearPendingInvocation() {
-    if (this.pendingInvocation !== null) {
-      clearTimeout(this.pendingInvocation);
+    if (this.pendingInvocation_ !== null) {
+      clearTimeout(this.pendingInvocation_);
     }
-    this.pendingInvocation = null;
+    this.pendingInvocation_ = null;
   }
 
   private invokeInternal(f: Closure) {
     this.clearPendingInvocation();
-    this.lastInvocationMs = Date.now();
+    this.lastInvocationMs_ = Date.now();
     f();
   }
 
   private onCooldown(): boolean {
-    if (this.lastInvocationMs === null) {
+    if (this.lastInvocationMs_ === null) {
       return false;
     }
-    return Date.now() - this.lastInvocationMs < this.minDelayMs;
+    return Date.now() - this.lastInvocationMs_ < this.minDelayMs_;
   }
 
   private scheduleSuppressed(f: Closure) {
-    if (this.pendingInvocation !== null) {
-      return;
+    if (this.pendingInvocation_ !== null) {
+      clearTimeout(this.pendingInvocation_);
     }
-    const delay = this.lastInvocationMs! + this.minDelayMs - Date.now();
-    this.pendingInvocation = setTimeout(this.invoke.bind(this, f), delay);
+    const delay = this.lastInvocationMs_! + this.minDelayMs_ - Date.now();
+    this.pendingInvocation_ = setTimeout(this.invoke.bind(this, f), delay);
   }
 }

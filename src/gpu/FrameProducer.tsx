@@ -1,6 +1,6 @@
 import { deepCopy, deepEquals } from '../base/Util';
 import { Blueprint } from './Blueprint';
-import { CompileResult, Executable } from './Executable';
+import { CompileResult, Executable, ShaderCompilationInfo } from './Executable';
 import { Gpu } from './Gpu';
 
 const getContextFromCanvas = (
@@ -31,7 +31,7 @@ export class FrameProducer {
   private mostRecentPendingCompile_: null | Promise<CompileResult>;
   private executable_: null | Executable;
 
-  onShadersCompiled?: (info: Record<string, GPUCompilationInfo>) => void;
+  onShadersCompiled?: (info: Record<string, ShaderCompilationInfo>) => void;
 
   constructor() {
     this.gpu_ = new Gpu();

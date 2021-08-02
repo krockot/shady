@@ -4,55 +4,29 @@ import React from 'react';
 
 import { LocalPersistent } from './base/LocalPersistent';
 import { deepCopy } from './base/Util';
-import { Blueprint } from './gpu/Blueprint';
+import { ShaderCompilationInfo } from './gpu/Executable';
 import { FrameProducer } from './gpu/FrameProducer';
-import { BASIC } from './presets/Basic';
-import { BOIDS } from './presets/Boids';
-import { INSTANCES } from './presets/Instances';
 import { ControlPanel } from './ui/ControlPanel';
 import { Display, DisplayConfig } from './ui/Display';
 import { Editor } from './ui/Editor';
+import { AppState } from './AppState';
 
-interface Props {}
-
-interface PersistableState {
-  blueprint: Blueprint;
-  savedBlueprints: Record<string, Blueprint>;
-  displayConfig: DisplayConfig;
-  codeMirrorTheme: string;
+interface Props {
+  appState: LocalPersistent<AppState>;
 }
 
-const DEFAULT_STATE: PersistableState = {
-  blueprint: BASIC,
-  savedBlueprints: {
-    Basic: BASIC,
-    Boids: BOIDS,
-    Instances: INSTANCES,
-  },
-  displayConfig: {
-    aspect: '1:1',
-    resolution: { mode: 'pixel', pixelSize: 1 },
-  },
-  codeMirrorTheme: 'monokai',
-};
-
-interface State extends PersistableState {
-  compilationInfo: Record<string, GPUCompilationInfo>;
+interface State extends AppState {
+  compilationInfo: Record<string, ShaderCompilationInfo>;
 }
 
 class App extends React.Component<Props, State> {
-  private persistentState_: LocalPersistent<PersistableState>;
   private frameProducer_: FrameProducer;
 
   constructor(props: Props) {
     super(props);
 
-    this.persistentState_ = new LocalPersistent<PersistableState>({
-      key: 'gpu-app-state',
-      default: DEFAULT_STATE,
-    });
     this.state = {
-      ...this.persistentState_.value,
+      ...this.props.appState.value,
       compilationInfo: {},
     };
 
@@ -65,7 +39,7 @@ class App extends React.Component<Props, State> {
   }
 
   componentDidUpdate() {
-    this.persistentState_.value = this.state;
+    this.props.appState.value = this.state;
     this.frameProducer_.setBlueprint(this.state.blueprint);
   }
 
@@ -90,7 +64,7 @@ class App extends React.Component<Props, State> {
   };
 
   onShadersCompiled_ = (
-    compilationInfo: Record<string, GPUCompilationInfo>
+    compilationInfo: Record<string, ShaderCompilationInfo>
   ) => {
     this.setState({ compilationInfo });
   };

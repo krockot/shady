@@ -6,11 +6,12 @@ import CodeMirror from '@uiw/react-codemirror';
 import React from 'react';
 
 import { BUILTIN_UNIFORMS_WGSL } from '../gpu/BuiltinUniforms';
+import { ShaderCompilationInfo } from '../gpu/Executable';
 
 const BUILTIN_WGSL_NUM_LINES = BUILTIN_UNIFORMS_WGSL.split(/\r\n|\r|\n/).length;
 
 interface Props {
-  compilationInfo?: GPUCompilationInfo;
+  compilationInfo?: ShaderCompilationInfo;
   contents: string;
   mutable: boolean;
   onChange: (contents: string) => void;
