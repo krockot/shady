@@ -1,14 +1,17 @@
-.Node {
+.Node,
+.Edge {
   padding: 4px 0px 2px 0px;
   background-color: #888;
   border: solid #777 1px;
   border-radius: 12px;
   display: flex;
+  user-select: none;
   flex-direction: column;
   align-items: stretch;
 }
 
-.Node select {
+.Node select,
+.Edge select {
   text-align: right;
 }
 
@@ -56,4 +59,39 @@
 .Node .EditableLabel {
   max-width: 8em;
   text-align: right;
+}
+
+.Edge {
+  display: flex;
+  flex-direction: column;
+  background-color: #999;
+  align-items: stretch;
+  width: 100%;
+}
+
+.Edge .RemoveButton {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 20px;
+}
+
+.Edge div {
+  font-size: 12px;
+}
+
+.Edge .Row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-right: 30px;
+}
+
+.Edge input[type='number'] {
+  font-size: 12px;
+  width: 3em;
+  box-sizing: border-box;
 }

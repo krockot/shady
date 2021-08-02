@@ -13,7 +13,7 @@ const isValidBufferTarget = (connection: Connection, blueprint: Blueprint) => {
   if (!node) {
     return false;
   }
-  return node.type === 'binding';
+  return node.type === 'compute' || node.type === 'render';
 };
 
 export const BufferNode = makeNodeType<BufferNodeDescriptor>({
