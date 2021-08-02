@@ -59,7 +59,15 @@ export class TabContainer extends React.Component<Props, State> {
                 onChange={tab.onRename ?? (() => ({}))}
               />
               {tab.mutable && (
-                <button className="RemoveButton" onClick={tab.onClose}>
+                <button
+                  className="RemoveButton"
+                  onClick={e => {
+                    if (tab.onClose) {
+                      tab.onClose();
+                    }
+                    e.stopPropagation();
+                  }}
+                >
                   x
                 </button>
               )}
