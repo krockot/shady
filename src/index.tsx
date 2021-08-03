@@ -15,8 +15,6 @@ localForage.config({
   storeName: 'local_state',
 });
 
-window.forage = localForage;
-
 async function init() {
   const state = await restoreLocalPersistent<AppState>({
     key: 'gpu-app-state',
