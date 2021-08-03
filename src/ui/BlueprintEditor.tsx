@@ -236,11 +236,11 @@ function buildGraphFromBlueprint(
         blueprint,
         descriptor: edge,
         onChange: (update: any) => {
-          Object.assign(blueprint.edges[id], update);
+          Object.assign(blueprint.edges![id], update);
           onChange();
         },
         destroy: () => {
-          delete blueprint.edges[id];
+          delete blueprint.edges![id];
           onChange();
         },
       },
