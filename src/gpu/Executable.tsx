@@ -112,7 +112,16 @@ export class Executable {
     const shaderInfo: Record<string, ShaderCompilationInfo> = {};
     for (const [id, m] of Object.entries(modules)) {
       const info = await m.compilationInfo();
-      shaderInfo[id] = { messages: info.messages.map(m => ({ ...m })) };
+      shaderInfo[id] = {
+        messages: info.messages.map(m => ({
+          message: m.message,
+          type: m.type,
+          lineNum: m.lineNum,
+          linePos: m.linePos,
+          offset: m.offset,
+          length: m.length,
+        })),
+      };
 
       for (const message of info.messages) {
         if (message.type === 'error' && usedShaders[id]) {
