@@ -43,6 +43,16 @@ function getUnusedKey<T extends Record<string, any>>(
   }
 }
 
+class FlowErrorBounary extends React.Component {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.log(error);
+  }
+
+  render() {
+    return this.props.children;
+  }
+}
+
 const isPassNode = (node: NodeDescriptor) =>
   node.type === 'render' || node.type === 'compute';
 
@@ -65,24 +75,26 @@ export class BlueprintEditor extends React.Component<Props> {
   render() {
     return (
       <div className="BlueprintEditor">
-        <ReactFlow
-          nodeTypes={NODE_TYPES}
-          edgeTypes={EDGE_TYPES}
-          elements={buildGraphFromBlueprint(this.props.blueprint, this.update_)}
-          elementsSelectable={true}
-          nodesConnectable={true}
-          nodesDraggable={true}
-          onConnect={this.onConnect_}
-          onElementClick={this.onElementClick_}
-          onNodeDragStop={this.onMoveNode_}
-        >
-          <div className="Toolbar">
-            <button onClick={this.addShader_}>+Shader</button>
-            <button onClick={this.addBuffer_}>+Buffer</button>
-            <button onClick={this.addRenderPass_}>+Render Pass</button>
-            <button onClick={this.addComputePass_}>+Compute Pass</button>
-          </div>
-        </ReactFlow>
+        <FlowErrorBounary>
+          <ReactFlow
+            nodeTypes={NODE_TYPES}
+            edgeTypes={EDGE_TYPES}
+            elements={buildGraphFromBlueprint(this.props.blueprint, this.update_)}
+            elementsSelectable={true}
+            nodesConnectable={true}
+            nodesDraggable={true}
+            onConnect={this.onConnect_}
+            onElementClick={this.onElementClick_}
+            onNodeDragStop={this.onMoveNode_}
+          >
+            <div className="Toolbar">
+              <button onClick={this.addShader_}>+Shader</button>
+              <button onClick={this.addBuffer_}>+Buffer</button>
+              <button onClick={this.addRenderPass_}>+Render Pass</button>
+              <button onClick={this.addComputePass_}>+Compute Pass</button>
+            </div>
+          </ReactFlow>
+        </FlowErrorBounary>
       </div>
     );
   }
@@ -176,17 +188,18 @@ export class BlueprintEditor extends React.Component<Props> {
   };
 
   addBufferBinding_ = (bufferId: string, passId: string) => {
-    this.addEdge_('buffer-binding', {
-      bindingType: 'storage-read',
+    this.addEdge_('binding', {
+      bindingType: 'buffer',
+      storageType: 'storage-read',
       group: 0,
       binding: 1,
-      bufferId,
-      passId,
+      source: bufferId,
+      target: passId,
     });
   };
 
   addQueueDependency_ = (source: string, target: string) => {
-    this.addEdge_('queue-dependency', { sourceId: source, targetId: target });
+    this.addEdge_('queue-dependency', { source: source, target: target });
   };
 
   addRenderPass_ = () => {
@@ -234,13 +247,13 @@ function buildGraphFromBlueprint(
           if (blueprint.edges) {
             for (const [edgeId, edge] of Object.entries(blueprint.edges)) {
               if (
-                edge.type === 'buffer-binding' &&
-                (edge.bufferId === id || edge.passId === id)
+                edge.type === 'binding' && edge.bindingType === 'buffer' &&
+                (edge.source === id || edge.target === id)
               ) {
                 delete blueprint.edges[edgeId];
               } else if (
                 edge.type === 'queue-dependency' &&
-                (edge.sourceId === id || edge.targetId === id)
+                (edge.source === id || edge.target === id)
               ) {
                 delete blueprint.edges[edgeId];
               }
@@ -268,13 +281,13 @@ function buildGraphFromBlueprint(
     };
 
     switch (edge.type) {
-      case 'buffer-binding':
+      case 'binding':
         elements.push({
           id,
-          source: edge.bufferId,
-          target: edge.passId,
+          source: edge.source,
+          target: edge.target,
           targetHandle: 'bindings',
-          type: 'buffer-binding',
+          type: `${edge.bindingType}-binding`,
           data,
         });
         break;
@@ -282,8 +295,8 @@ function buildGraphFromBlueprint(
       case 'queue-dependency':
         elements.push({
           id,
-          source: edge.sourceId,
-          target: edge.targetId,
+          source: edge.source,
+          target: edge.target,
           targetHandle: 'queueIn',
           type: 'queue-dependency',
           data,

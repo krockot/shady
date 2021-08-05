@@ -39,6 +39,14 @@ export function isValidBindingConnection(c: Connection, blueprint: Blueprint) {
     return false;
   }
 
+  if (
+    data.source.type !== 'buffer' &&
+    data.source.type !== 'texture' &&
+    data.source.type !== 'sampler'
+  ) {
+    return false;
+  }
+
   if (data.target.type !== 'render' && data.target.type !== 'compute') {
     return false;
   }
@@ -53,9 +61,9 @@ export function isValidBindingConnection(c: Connection, blueprint: Blueprint) {
 
   return !Object.values(blueprint.edges).some((e: EdgeDescriptor) => {
     return (
-      e.type === 'buffer-binding' &&
-      e.bufferId === data.sourceName &&
-      e.passId === data.targetName
+      e.type === 'binding' &&
+      e.source === data.sourceName &&
+      e.target === data.targetName
     );
   });
 }
@@ -81,7 +89,7 @@ export function isValidQueueConnection(c: Connection, blueprint: Blueprint) {
   return !Object.values(blueprint.edges).some((e: EdgeDescriptor) => {
     return (
       e.type === 'queue-dependency' &&
-      (e.sourceId === data.sourceName || e.targetId === data.targetName)
+      (e.source === data.sourceName || e.target === data.targetName)
     );
   });
 }

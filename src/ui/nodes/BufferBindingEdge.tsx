@@ -4,7 +4,7 @@ import React from 'react';
 
 import {
   BufferBindingEdgeDescriptor,
-  BufferBindingType,
+  BufferBindingStorageType,
 } from '../../gpu/Blueprint';
 import { makeEdgeType } from './EdgeTypeFactory';
 
@@ -17,11 +17,11 @@ export const BufferBindingEdge = makeEdgeType<BufferBindingEdgeDescriptor>({
         X
       </button>
       <select
-        value={data.descriptor.bindingType}
+        value={data.descriptor.storageType}
         style={{ width: '8em', marginLeft: '1em' }}
         onChange={e =>
           data.onChange({
-            bindingType: e.currentTarget.value as BufferBindingType,
+            storageType: e.currentTarget.value as BufferBindingStorageType,
           })
         }
       >

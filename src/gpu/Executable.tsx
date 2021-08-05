@@ -168,13 +168,13 @@ export class Executable {
     const bufferBindingsByPass: Record<string, BufferBindingEdgeDescriptor[]> =
       {};
     Object.entries(this.blueprint_.edges ?? {}).forEach(([id, edge]) => {
-      if (edge.type !== 'buffer-binding') {
+      if (edge.type !== 'binding' || edge.bindingType !== 'buffer') {
         return;
       }
-      if (!bufferBindingsByPass[edge.passId]) {
-        bufferBindingsByPass[edge.passId] = [];
+      if (!bufferBindingsByPass[edge.target]) {
+        bufferBindingsByPass[edge.target] = [];
       }
-      bufferBindingsByPass[edge.passId].push(edge);
+      bufferBindingsByPass[edge.target].push(edge);
     });
 
     const pipelineBindGroups: Record<string, PipelineBindGroup[]> = {};
@@ -197,9 +197,9 @@ export class Executable {
         const bindGroup = groups[group] ?? { layout: [], bindings: new Map() };
         groups[group] = bindGroup;
         bindGroup.layout.push(entry);
-        bindGroup.bindings.set(descriptor.binding, edge.bufferId);
+        bindGroup.bindings.set(descriptor.binding, edge.source);
 
-        switch (descriptor.bindingType) {
+        switch (descriptor.storageType) {
           case 'storage-read':
             usageFlags = GPUBufferUsage.STORAGE;
             entry.buffer = { type: 'read-only-storage' };
@@ -217,8 +217,8 @@ export class Executable {
         }
 
         if (usageFlags !== 0) {
-          bufferUsageFlags[edge.bufferId] =
-            (bufferUsageFlags[edge.bufferId] ?? 0) | usageFlags;
+          bufferUsageFlags[edge.source] =
+            (bufferUsageFlags[edge.source] ?? 0) | usageFlags;
         }
       }
     };
@@ -420,8 +420,8 @@ export class Executable {
       if (edge.type !== 'queue-dependency') {
         continue;
       }
-      targets.set(edge.sourceId, edge.targetId);
-      startNodes.delete(edge.targetId);
+      targets.set(edge.source, edge.target);
+      startNodes.delete(edge.target);
     }
     if (startNodes.size === 0) {
       throw new Error('No usable passes compiled');

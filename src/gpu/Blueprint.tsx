@@ -11,8 +11,7 @@ export type NodeDescriptor =
   | ComputeNodeDescriptor
   | BufferNodeDescriptor
   | TextureNodeDescriptor
-  | SamplerNodeDescriptor
-  | BindingNodeDescriptor;
+  | SamplerNodeDescriptor;
 
 export type EdgeDescriptor =
   | BufferBindingEdgeDescriptor
@@ -58,20 +57,9 @@ export interface ComputeNodeDescriptor extends PipelineNodeDescriptor {
 }
 
 export type BindingType =
-  | 'storage-read'
-  | 'storage'
-  | 'uniform'
+  | 'buffer'
   | 'sampler'
   | 'texture';
-
-export interface BindingNodeDescriptor extends NodeDescriptorBase {
-  type: 'binding';
-  bindingType: BindingType;
-  group: number;
-  binding: number;
-  resourceId: string;
-  passes: string[];
-}
 
 export type BufferInitializer = 'zero' | 'random-floats' | 'random-uints';
 
@@ -102,61 +90,43 @@ interface Shader {
 }
 
 export interface EdgeDescriptorBase {
-  type: 'buffer-binding' | 'queue-dependency';
+  type: 'binding' | 'queue-dependency';
+  source: string;
+  target: string;
 }
 
-export type BufferBindingType = 'storage-read' | 'storage' | 'uniform';
-
-export interface BufferBindingEdgeDescriptor extends EdgeDescriptorBase {
-  type: 'buffer-binding';
-  bindingType: BufferBindingType;
-  bufferId: string;
-  passId: string;
+export interface BindingEdgeDescriptorBase extends EdgeDescriptorBase {
+  bindingType: BindingType;
   group: number;
   binding: number;
 }
 
-export interface QueueDependencyEdgeDescriptor extends EdgeDescriptorBase {
-  type: 'queue-dependency';
-  sourceId: string;
-  targetId: string;
+export type BufferBindingStorageType = 'storage-read' | 'storage' | 'uniform';
+
+export interface BufferBindingEdgeDescriptor extends BindingEdgeDescriptorBase {
+  type: 'binding';
+  bindingType: 'buffer'
+  storageType: BufferBindingStorageType;
 }
 
-function migrateBindingsToEdges(blueprint: Blueprint) {
-  if (!blueprint.edges) {
-    blueprint.edges = {};
-  }
-  const nodesToRemove = Object.entries(blueprint.nodes).filter(
-    ([, node]) => node.type === 'binding'
-  ) as [string, BindingNodeDescriptor][];
-  nodesToRemove.forEach(([id, node]) => {
-    delete blueprint.nodes[id];
-    for (let i = 1; ; ++i) {
-      const edgeId = `binding${i}`;
-      if (blueprint.edges!.hasOwnProperty(edgeId)) {
-        continue;
-      }
-      node.passes.forEach(passId => {
-        blueprint.edges![edgeId] = {
-          type: 'buffer-binding',
-          bindingType: node.bindingType as BufferBindingType,
-          bufferId: node.resourceId,
-          passId,
-          group: node.group,
-          binding: node.binding,
-        };
-      });
-      return;
-    }
-  });
-  Object.entries(blueprint.nodes).forEach(([id, node]) => {
-    if (node.type !== 'compute' && node.type !== 'render') {
-      return;
-    }
-    delete node.bindings;
-  });
+export interface QueueDependencyEdgeDescriptor extends EdgeDescriptorBase {
+  type: 'queue-dependency';
 }
 
 export function canonicalize(blueprint: Blueprint) {
-  migrateBindingsToEdges(blueprint);
+  for (const [, edge] of Object.entries(blueprint.edges ?? {})) {
+    const d = edge as any;
+    if (d['sourceId']) {
+      d['source'] = d['sourceId'];
+    }
+    if (d['targetId']) {
+      d['target'] = d['targetId'];
+    }
+    if (d['bufferId']) {
+      d['source'] = d['bufferId'];
+    }
+    if (d['passId']) {
+      d['targetId'] = d['passId'];
+    }
+  }
 }
