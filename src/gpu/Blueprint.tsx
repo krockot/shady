@@ -15,6 +15,7 @@ export type NodeDescriptor =
 
 export type EdgeDescriptor =
   | BufferBindingEdgeDescriptor
+  | TextureBindingEdgeDescriptor
   | QueueDependencyEdgeDescriptor;
 
 export interface NodeDescriptorBase {
@@ -56,10 +57,7 @@ export interface ComputeNodeDescriptor extends PipelineNodeDescriptor {
   dispatchSize: { x: number; y: number; z: number };
 }
 
-export type BindingType =
-  | 'buffer'
-  | 'sampler'
-  | 'texture';
+export type BindingType = 'buffer' | 'sampler' | 'texture';
 
 export type BufferInitializer = 'zero' | 'random-floats' | 'random-uints';
 
@@ -71,7 +69,7 @@ export interface BufferNodeDescriptor extends NodeDescriptorBase {
 
 export interface TextureNodeDescriptor extends NodeDescriptorBase {
   type: 'texture';
-  imageId?: string;
+  imageData: null | Blob;
   size: GPUExtent3DDict;
   format: GPUTextureFormat;
   mipLevelCount: number;
@@ -96,6 +94,7 @@ export interface EdgeDescriptorBase {
 }
 
 export interface BindingEdgeDescriptorBase extends EdgeDescriptorBase {
+  type: 'binding';
   bindingType: BindingType;
   group: number;
   binding: number;
@@ -104,9 +103,13 @@ export interface BindingEdgeDescriptorBase extends EdgeDescriptorBase {
 export type BufferBindingStorageType = 'storage-read' | 'storage' | 'uniform';
 
 export interface BufferBindingEdgeDescriptor extends BindingEdgeDescriptorBase {
-  type: 'binding';
-  bindingType: 'buffer'
+  bindingType: 'buffer';
   storageType: BufferBindingStorageType;
+}
+
+export interface TextureBindingEdgeDescriptor
+  extends BindingEdgeDescriptorBase {
+  bindingType: 'texture';
 }
 
 export interface QueueDependencyEdgeDescriptor extends EdgeDescriptorBase {

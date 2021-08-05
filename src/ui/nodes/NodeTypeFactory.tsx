@@ -1,6 +1,6 @@
 import './Node.css';
 
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { Blueprint, NodeDescriptorBase } from '../../gpu/Blueprint';
 import { EditableLabel } from '../EditableLabel';
 import { LabeledField } from '../LabeledField';
@@ -17,12 +17,15 @@ interface NodeData<DescriptorType extends NodeDescriptorBase> {
 }
 
 type RenderFn<DescriptorType extends NodeDescriptorBase> = (
-  data: NodeData<DescriptorType>
+  data: NodeData<DescriptorType>,
+  context?: any
 ) => ReactNode;
 
 interface Params<DescriptorType extends NodeDescriptorBase> {
   title: string;
   render: RenderFn<DescriptorType>;
+  context?: any;
+  effect?: (data: NodeData<DescriptorType>, context?: any) => void;
 }
 
 export function makeNodeType<DescriptorType extends NodeDescriptorBase>(
@@ -38,6 +41,10 @@ export function makeNodeType<DescriptorType extends NodeDescriptorBase>(
       props.data.onChange({ name: value } as Partial<DescriptorType>);
     };
 
+    if (params.effect) {
+      React.useEffect(() => params.effect!(props.data, params.context));
+    }
+
     return (
       <div className={`Node Node-${node.type}`}>
         <button className="RemoveButton" onClick={props.data.destroy}>
@@ -48,7 +55,7 @@ export function makeNodeType<DescriptorType extends NodeDescriptorBase>(
           <LabeledField label="Name">
             <EditableLabel value={node.name} onChange={onChangeName} />
           </LabeledField>
-          {params.render(props.data)}
+          {params.render(props.data, params.context)}
         </div>
       </div>
     );

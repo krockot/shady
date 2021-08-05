@@ -14,9 +14,12 @@ import { QueueDependencyEdge } from './nodes/QueueDependencyEdge';
 import { BufferNode } from './nodes/BufferNode';
 import { ComputeNode } from './nodes/ComputeNode';
 import { RenderNode } from './nodes/RenderNode';
+import { TextureBindingEdge } from './nodes/TextureBindingEdge';
+import { TextureNode } from './nodes/TextureNode';
 
 const NODE_TYPES = {
   buffer: BufferNode,
+  texture: TextureNode,
   compute: ComputeNode,
   render: RenderNode,
 };
@@ -24,6 +27,7 @@ const NODE_TYPES = {
 const EDGE_TYPES = {
   'buffer-binding': BufferBindingEdge,
   'queue-dependency': QueueDependencyEdge,
+  'texture-binding': TextureBindingEdge,
 };
 
 interface Props {
@@ -79,7 +83,10 @@ export class BlueprintEditor extends React.Component<Props> {
           <ReactFlow
             nodeTypes={NODE_TYPES}
             edgeTypes={EDGE_TYPES}
-            elements={buildGraphFromBlueprint(this.props.blueprint, this.update_)}
+            elements={buildGraphFromBlueprint(
+              this.props.blueprint,
+              this.update_
+            )}
             elementsSelectable={true}
             nodesConnectable={true}
             nodesDraggable={true}
@@ -90,6 +97,7 @@ export class BlueprintEditor extends React.Component<Props> {
             <div className="Toolbar">
               <button onClick={this.addShader_}>+Shader</button>
               <button onClick={this.addBuffer_}>+Buffer</button>
+              <button onClick={this.addTexture_}>+Texture</button>
               <button onClick={this.addRenderPass_}>+Render Pass</button>
               <button onClick={this.addComputePass_}>+Compute Pass</button>
             </div>
@@ -123,6 +131,16 @@ export class BlueprintEditor extends React.Component<Props> {
       edge.targetHandle === 'bindings'
     ) {
       this.addBufferBinding_(edge.source!, edge.target!);
+      this.props.onChange();
+      return;
+    }
+
+    if (
+      isPassNode(target) &&
+      source.type === 'texture' &&
+      edge.targetHandle === 'bindings'
+    ) {
+      this.addTextureBinding_(edge.source!, edge.target!);
       this.props.onChange();
       return;
     }
@@ -187,6 +205,16 @@ export class BlueprintEditor extends React.Component<Props> {
     });
   };
 
+  addTexture_ = () => {
+    this.addNode_('texture', {
+      position: { x: 100, y: 100 },
+      size: { width: 1024, height: 1024 },
+      format: 'rgba8unorm',
+      mipLevelCount: 1,
+      sampleCount: 1,
+    });
+  };
+
   addBufferBinding_ = (bufferId: string, passId: string) => {
     this.addEdge_('binding', {
       bindingType: 'buffer',
@@ -194,6 +222,16 @@ export class BlueprintEditor extends React.Component<Props> {
       group: 0,
       binding: 1,
       source: bufferId,
+      target: passId,
+    });
+  };
+
+  addTextureBinding_ = (textureId: string, passId: string) => {
+    this.addEdge_('binding', {
+      bindingType: 'texture',
+      group: 0,
+      binding: 1,
+      source: textureId,
       target: passId,
     });
   };
@@ -246,15 +284,7 @@ function buildGraphFromBlueprint(
           delete blueprint.nodes[id];
           if (blueprint.edges) {
             for (const [edgeId, edge] of Object.entries(blueprint.edges)) {
-              if (
-                edge.type === 'binding' && edge.bindingType === 'buffer' &&
-                (edge.source === id || edge.target === id)
-              ) {
-                delete blueprint.edges[edgeId];
-              } else if (
-                edge.type === 'queue-dependency' &&
-                (edge.source === id || edge.target === id)
-              ) {
+              if (edge.source === id || edge.target === id) {
                 delete blueprint.edges[edgeId];
               }
             }

@@ -7,6 +7,10 @@ function doCopy<T>(value: T, traversed: Set<any>): T {
     return value.map(x => doCopy(x, traversed)) as any;
   }
 
+  if (value instanceof Blob) {
+    return value;
+  }
+
   if (typeof value === 'object' && value !== null) {
     if (traversed.has(value)) {
       throw new Error('cycle detected in deep copy');
@@ -45,6 +49,10 @@ export function deepEquals<T extends Record<string, any>>(a: T, b: T): boolean {
       return false;
     }
     return a.every((x, i) => deepEquals(x, b[i]));
+  }
+
+  if (a instanceof Blob || b instanceof Blob) {
+    return a === b;
   }
 
   if (typeof a === 'object' && a !== null) {

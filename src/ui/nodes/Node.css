@@ -44,7 +44,7 @@
 }
 
 .Node-texture {
-  background-color: #ee9;
+  background-color: #ea4;
 }
 
 .Node > .Title {
@@ -144,4 +144,22 @@
 
 .Handle.react-flow__handle-valid {
   background: #5d9 !important;
+}
+
+.Node-texture input[type='file'] {
+  margin-top: 8px;
+  width: 256px;
+}
+
+.Node-texture .TextureDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.Node-texture .Preview {
+  width: 256px;
+  height: 256px;
+  border: solid 2px black;
+  margin: 8px;
 }

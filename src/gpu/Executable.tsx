@@ -2,8 +2,10 @@ import {
   Blueprint,
   BufferBindingEdgeDescriptor,
   BufferNodeDescriptor,
-  RenderNodeDescriptor,
   ComputeNodeDescriptor,
+  RenderNodeDescriptor,
+  TextureBindingEdgeDescriptor,
+  TextureNodeDescriptor,
 } from './Blueprint';
 import { Gpu } from './Gpu';
 import { BUILTIN_UNIFORMS_WGSL } from './BuiltinUniforms';
@@ -51,6 +53,7 @@ export class Executable {
   private shaderInfo_: Record<string, ShaderCompilationInfo>;
   private builtinUniforms_: null | GPUBuffer;
   private buffers_: Record<string, GPUBuffer>;
+  private textures_: Record<string, GPUTexture>;
   private passes_: CompiledPass[];
 
   private outputDepthStencilTexture_: null | GPUTexture;
@@ -68,6 +71,7 @@ export class Executable {
     this.shaderInfo_ = shaderInfo;
     this.builtinUniforms_ = null;
     this.buffers_ = {};
+    this.textures_ = {};
     this.passes_ = [];
     this.outputDepthStencilTexture_ = null;
     this.outputDepthStencilTextureSize_ = { width: 0, height: 0 };
@@ -147,6 +151,7 @@ export class Executable {
     try {
       messages = await executable.compile_(outputFormat);
     } catch (e) {
+      console.log('Compilation failed: ' + e.message);
       return { shaderInfo: {}, messages: [...messages, e.message] };
     }
     return { executable, shaderInfo, messages };
@@ -167,14 +172,29 @@ export class Executable {
 
     const bufferBindingsByPass: Record<string, BufferBindingEdgeDescriptor[]> =
       {};
+    const textureBindingsByPass: Record<
+      string,
+      TextureBindingEdgeDescriptor[]
+    > = {};
     Object.entries(this.blueprint_.edges ?? {}).forEach(([id, edge]) => {
-      if (edge.type !== 'binding' || edge.bindingType !== 'buffer') {
+      if (edge.type !== 'binding') {
         return;
       }
-      if (!bufferBindingsByPass[edge.target]) {
-        bufferBindingsByPass[edge.target] = [];
+      switch (edge.bindingType) {
+        case 'buffer':
+          if (!bufferBindingsByPass[edge.target]) {
+            bufferBindingsByPass[edge.target] = [];
+          }
+          bufferBindingsByPass[edge.target].push(edge);
+          break;
+
+        case 'texture':
+          if (!textureBindingsByPass[edge.target]) {
+            textureBindingsByPass[edge.target] = [];
+          }
+          textureBindingsByPass[edge.target].push(edge);
+          break;
       }
-      bufferBindingsByPass[edge.target].push(edge);
     });
 
     const pipelineBindGroups: Record<string, PipelineBindGroup[]> = {};
@@ -221,15 +241,37 @@ export class Executable {
             (bufferUsageFlags[edge.source] ?? 0) | usageFlags;
         }
       }
+
+      for (const edge of textureBindingsByPass[pipelineId] ?? []) {
+        const descriptor = edge as TextureBindingEdgeDescriptor;
+        const entry: GPUBindGroupLayoutEntry = {
+          binding: descriptor.binding,
+          visibility,
+        };
+        const groups = pipelineBindGroups[pipelineId] ?? [];
+        pipelineBindGroups[pipelineId] = groups;
+
+        const group = descriptor.group;
+        const bindGroup = groups[group] ?? { layout: [], bindings: new Map() };
+        groups[group] = bindGroup;
+        bindGroup.layout.push(entry);
+        bindGroup.bindings.set(descriptor.binding, edge.source);
+        entry.texture = {};
+      }
     };
 
     const buffers: Record<string, BufferNodeDescriptor> = {};
+    const textures: Record<string, TextureNodeDescriptor> = {};
     const renders: Record<string, RenderNodeDescriptor> = {};
     const computes: Record<string, ComputeNodeDescriptor> = {};
     for (const [id, node] of Object.entries(this.blueprint_.nodes)) {
       switch (node.type) {
         case 'buffer':
           buffers[id] = node;
+          break;
+
+        case 'texture':
+          textures[id] = node;
           break;
 
         case 'render':
@@ -281,6 +323,28 @@ export class Executable {
       this.buffers_[id] = buffer;
     }
 
+    for (const [id, node] of Object.entries(textures)) {
+      if (!node.imageData) {
+        continue;
+      }
+      const image = await createImageBitmap(node.imageData);
+      const size = { width: image.width, height: image.height };
+      const texture = device.createTexture({
+        size,
+        format: 'rgba8unorm',
+        usage:
+          GPUTextureUsage.SAMPLED |
+          GPUTextureUsage.COPY_DST |
+          GPUTextureUsage.RENDER_ATTACHMENT,
+      });
+      device.queue.copyExternalImageToTexture(
+        { source: image },
+        { texture },
+        size
+      );
+      this.textures_[id] = texture;
+    }
+
     const getBindingResource = (id: string): GPUBindingResource => {
       if (id === 'builtin-uniforms') {
         return { buffer: this.builtinUniforms_! };
@@ -298,6 +362,13 @@ export class Executable {
             throw new Error(`unknown buffer ${id}`);
           }
           return { buffer };
+
+        case 'texture':
+          const texture = this.textures_[id];
+          if (!texture) {
+            throw new Error(`unknown texture ${id}`);
+          }
+          return texture.createView();
 
         default:
           throw new Error(`unsupported binding resource type '${node.type}'`);
