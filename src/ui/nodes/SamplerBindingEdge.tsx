@@ -18,7 +18,7 @@ export const SamplerBindingEdge = makeEdgeType<SamplerBindingEdgeDescriptor>({
           Group
           <input
             type="number"
-            value={data.descriptor.group}
+            value={data.edge.group}
             onChange={e =>
               data.onChange({ group: e.currentTarget.valueAsNumber })
             }
@@ -28,7 +28,7 @@ export const SamplerBindingEdge = makeEdgeType<SamplerBindingEdgeDescriptor>({
           Binding
           <input
             type="number"
-            value={data.descriptor.binding}
+            value={data.edge.binding}
             onChange={e =>
               data.onChange({ binding: e.currentTarget.valueAsNumber })
             }

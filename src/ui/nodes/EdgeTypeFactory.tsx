@@ -16,7 +16,7 @@ type UpdateFn<DescriptorType extends EdgeDescriptorBase> = (
 
 interface EdgeData<DescriptorType extends EdgeDescriptorBase> {
   blueprint: Blueprint;
-  descriptor: DescriptorType;
+  edge: DescriptorType;
   onChange: UpdateFn<DescriptorType>;
   destroy: () => void;
 }
@@ -63,7 +63,7 @@ export function makeEdgeType<DescriptorType extends EdgeDescriptorBase>(
       targetY,
     });
     const data = anyData as EdgeData<DescriptorType>;
-    const node = data.descriptor;
+    const edge = data.edge;
     return (
       <>
         <path
@@ -79,7 +79,7 @@ export function makeEdgeType<DescriptorType extends EdgeDescriptorBase>(
           x={centerX - params.width / 2}
           y={centerY - params.height / 2}
         >
-          <div className={`Edge Edge-${node.type}`}>{params.render(data)}</div>
+          <div className={`Edge Edge-${edge.type}`}>{params.render(data)}</div>
         </foreignObject>
       </>
     );

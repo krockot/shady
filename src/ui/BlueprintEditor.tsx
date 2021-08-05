@@ -330,7 +330,7 @@ function buildGraphFromBlueprint(
   Object.entries(blueprint.edges ?? {}).forEach(([id, edge]) => {
     const data = {
       blueprint,
-      descriptor: edge,
+      edge,
       onChange: (update: any) => {
         Object.assign(blueprint.edges![id], update);
         onChange();

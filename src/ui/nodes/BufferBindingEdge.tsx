@@ -17,7 +17,7 @@ export const BufferBindingEdge = makeEdgeType<BufferBindingEdgeDescriptor>({
         X
       </button>
       <select
-        value={data.descriptor.storageType}
+        value={data.edge.storageType}
         style={{ width: '8em', marginLeft: '1em' }}
         onChange={e =>
           data.onChange({
@@ -36,7 +36,7 @@ export const BufferBindingEdge = makeEdgeType<BufferBindingEdgeDescriptor>({
           Group
           <input
             type="number"
-            value={data.descriptor.group}
+            value={data.edge.group}
             onChange={e =>
               data.onChange({ group: e.currentTarget.valueAsNumber })
             }
@@ -46,7 +46,7 @@ export const BufferBindingEdge = makeEdgeType<BufferBindingEdgeDescriptor>({
           Binding
           <input
             type="number"
-            value={data.descriptor.binding}
+            value={data.edge.binding}
             onChange={e =>
               data.onChange({ binding: e.currentTarget.valueAsNumber })
             }
