@@ -2,20 +2,26 @@ import './Node.css';
 
 import React from 'react';
 
-import { BindingNodeDescriptor, BindingType } from '../../gpu/Blueprint';
+import {
+  BufferBindingEdgeDescriptor,
+  BufferBindingType,
+} from '../../gpu/Blueprint';
 import { makeEdgeType } from './EdgeTypeFactory';
 
-export const BufferBindingEdge = makeEdgeType<BindingNodeDescriptor>({
+export const BufferBindingEdge = makeEdgeType<BufferBindingEdgeDescriptor>({
   width: 150,
   height: 85,
   render: data => (
     <div>
+      <button className="RemoveButton" onClick={data.destroy}>
+        X
+      </button>
       <select
         value={data.descriptor.bindingType}
         style={{ width: '8em', marginLeft: '1em' }}
         onChange={e =>
           data.onChange({
-            bindingType: e.currentTarget.value as BindingType,
+            bindingType: e.currentTarget.value as BufferBindingType,
           })
         }
       >

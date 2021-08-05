@@ -1,8 +1,10 @@
 import { Handle, Position } from 'react-flow-renderer';
+
 import { RenderNodeDescriptor } from '../../gpu/Blueprint';
 import { EditableLabel } from '../EditableLabel';
 import { LabeledField } from '../LabeledField';
 import { makeNodeType } from './NodeTypeFactory';
+import { isValidBindingConnection, isValidQueueConnection } from './Validation';
 
 function colorValue(c: GPUColorDict): string {
   const p = (x: number) => `${x < 16 ? '0' : ''}${x.toString(16)}`;
@@ -26,7 +28,31 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
   render: data => {
     return (
       <div>
-        <Handle type="target" position={'left' as Position} />
+        <Handle
+          id="bindings"
+          type="target"
+          title="Bindings"
+          position={'top' as Position}
+          className="Handle Binding"
+          isValidConnection={c => isValidBindingConnection(c, data.blueprint)}
+        />
+        <Handle
+          id="queueIn"
+          type="target"
+          title="Queue In"
+          position={'left' as Position}
+          className="Handle Queue"
+          isValidConnection={c => isValidQueueConnection(c, data.blueprint)}
+        />
+        <Handle
+          id="queueOut"
+          type="source"
+          title="Queue Out"
+          position={'right' as Position}
+          className="Handle Queue"
+          isValidConnection={c => isValidQueueConnection(c, data.blueprint)}
+        />
+
         <LabeledField label="Vertex Shader">
           <select
             value={data.descriptor.vertexShader}
@@ -92,7 +118,6 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
         <LabeledField label="# Vertices">
           <input
             type="number"
-            style={{ width: '3em' }}
             value={data.descriptor.numVertices}
             onChange={e =>
               data.onChange({
@@ -104,7 +129,6 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
         <LabeledField label="# Instances">
           <input
             type="number"
-            style={{ width: '3em' }}
             value={data.descriptor.numInstances}
             onChange={e =>
               data.onChange({

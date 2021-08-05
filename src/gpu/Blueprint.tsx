@@ -14,7 +14,9 @@ export type NodeDescriptor =
   | SamplerNodeDescriptor
   | BindingNodeDescriptor;
 
-export type EdgeDescriptor = BufferBindingEdgeDescriptor;
+export type EdgeDescriptor =
+  | BufferBindingEdgeDescriptor
+  | QueueDependencyEdgeDescriptor;
 
 export interface NodeDescriptorBase {
   type: 'buffer' | 'render' | 'compute' | 'texture' | 'sampler' | 'binding';
@@ -100,17 +102,24 @@ interface Shader {
 }
 
 export interface EdgeDescriptorBase {
-  type: 'buffer-binding';
+  type: 'buffer-binding' | 'queue-dependency';
 }
 
-type BufferBindingType = 'storage-read' | 'storage' | 'uniform';
+export type BufferBindingType = 'storage-read' | 'storage' | 'uniform';
 
 export interface BufferBindingEdgeDescriptor extends EdgeDescriptorBase {
+  type: 'buffer-binding';
   bindingType: BufferBindingType;
   bufferId: string;
   passId: string;
   group: number;
   binding: number;
+}
+
+export interface QueueDependencyEdgeDescriptor extends EdgeDescriptorBase {
+  type: 'queue-dependency';
+  sourceId: string;
+  targetId: string;
 }
 
 function migrateBindingsToEdges(blueprint: Blueprint) {

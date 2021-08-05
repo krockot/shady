@@ -12,7 +12,7 @@
   cursor: default;
 }
 
-.EditableLabel .Empty {
+.EditableLabel.Empty {
   color: #999;
 }
 

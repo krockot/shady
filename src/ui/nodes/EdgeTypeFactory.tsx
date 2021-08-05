@@ -8,30 +8,30 @@ import {
   EdgeProps,
 } from 'react-flow-renderer';
 
-import { Blueprint, NodeDescriptorBase } from '../../gpu/Blueprint';
+import { Blueprint, EdgeDescriptorBase } from '../../gpu/Blueprint';
 
-type UpdateFn<DescriptorType extends NodeDescriptorBase> = (
+type UpdateFn<DescriptorType extends EdgeDescriptorBase> = (
   update: Partial<DescriptorType>
 ) => void;
 
-interface EdgeData<DescriptorType extends NodeDescriptorBase> {
+interface EdgeData<DescriptorType extends EdgeDescriptorBase> {
   blueprint: Blueprint;
   descriptor: DescriptorType;
   onChange: UpdateFn<DescriptorType>;
   destroy: () => void;
 }
 
-type RenderFn<DescriptorType extends NodeDescriptorBase> = (
+type RenderFn<DescriptorType extends EdgeDescriptorBase> = (
   data: EdgeData<DescriptorType>
 ) => ReactNode;
 
-interface Params<DescriptorType extends NodeDescriptorBase> {
+interface Params<DescriptorType extends EdgeDescriptorBase> {
   render: RenderFn<DescriptorType>;
   width: number;
   height: number;
 }
 
-export function makeEdgeType<DescriptorType extends NodeDescriptorBase>(
+export function makeEdgeType<DescriptorType extends EdgeDescriptorBase>(
   params: Params<DescriptorType>
 ) {
   return ({
@@ -79,12 +79,7 @@ export function makeEdgeType<DescriptorType extends NodeDescriptorBase>(
           x={centerX - params.width / 2}
           y={centerY - params.height / 2}
         >
-          <div className={`Edge Edge-${node.type}`}>
-            <button className="RemoveButton" onClick={data.destroy}>
-              X
-            </button>
-            {params.render(data)}
-          </div>
+          <div className={`Edge Edge-${node.type}`}>{params.render(data)}</div>
         </foreignObject>
       </>
     );

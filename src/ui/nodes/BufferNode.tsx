@@ -1,20 +1,9 @@
-import { Connection, Handle, Position } from 'react-flow-renderer';
+import { Handle, Position } from 'react-flow-renderer';
 
-import {
-  BufferInitializer,
-  BufferNodeDescriptor,
-  Blueprint,
-} from '../../gpu/Blueprint';
+import { BufferInitializer, BufferNodeDescriptor } from '../../gpu/Blueprint';
 import { LabeledField } from '../LabeledField';
 import { makeNodeType } from './NodeTypeFactory';
-
-const isValidBufferTarget = (connection: Connection, blueprint: Blueprint) => {
-  const node = blueprint.nodes[connection.target!];
-  if (!node) {
-    return false;
-  }
-  return node.type === 'compute' || node.type === 'render';
-};
+import { isValidBindingConnection } from './Validation';
 
 export const BufferNode = makeNodeType<BufferNodeDescriptor>({
   title: 'Buffer',
@@ -23,10 +12,9 @@ export const BufferNode = makeNodeType<BufferNodeDescriptor>({
       <div>
         <Handle
           type="source"
-          position={'right' as Position}
-          isValidConnection={connection =>
-            isValidBufferTarget(connection, data.blueprint)
-          }
+          className="Handle Binding"
+          position={'bottom' as Position}
+          isValidConnection={c => isValidBindingConnection(c, data.blueprint)}
         />
         <LabeledField label="Size">
           <input

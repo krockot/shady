@@ -10,6 +10,7 @@ import ReactFlow, {
 
 import { Blueprint, EdgeDescriptor, NodeDescriptor } from '../gpu/Blueprint';
 import { BufferBindingEdge } from './nodes/BufferBindingEdge';
+import { QueueDependencyEdge } from './nodes/QueueDependencyEdge';
 import { BufferNode } from './nodes/BufferNode';
 import { ComputeNode } from './nodes/ComputeNode';
 import { RenderNode } from './nodes/RenderNode';
@@ -21,7 +22,8 @@ const NODE_TYPES = {
 };
 
 const EDGE_TYPES = {
-  bufferBinding: BufferBindingEdge,
+  'buffer-binding': BufferBindingEdge,
+  'queue-dependency': QueueDependencyEdge,
 };
 
 interface Props {
@@ -40,6 +42,9 @@ function getUnusedKey<T extends Record<string, any>>(
     }
   }
 }
+
+const isPassNode = (node: NodeDescriptor) =>
+  node.type === 'render' || node.type === 'compute';
 
 export class BlueprintEditor extends React.Component<Props> {
   private isMounted_: boolean;
@@ -93,18 +98,29 @@ export class BlueprintEditor extends React.Component<Props> {
     this.props.onChange();
   };
 
-  onConnect_ = (connection: Edge<any> | Connection) => {
-    const source = this.props.blueprint.nodes[connection.source!];
-    const target = this.props.blueprint.nodes[connection.target!];
+  onConnect_ = (edge: Edge<any> | Connection) => {
+    const source = this.props.blueprint.nodes[edge.source!];
+    const target = this.props.blueprint.nodes[edge.target!];
     if (!source || !target) {
       return;
     }
 
     if (
-      (target.type === 'compute' || target.type === 'render') &&
-      source.type === 'buffer'
+      isPassNode(target) &&
+      source.type === 'buffer' &&
+      edge.targetHandle === 'bindings'
     ) {
-      this.addBufferBinding_(connection.source!, connection.target!);
+      this.addBufferBinding_(edge.source!, edge.target!);
+      this.props.onChange();
+      return;
+    }
+
+    if (
+      isPassNode(target) &&
+      isPassNode(source) &&
+      edge.targetHandle === 'queueIn'
+    ) {
+      this.addQueueDependency_(edge.source!, edge.target!);
       this.props.onChange();
       return;
     }
@@ -169,6 +185,10 @@ export class BlueprintEditor extends React.Component<Props> {
     });
   };
 
+  addQueueDependency_ = (source: string, target: string) => {
+    this.addEdge_('queue-dependency', { sourceId: source, targetId: target });
+  };
+
   addRenderPass_ = () => {
     this.addNode_('render', {
       vertexShader: '',
@@ -211,12 +231,19 @@ function buildGraphFromBlueprint(
         },
         destroy: () => {
           delete blueprint.nodes[id];
-          for (const [id, edge] of Object.entries(blueprint.edges ?? {})) {
-            if (
-              blueprint.edges &&
-              (edge.bufferId === id || edge.passId === id)
-            ) {
-              delete blueprint.edges[id];
+          if (blueprint.edges) {
+            for (const [edgeId, edge] of Object.entries(blueprint.edges)) {
+              if (
+                edge.type === 'buffer-binding' &&
+                (edge.bufferId === id || edge.passId === id)
+              ) {
+                delete blueprint.edges[edgeId];
+              } else if (
+                edge.type === 'queue-dependency' &&
+                (edge.sourceId === id || edge.targetId === id)
+              ) {
+                delete blueprint.edges[edgeId];
+              }
             }
           }
           onChange();
@@ -227,24 +254,42 @@ function buildGraphFromBlueprint(
   });
 
   Object.entries(blueprint.edges ?? {}).forEach(([id, edge]) => {
-    elements.push({
-      id,
-      source: edge.bufferId,
-      target: edge.passId,
-      type: 'bufferBinding',
-      data: {
-        blueprint,
-        descriptor: edge,
-        onChange: (update: any) => {
-          Object.assign(blueprint.edges![id], update);
-          onChange();
-        },
-        destroy: () => {
-          delete blueprint.edges![id];
-          onChange();
-        },
+    const data = {
+      blueprint,
+      descriptor: edge,
+      onChange: (update: any) => {
+        Object.assign(blueprint.edges![id], update);
+        onChange();
       },
-    });
+      destroy: () => {
+        delete blueprint.edges![id];
+        onChange();
+      },
+    };
+
+    switch (edge.type) {
+      case 'buffer-binding':
+        elements.push({
+          id,
+          source: edge.bufferId,
+          target: edge.passId,
+          targetHandle: 'bindings',
+          type: 'buffer-binding',
+          data,
+        });
+        break;
+
+      case 'queue-dependency':
+        elements.push({
+          id,
+          source: edge.sourceId,
+          target: edge.targetId,
+          targetHandle: 'queueIn',
+          type: 'queue-dependency',
+          data,
+        });
+        break;
+    }
   });
 
   return elements;

@@ -23,8 +23,24 @@
   background-color: #eaa;
 }
 
+.Node-render input[type='number'] {
+  width: 5em;
+  text-align: right;
+}
+
 .Node-compute {
   background-color: #ccf;
+}
+
+.Node-compute .DispatchSize {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.Node-compute .DispatchSize input[type='number'] {
+  width: 5em;
+  text-align: right;
 }
 
 .Node-texture {
@@ -61,7 +77,14 @@
   text-align: right;
 }
 
-.Edge {
+.Edge .RemoveButton {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 20px;
+}
+
+.Edge-buffer-binding {
   display: flex;
   flex-direction: column;
   background-color: #999;
@@ -69,14 +92,15 @@
   width: 100%;
 }
 
-.Edge .RemoveButton {
+.Edge-buffer-binding .RemoveButton {
   position: absolute;
   top: 5px;
   right: 5px;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border-radius: 20px;
+}
+
+.Edge-queue-dependency {
+  background: none;
+  border: none;
 }
 
 .Edge div {
@@ -94,4 +118,30 @@
   font-size: 12px;
   width: 3em;
   box-sizing: border-box;
+}
+
+.Handle {
+  width: 8px;
+  height: 8px;
+}
+
+.Handle.react-flow__handle {
+  width: 10px;
+  height: 10px;
+}
+
+.Handle.Binding.react-flow__handle {
+  background: yellow;
+}
+
+.Handle.Queue.react-flow__handle {
+  background: magenta;
+}
+
+.Handle.react-flow__handle-connecting {
+  background: #f66 !important;
+}
+
+.Handle.react-flow__handle-valid {
+  background: #5d9 !important;
 }

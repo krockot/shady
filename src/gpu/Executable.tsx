@@ -42,6 +42,8 @@ interface CompiledRenderPass {
   bundle: GPURenderBundle;
 }
 
+type CompiledPass = CompiledComputePass | CompiledRenderPass;
+
 export class Executable {
   private gpu_: Gpu;
   private blueprint_: Blueprint;
@@ -49,8 +51,7 @@ export class Executable {
   private shaderInfo_: Record<string, ShaderCompilationInfo>;
   private builtinUniforms_: null | GPUBuffer;
   private buffers_: Record<string, GPUBuffer>;
-  private renderPasses_: Record<string, CompiledRenderPass>;
-  private computePasses_: Record<string, CompiledComputePass>;
+  private passes_: CompiledPass[];
 
   private outputDepthStencilTexture_: null | GPUTexture;
   private outputDepthStencilTextureSize_: GPUExtent3DDict;
@@ -67,8 +68,7 @@ export class Executable {
     this.shaderInfo_ = shaderInfo;
     this.builtinUniforms_ = null;
     this.buffers_ = {};
-    this.renderPasses_ = {};
-    this.computePasses_ = {};
+    this.passes_ = [];
     this.outputDepthStencilTexture_ = null;
     this.outputDepthStencilTextureSize_ = { width: 0, height: 0 };
   }
@@ -143,7 +143,12 @@ export class Executable {
     }
 
     const executable = new Executable(gpu, blueprint, modules, shaderInfo);
-    let messages = await executable.compile_(outputFormat);
+    let messages: string[] = [];
+    try {
+      messages = await executable.compile_(outputFormat);
+    } catch (e) {
+      return { shaderInfo: {}, messages: [...messages, e.message] };
+    }
     return { executable, shaderInfo, messages };
   }
 
@@ -163,6 +168,9 @@ export class Executable {
     const bufferBindingsByPass: Record<string, BufferBindingEdgeDescriptor[]> =
       {};
     Object.entries(this.blueprint_.edges ?? {}).forEach(([id, edge]) => {
+      if (edge.type !== 'buffer-binding') {
+        return;
+      }
       if (!bufferBindingsByPass[edge.passId]) {
         bufferBindingsByPass[edge.passId] = [];
       }
@@ -328,6 +336,7 @@ export class Executable {
       return { layout, bindGroups };
     };
 
+    const allPasses: Map<string, CompiledPass> = new Map();
     for (const [id, node] of Object.entries(renders)) {
       const vertexShader = this.shaders_[node.vertexShader];
       const fragmentShader = this.shaders_[node.fragmentShader];
@@ -374,11 +383,11 @@ export class Executable {
         }
       });
       encoder.draw(node.numVertices, node.numInstances);
-      this.renderPasses_[id] = {
+      allPasses.set(id, {
         type: 'render',
         descriptor: node,
         bundle: encoder.finish(),
-      };
+      });
     }
 
     for (const [id, node] of Object.entries(computes)) {
@@ -395,12 +404,40 @@ export class Executable {
           entryPoint: node.entryPoint,
         },
       });
-      this.computePasses_[id] = {
+      allPasses.set(id, {
         type: 'compute',
         descriptor: node,
         bindGroups,
         pipeline,
-      };
+      });
+    }
+
+    // Build an ordered list of passes based on the queueing dependency graph.
+    const edges = Object.values(this.blueprint_.edges ?? {});
+    const targets: Map<string, string> = new Map();
+    const startNodes: Set<string> = new Set(allPasses.keys());
+    for (const edge of edges) {
+      if (edge.type !== 'queue-dependency') {
+        continue;
+      }
+      targets.set(edge.sourceId, edge.targetId);
+      startNodes.delete(edge.targetId);
+    }
+    if (startNodes.size === 0) {
+      throw new Error('No usable passes compiled');
+    }
+
+    let thisPhase = Array.from(startNodes);
+    while (this.passes_.length < allPasses.size) {
+      this.passes_.push(...thisPhase.map(id => allPasses.get(id)!));
+      const nextPhase = [];
+      for (const passId of thisPhase) {
+        const target = targets.get(passId);
+        if (target) {
+          nextPhase.push(target);
+        }
+      }
+      thisPhase = nextPhase;
     }
 
     return messages;
@@ -431,21 +468,6 @@ export class Executable {
     const device = this.gpu_.device!;
     const encoder = device.createCommandEncoder();
 
-    // TODO: Do something less cheesy than simply interleaving compute and
-    // render passes arbitrarily.
-
-    const passes: (CompiledComputePass | CompiledRenderPass)[] = [];
-    const computePasses = Object.values(this.computePasses_);
-    const renderPasses = Object.values(this.renderPasses_);
-    while (computePasses.length || renderPasses.length) {
-      if (computePasses.length) {
-        passes.push(computePasses.shift()!);
-      }
-      if (renderPasses.length) {
-        passes.push(renderPasses.shift()!);
-      }
-    }
-
     // TODO: configurable depth/stencil state
     if (
       this.outputDepthStencilTexture_ === null ||
@@ -465,7 +487,7 @@ export class Executable {
       this.outputDepthStencilTextureSize_ = { width, height };
     }
 
-    for (const pass of passes) {
+    for (const pass of this.passes_) {
       if (pass.type === 'compute') {
         const computePass = encoder.beginComputePass();
         const dispatchSize = pass.descriptor.dispatchSize;

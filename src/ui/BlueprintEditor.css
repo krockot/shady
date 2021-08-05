@@ -18,16 +18,3 @@
   min-width: 3em;
   height: 3em;
 }
-
-.BlueprintEditor .react-flow__handle {
-  width: 8px;
-  height: 8px;
-}
-
-.BlueprintEditor .react-flow__handle-connecting {
-  background: #f66;
-}
-
-.BlueprintEditor .react-flow__handle-valid {
-  background: #5d9;
-}
