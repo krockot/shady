@@ -47,6 +47,10 @@
   background-color: #ea4;
 }
 
+.Node-sampler {
+  background-color: #eea;
+}
+
 .Node > .Title {
   width: 100%;
   padding: 3px 0 3px 0;

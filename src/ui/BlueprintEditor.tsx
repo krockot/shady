@@ -14,6 +14,8 @@ import { QueueDependencyEdge } from './nodes/QueueDependencyEdge';
 import { BufferNode } from './nodes/BufferNode';
 import { ComputeNode } from './nodes/ComputeNode';
 import { RenderNode } from './nodes/RenderNode';
+import { SamplerBindingEdge } from './nodes/SamplerBindingEdge';
+import { SamplerNode } from './nodes/SamplerNode';
 import { TextureBindingEdge } from './nodes/TextureBindingEdge';
 import { TextureNode } from './nodes/TextureNode';
 
@@ -22,11 +24,13 @@ const NODE_TYPES = {
   texture: TextureNode,
   compute: ComputeNode,
   render: RenderNode,
+  sampler: SamplerNode,
 };
 
 const EDGE_TYPES = {
   'buffer-binding': BufferBindingEdge,
   'queue-dependency': QueueDependencyEdge,
+  'sampler-binding': SamplerBindingEdge,
   'texture-binding': TextureBindingEdge,
 };
 
@@ -98,6 +102,7 @@ export class BlueprintEditor extends React.Component<Props> {
               <button onClick={this.addShader_}>+Shader</button>
               <button onClick={this.addBuffer_}>+Buffer</button>
               <button onClick={this.addTexture_}>+Texture</button>
+              <button onClick={this.addSampler_}>+Sampler</button>
               <button onClick={this.addRenderPass_}>+Render Pass</button>
               <button onClick={this.addComputePass_}>+Compute Pass</button>
             </div>
@@ -141,6 +146,16 @@ export class BlueprintEditor extends React.Component<Props> {
       edge.targetHandle === 'bindings'
     ) {
       this.addTextureBinding_(edge.source!, edge.target!);
+      this.props.onChange();
+      return;
+    }
+
+    if (
+      isPassNode(target) &&
+      source.type === 'sampler' &&
+      edge.targetHandle === 'bindings'
+    ) {
+      this.addSamplerBinding_(edge.source!, edge.target!);
       this.props.onChange();
       return;
     }
@@ -215,6 +230,12 @@ export class BlueprintEditor extends React.Component<Props> {
     });
   };
 
+  addSampler_ = () => {
+    this.addNode_('sampler', {
+      position: { x: 100, y: 100 },
+    });
+  };
+
   addBufferBinding_ = (bufferId: string, passId: string) => {
     this.addEdge_('binding', {
       bindingType: 'buffer',
@@ -229,6 +250,16 @@ export class BlueprintEditor extends React.Component<Props> {
   addTextureBinding_ = (textureId: string, passId: string) => {
     this.addEdge_('binding', {
       bindingType: 'texture',
+      group: 0,
+      binding: 1,
+      source: textureId,
+      target: passId,
+    });
+  };
+
+  addSamplerBinding_ = (textureId: string, passId: string) => {
+    this.addEdge_('binding', {
+      bindingType: 'sampler',
       group: 0,
       binding: 1,
       source: textureId,

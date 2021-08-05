@@ -21,14 +21,14 @@ Canary release.
 
 ### Firefox
 
-Firefox Nightly *may* also work with `dom.webgpu.enabled` and
+Firefox Nightly _may_ also work with `dom.webgpu.enabled` and
 `gfx.webrender.all` set in `about:config`, but as of this writing the API is
 lagging behind the spec enough to be broken. To wit, at least the following
 are out of date:
 
-* GPUCanvasContext acquisition
-* Device loss handling
-* Swap chain configuration
+- GPUCanvasContext acquisition
+- Device loss handling
+- Swap chain configuration
 
 ## Local Deployment
 

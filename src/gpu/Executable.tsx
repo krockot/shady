@@ -4,6 +4,8 @@ import {
   BufferNodeDescriptor,
   ComputeNodeDescriptor,
   RenderNodeDescriptor,
+  SamplerBindingEdgeDescriptor,
+  SamplerNodeDescriptor,
   TextureBindingEdgeDescriptor,
   TextureNodeDescriptor,
 } from './Blueprint';
@@ -54,6 +56,7 @@ export class Executable {
   private builtinUniforms_: null | GPUBuffer;
   private buffers_: Record<string, GPUBuffer>;
   private textures_: Record<string, GPUTexture>;
+  private samplers_: Record<string, GPUSampler>;
   private passes_: CompiledPass[];
 
   private outputDepthStencilTexture_: null | GPUTexture;
@@ -72,6 +75,7 @@ export class Executable {
     this.builtinUniforms_ = null;
     this.buffers_ = {};
     this.textures_ = {};
+    this.samplers_ = {};
     this.passes_ = [];
     this.outputDepthStencilTexture_ = null;
     this.outputDepthStencilTextureSize_ = { width: 0, height: 0 };
@@ -176,6 +180,10 @@ export class Executable {
       string,
       TextureBindingEdgeDescriptor[]
     > = {};
+    const samplerBindingsByPass: Record<
+      string,
+      SamplerBindingEdgeDescriptor[]
+    > = {};
     Object.entries(this.blueprint_.edges ?? {}).forEach(([id, edge]) => {
       if (edge.type !== 'binding') {
         return;
@@ -193,6 +201,13 @@ export class Executable {
             textureBindingsByPass[edge.target] = [];
           }
           textureBindingsByPass[edge.target].push(edge);
+          break;
+
+        case 'sampler':
+          if (!samplerBindingsByPass[edge.target]) {
+            samplerBindingsByPass[edge.target] = [];
+          }
+          samplerBindingsByPass[edge.target].push(edge);
           break;
       }
     });
@@ -258,10 +273,28 @@ export class Executable {
         bindGroup.bindings.set(descriptor.binding, edge.source);
         entry.texture = {};
       }
+
+      for (const edge of samplerBindingsByPass[pipelineId] ?? []) {
+        const descriptor = edge as SamplerBindingEdgeDescriptor;
+        const entry: GPUBindGroupLayoutEntry = {
+          binding: descriptor.binding,
+          visibility,
+        };
+        const groups = pipelineBindGroups[pipelineId] ?? [];
+        pipelineBindGroups[pipelineId] = groups;
+
+        const group = descriptor.group;
+        const bindGroup = groups[group] ?? { layout: [], bindings: new Map() };
+        groups[group] = bindGroup;
+        bindGroup.layout.push(entry);
+        bindGroup.bindings.set(descriptor.binding, edge.source);
+        entry.sampler = {};
+      }
     };
 
     const buffers: Record<string, BufferNodeDescriptor> = {};
     const textures: Record<string, TextureNodeDescriptor> = {};
+    const samplers: Record<string, SamplerNodeDescriptor> = {};
     const renders: Record<string, RenderNodeDescriptor> = {};
     const computes: Record<string, ComputeNodeDescriptor> = {};
     for (const [id, node] of Object.entries(this.blueprint_.nodes)) {
@@ -272,6 +305,10 @@ export class Executable {
 
         case 'texture':
           textures[id] = node;
+          break;
+
+        case 'sampler':
+          samplers[id] = node;
           break;
 
         case 'render':
@@ -345,6 +382,10 @@ export class Executable {
       this.textures_[id] = texture;
     }
 
+    for (const [id, node] of Object.entries(samplers)) {
+      this.samplers_[id] = device.createSampler();
+    }
+
     const getBindingResource = (id: string): GPUBindingResource => {
       if (id === 'builtin-uniforms') {
         return { buffer: this.builtinUniforms_! };
@@ -369,6 +410,13 @@ export class Executable {
             throw new Error(`unknown texture ${id}`);
           }
           return texture.createView();
+
+        case 'sampler':
+          const sampler = this.samplers_[id];
+          if (!sampler) {
+            throw new Error(`unknown sampler ${id}`);
+          }
+          return sampler;
 
         default:
           throw new Error(`unsupported binding resource type '${node.type}'`);

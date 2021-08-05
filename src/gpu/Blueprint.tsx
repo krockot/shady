@@ -10,13 +10,14 @@ export type NodeDescriptor =
   | RenderNodeDescriptor
   | ComputeNodeDescriptor
   | BufferNodeDescriptor
-  | TextureNodeDescriptor
-  | SamplerNodeDescriptor;
+  | SamplerNodeDescriptor
+  | TextureNodeDescriptor;
 
 export type EdgeDescriptor =
   | BufferBindingEdgeDescriptor
-  | TextureBindingEdgeDescriptor
-  | QueueDependencyEdgeDescriptor;
+  | QueueDependencyEdgeDescriptor
+  | SamplerBindingEdgeDescriptor
+  | TextureBindingEdgeDescriptor;
 
 export interface NodeDescriptorBase {
   type: 'buffer' | 'render' | 'compute' | 'texture' | 'sampler' | 'binding';
@@ -110,6 +111,11 @@ export interface BufferBindingEdgeDescriptor extends BindingEdgeDescriptorBase {
 export interface TextureBindingEdgeDescriptor
   extends BindingEdgeDescriptorBase {
   bindingType: 'texture';
+}
+
+export interface SamplerBindingEdgeDescriptor
+  extends BindingEdgeDescriptorBase {
+  bindingType: 'sampler';
 }
 
 export interface QueueDependencyEdgeDescriptor extends EdgeDescriptorBase {
