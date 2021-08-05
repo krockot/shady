@@ -106,7 +106,9 @@ export class FrameProducer {
     }
 
     if (!this.executable_) {
-      this.tryCompile_();
+      if (!this.mostRecentPendingCompile_) {
+        this.tryCompile_();
+      }
       return;
     }
 
