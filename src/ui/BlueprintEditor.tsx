@@ -177,7 +177,7 @@ export class BlueprintEditor extends React.Component<Props> {
   ) => {};
 
   onMoveNode_ = (event: React.MouseEvent, node: Node) => {
-    node.data.descriptor.position = { ...node.position };
+    node.data.node.position = { ...node.position };
     this.update_();
   };
 
@@ -306,7 +306,7 @@ function buildGraphFromBlueprint(
       type: node.type,
       data: {
         blueprint,
-        descriptor: node,
+        node,
         onChange: (update: any) => {
           Object.assign(blueprint.nodes[id], update);
           onChange();

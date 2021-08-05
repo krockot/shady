@@ -3,7 +3,7 @@ import { Handle, Position } from 'react-flow-renderer';
 import { RenderNodeDescriptor } from '../../gpu/Blueprint';
 import { EditableLabel } from '../EditableLabel';
 import { LabeledField } from '../LabeledField';
-import { makeNodeType } from './NodeTypeFactory';
+import { Node, NodeProps } from './Node';
 import { isValidBindingConnection, isValidQueueConnection } from './Validation';
 
 function colorValue(c: GPUColorDict): string {
@@ -23,10 +23,16 @@ function parseColor(value: string): GPUColorDict {
   };
 }
 
-export const RenderNode = makeNodeType<RenderNodeDescriptor>({
-  title: 'Render Pass',
-  render: data => {
-    return (
+export const RenderNode = (props: NodeProps<RenderNodeDescriptor>) => {
+  const data = props.data;
+  const node = data.node;
+  return (
+    <Node
+      title="Render Pass"
+      node={node}
+      onRename={name => data.onChange({ name })}
+      destroy={data.destroy}
+    >
       <div>
         <Handle
           id="bindings"
@@ -55,7 +61,7 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
 
         <LabeledField label="Vertex Shader">
           <select
-            value={data.descriptor.vertexShader}
+            value={node.vertexShader}
             onChange={e =>
               data.onChange({ vertexShader: e.currentTarget.value })
             }
@@ -70,14 +76,14 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
         </LabeledField>
         <LabeledField label="Vertex Entry Point">
           <EditableLabel
-            value={data.descriptor.vertexEntryPoint}
+            value={node.vertexEntryPoint}
             emptyText="None"
             onChange={value => data.onChange({ vertexEntryPoint: value })}
           />
         </LabeledField>
         <LabeledField label="Fragment Shader">
           <select
-            value={data.descriptor.fragmentShader}
+            value={node.fragmentShader}
             onChange={e =>
               data.onChange({
                 fragmentShader: e.currentTarget.value,
@@ -94,14 +100,14 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
         </LabeledField>
         <LabeledField label="Fragment Entry Point">
           <EditableLabel
-            value={data.descriptor.fragmentEntryPoint}
+            value={node.fragmentEntryPoint}
             emptyText="None"
             onChange={value => data.onChange({ fragmentEntryPoint: value })}
           />
         </LabeledField>
         <LabeledField label="Topology">
           <select
-            value={data.descriptor.topology ?? 'triangle-list'}
+            value={node.topology ?? 'triangle-list'}
             onChange={e =>
               data.onChange({
                 topology: e.currentTarget.value as GPUPrimitiveTopology,
@@ -118,7 +124,7 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
         <LabeledField label="# Vertices">
           <input
             type="number"
-            value={data.descriptor.numVertices}
+            value={node.numVertices}
             onChange={e =>
               data.onChange({
                 numVertices: Math.max(e.currentTarget.valueAsNumber, 0),
@@ -129,7 +135,7 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
         <LabeledField label="# Instances">
           <input
             type="number"
-            value={data.descriptor.numInstances}
+            value={node.numInstances}
             onChange={e =>
               data.onChange({
                 numInstances: Math.max(e.currentTarget.valueAsNumber, 0),
@@ -140,16 +146,14 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
         <LabeledField label="Clear">
           <input
             type="checkbox"
-            checked={data.descriptor.clear ?? false}
-            onChange={e => data.onChange({ clear: !data.descriptor.clear })}
+            checked={node.clear ?? false}
+            onChange={e => data.onChange({ clear: !node.clear })}
           />
         </LabeledField>
         <LabeledField label="Clear Color">
           <input
             type="color"
-            value={colorValue(
-              data.descriptor.clearColor ?? { r: 0, g: 0, b: 0, a: 1 }
-            )}
+            value={colorValue(node.clearColor ?? { r: 0, g: 0, b: 0, a: 1 })}
             onChange={e =>
               data.onChange({ clearColor: parseColor(e.currentTarget.value) })
             }
@@ -157,7 +161,7 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
         </LabeledField>
         <LabeledField label="Depth Test">
           <select
-            value={data.descriptor.depthTest ?? 'always'}
+            value={node.depthTest ?? 'always'}
             onChange={e =>
               data.onChange({
                 depthTest: e.currentTarget.value as GPUCompareFunction,
@@ -175,6 +179,6 @@ export const RenderNode = makeNodeType<RenderNodeDescriptor>({
           </select>
         </LabeledField>
       </div>
-    );
-  },
-});
+    </Node>
+  );
+};

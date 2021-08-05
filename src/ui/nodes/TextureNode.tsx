@@ -2,7 +2,7 @@ import React from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 
 import { TextureNodeDescriptor } from '../../gpu/Blueprint';
-import { makeNodeType } from './NodeTypeFactory';
+import { Node, NodeProps } from './Node';
 import { isValidBindingConnection } from './Validation';
 
 function getSelectedFile(input: HTMLInputElement): null | File {
@@ -36,17 +36,25 @@ async function updateCanvasImage(
 
 type CanvasRef = React.RefObject<HTMLCanvasElement>;
 
-export const TextureNode = makeNodeType<TextureNodeDescriptor>({
-  title: 'Texture',
-  context: React.createRef(),
-  effect: (data, context) => {
-    const ref = context as CanvasRef;
-    if (ref.current && data.descriptor.imageData) {
-      updateCanvasImage(ref.current, data.descriptor.imageData);
+export const TextureNode = (props: NodeProps<TextureNodeDescriptor>) => {
+  const data = props.data;
+  const node = data.node;
+  const canvasRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const ref = canvasRef as CanvasRef;
+    if (ref.current && node.imageData instanceof Blob) {
+      updateCanvasImage(ref.current, node.imageData);
     }
-  },
-  render: (data, context) => {
-    return (
+  });
+
+  return (
+    <Node
+      title="Texture"
+      node={node}
+      onRename={name => data.onChange({ name })}
+      destroy={data.destroy}
+    >
       <div className="TextureDetails">
         <Handle
           type="source"
@@ -65,12 +73,13 @@ export const TextureNode = makeNodeType<TextureNodeDescriptor>({
           }}
         />
         <canvas
-          ref={context as CanvasRef}
+          id={node.name}
+          ref={canvasRef as CanvasRef}
           className="Preview"
           width={128}
           height={128}
         />
       </div>
-    );
-  },
-});
+    </Node>
+  );
+};

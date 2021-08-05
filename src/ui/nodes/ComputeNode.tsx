@@ -3,13 +3,19 @@ import { Handle, Position } from 'react-flow-renderer';
 import { ComputeNodeDescriptor } from '../../gpu/Blueprint';
 import { EditableLabel } from '../EditableLabel';
 import { LabeledField } from '../LabeledField';
-import { makeNodeType } from './NodeTypeFactory';
+import { Node, NodeProps } from './Node';
 import { isValidBindingConnection, isValidQueueConnection } from './Validation';
 
-export const ComputeNode = makeNodeType<ComputeNodeDescriptor>({
-  title: 'Compute Pass',
-  render: data => {
-    return (
+export const ComputeNode = (props: NodeProps<ComputeNodeDescriptor>) => {
+  const data = props.data;
+  const node = data.node;
+  return (
+    <Node
+      title="Compute Pass"
+      node={node}
+      onRename={name => data.onChange({ name })}
+      destroy={data.destroy}
+    >
       <div>
         <Handle
           id="bindings"
@@ -37,7 +43,7 @@ export const ComputeNode = makeNodeType<ComputeNodeDescriptor>({
         />
         <LabeledField label="Shader">
           <select
-            value={data.descriptor.shader}
+            value={node.shader}
             onChange={e => data.onChange({ shader: e.currentTarget.value })}
           >
             <option value=""></option>
@@ -51,7 +57,7 @@ export const ComputeNode = makeNodeType<ComputeNodeDescriptor>({
         <LabeledField label="Entry Point">
           <EditableLabel
             emptyText="None"
-            value={data.descriptor.entryPoint}
+            value={node.entryPoint}
             onChange={value => data.onChange({ entryPoint: value })}
           />
         </LabeledField>
@@ -61,13 +67,13 @@ export const ComputeNode = makeNodeType<ComputeNodeDescriptor>({
               X{' '}
               <input
                 type="number"
-                value={data.descriptor.dispatchSize.x}
+                value={node.dispatchSize.x}
                 onChange={e =>
                   data.onChange({
                     dispatchSize: {
                       x: e.currentTarget.valueAsNumber,
-                      y: data.descriptor.dispatchSize.y,
-                      z: data.descriptor.dispatchSize.z,
+                      y: node.dispatchSize.y,
+                      z: node.dispatchSize.z,
                     },
                   })
                 }
@@ -77,13 +83,13 @@ export const ComputeNode = makeNodeType<ComputeNodeDescriptor>({
               Y{' '}
               <input
                 type="number"
-                value={data.descriptor.dispatchSize.y}
+                value={node.dispatchSize.y}
                 onChange={e =>
                   data.onChange({
                     dispatchSize: {
-                      x: data.descriptor.dispatchSize.x,
+                      x: node.dispatchSize.x,
                       y: e.currentTarget.valueAsNumber,
-                      z: data.descriptor.dispatchSize.z,
+                      z: node.dispatchSize.z,
                     },
                   })
                 }
@@ -93,12 +99,12 @@ export const ComputeNode = makeNodeType<ComputeNodeDescriptor>({
               Z{' '}
               <input
                 type="number"
-                value={data.descriptor.dispatchSize.z}
+                value={node.dispatchSize.z}
                 onChange={e =>
                   data.onChange({
                     dispatchSize: {
-                      x: data.descriptor.dispatchSize.x,
-                      y: data.descriptor.dispatchSize.y,
+                      x: node.dispatchSize.x,
+                      y: node.dispatchSize.y,
                       z: e.currentTarget.valueAsNumber,
                     },
                   })
@@ -108,6 +114,6 @@ export const ComputeNode = makeNodeType<ComputeNodeDescriptor>({
           </div>
         </LabeledField>
       </div>
-    );
-  },
-});
+    </Node>
+  );
+};

@@ -2,14 +2,19 @@ import React from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 
 import { SamplerNodeDescriptor } from '../../gpu/Blueprint';
-import { makeNodeType } from './NodeTypeFactory';
+import { Node, NodeProps } from './Node';
 import { isValidBindingConnection } from './Validation';
 
-export const SamplerNode = makeNodeType<SamplerNodeDescriptor>({
-  title: 'Sampler',
-  context: React.createRef(),
-  render: data => {
-    return (
+export const SamplerNode = (props: NodeProps<SamplerNodeDescriptor>) => {
+  const data = props.data;
+  const node = data.node;
+  return (
+    <Node
+      title="Sampler"
+      node={node}
+      onRename={name => data.onChange({ name })}
+      destroy={data.destroy}
+    >
       <div className="SamplerDetails">
         <Handle
           type="source"
@@ -18,6 +23,6 @@ export const SamplerNode = makeNodeType<SamplerNodeDescriptor>({
           isValidConnection={c => isValidBindingConnection(c, data.blueprint)}
         />
       </div>
-    );
-  },
-});
+    </Node>
+  );
+};
