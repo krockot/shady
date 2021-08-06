@@ -87,3 +87,23 @@
   font-weight: bold;
   font-size: 1em;
 }
+
+.ControlPanel .PasteBlueprintPanel {
+  position: absolute;
+  left: 120px;
+  bottom: 60px;
+  z-index: 1;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  border: solid gray 1px;
+  background: #fff;
+  padding: 1em;
+  border-radius: 4px;
+}
+
+.ControlPanel .PasteBlueprintPanel textarea {
+  height: 3em;
+}

@@ -71,6 +71,7 @@ export interface BufferNodeDescriptor extends NodeDescriptorBase {
 export interface TextureNodeDescriptor extends NodeDescriptorBase {
   type: 'texture';
   imageData: null | Blob;
+  imageDataSerialized: null | string;
   size: GPUExtent3DDict;
   format: GPUTextureFormat;
   mipLevelCount: number;

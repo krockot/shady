@@ -4,7 +4,7 @@ import React from 'react';
 
 import { LocalPersistent } from './base/LocalPersistent';
 import { deepCopy } from './base/Util';
-import { canonicalize } from './gpu/Blueprint';
+import { Blueprint, canonicalize } from './gpu/Blueprint';
 import { ShaderCompilationInfo } from './gpu/Executable';
 import { FrameProducer } from './gpu/FrameProducer';
 import { ControlPanel } from './ui/ControlPanel';
@@ -89,6 +89,11 @@ class App extends React.Component<Props, State> {
     this.setState({ blueprint });
   };
 
+  onImportBlueprint_ = (blueprint: Blueprint) => {
+    canonicalize(blueprint);
+    this.setState({ blueprint });
+  };
+
   onDeleteBlueprint_ = (name: string) => {
     this.setState((state, props) => {
       delete state.savedBlueprints[name];
@@ -138,11 +143,13 @@ class App extends React.Component<Props, State> {
         </div>
         <div className="App-bottom">
           <ControlPanel
+            blueprint={this.state.blueprint}
             displayConfig={this.state.displayConfig}
             onDisplayConfigChange={this.onDisplayConfigChange}
             savedBlueprints={this.state.savedBlueprints}
             onSaveBlueprint={this.onSaveBlueprint_}
             onLoadBlueprint={this.onLoadBlueprint_}
+            onImportBlueprint={this.onImportBlueprint_}
             onDeleteBlueprint={this.onDeleteBlueprint_}
             codeMirrorTheme={this.state.codeMirrorTheme}
             onCodeMirrorThemeChange={this.onCodeMirrorThemeChange_}

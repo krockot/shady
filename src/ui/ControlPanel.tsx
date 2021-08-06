@@ -1,18 +1,22 @@
 import './ControlPanel.css';
 
 import React from 'react';
+import { toByteArray, fromByteArray } from 'base64-js';
 
+import { deepCopy } from '../base/Util';
 import { Blueprint } from '../gpu/Blueprint';
 import { CODE_MIRROR_THEMES } from './CodeMirrorThemes';
 import { DisplayConfig } from './Display';
 import { LabeledField } from './LabeledField';
 
 interface Props {
+  blueprint: Blueprint;
   displayConfig: DisplayConfig;
   onDisplayConfigChange: (change: Partial<DisplayConfig>) => void;
   savedBlueprints: Record<string, Blueprint>;
   onSaveBlueprint: (name: string) => void;
   onLoadBlueprint: (name: string) => void;
+  onImportBlueprint: (blueprint: Blueprint) => void;
   onDeleteBlueprint: (name: string) => void;
   codeMirrorTheme: string;
   onCodeMirrorThemeChange: (name: string) => void;
@@ -21,6 +25,7 @@ interface Props {
 interface State {
   optionsVisible: boolean;
   loadMenuVisible: boolean;
+  pasteMenuVisible: boolean;
 }
 
 export class ControlPanel extends React.Component<Props, State> {
@@ -28,18 +33,21 @@ export class ControlPanel extends React.Component<Props, State> {
   private pixelSizeRef_: React.RefObject<HTMLInputElement>;
   private framebufferWidthRef_: React.RefObject<HTMLInputElement>;
   private framebufferHeightRef_: React.RefObject<HTMLInputElement>;
+  private importRef_: React.RefObject<HTMLTextAreaElement>;
 
   constructor(props: Props) {
     super(props);
     this.state = {
       optionsVisible: false,
       loadMenuVisible: false,
+      pasteMenuVisible: false,
     };
 
     this.pixelSizeToggleRef_ = React.createRef();
     this.pixelSizeRef_ = React.createRef();
     this.framebufferWidthRef_ = React.createRef();
     this.framebufferHeightRef_ = React.createRef();
+    this.importRef_ = React.createRef();
   }
 
   render() {
@@ -187,6 +195,30 @@ export class ControlPanel extends React.Component<Props, State> {
             )}
           </div>
         )}
+        <button
+          className="Toggle"
+          onClick={this.copyBlueprintToClipboard_}
+          title="Copy Blueprint To Clipboard"
+        >
+          📋
+        </button>
+        <button
+          className="Toggle"
+          onClick={this.togglePasteMenu_}
+          title="Paste Blueprint From Clipboard"
+        >
+          ⬇
+        </button>
+        {this.state.pasteMenuVisible && (
+          <div className="PasteBlueprintPanel">
+            <h1>Import From Clipboard</h1>
+            Paste it here:
+            <textarea ref={this.importRef_} />
+            <button title="Import" onClick={this.importBlueprintFromClipboard_}>
+              Import
+            </button>
+          </div>
+        )}
       </div>
     );
   }
@@ -203,6 +235,57 @@ export class ControlPanel extends React.Component<Props, State> {
   loadBlueprint_ = (name: string) => {
     this.props.onLoadBlueprint(name);
     this.toggleLoadBlueprintPanel_();
+  };
+
+  copyBlueprintToClipboard_ = async () => {
+    const copy = deepCopy(this.props.blueprint);
+    for (const node of Object.values(copy.nodes)) {
+      if (node.type !== 'texture') {
+        continue;
+      }
+
+      if (node.imageData instanceof Blob) {
+        const bytes = new Uint8Array(await node.imageData.arrayBuffer());
+        node.imageDataSerialized = fromByteArray(bytes);
+        node.imageData = null;
+      }
+    }
+
+    navigator.clipboard.writeText(JSON.stringify(copy));
+  };
+
+  importBlueprintFromClipboard_ = () => {
+    this.togglePasteMenu_();
+
+    if (!this.importRef_.current) {
+      return;
+    }
+
+    const serializedBlueprint = this.importRef_.current.value;
+    const blueprint = JSON.parse(serializedBlueprint) as null | Blueprint;
+    if (!blueprint) {
+      return;
+    }
+
+    for (const node of Object.values(blueprint.nodes)) {
+      if (node.type !== 'texture') {
+        continue;
+      }
+
+      if (node.imageDataSerialized) {
+        const bytes = toByteArray(node.imageDataSerialized);
+        node.imageData = new Blob([bytes]);
+        node.imageDataSerialized = null;
+      }
+    }
+
+    this.props.onImportBlueprint(blueprint);
+  };
+
+  togglePasteMenu_ = () => {
+    this.setState((state, props) => ({
+      pasteMenuVisible: !state.pasteMenuVisible,
+    }));
   };
 
   deleteBlueprint_ = (name: string) => {
