@@ -78,8 +78,25 @@
 }
 
 .TabContainer .ContentArea {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   flex: 1 1 auto;
   background-color: white;
   width: 100%;
-  overflow: scroll;
+  overflow: hidden;
+}
+
+.TabContainer .ContentArea .Content {
+}
+
+.TabContainer .ContentArea .Content.Active {
+  flex: 1 1 auto;
+}
+
+.TabContainer .ContentArea .Content.Inactive {
+  visibility: hidden;
+  position: absolute;
+  width: 10px;
+  height: 10px;
 }

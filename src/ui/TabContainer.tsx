@@ -29,11 +29,30 @@ export class TabContainer extends React.Component<Props, State> {
     };
   }
 
+  componentDidUpdate() {
+    const numChildren = React.Children.count(this.props.children);
+    if (this.state.activeTab >= numChildren) {
+      this.setState({ activeTab: numChildren - 1 });
+    }
+  }
+
   render() {
     return (
       <div className="TabContainer">
         {this.renderTabs_()}
-        <div className="ContentArea">{this.renderActiveTabContent_()}</div>
+        <div className="ContentArea">
+          {React.Children.toArray(this.props.children).map((child, i) => {
+            const active = i === this.state.activeTab;
+            return (
+              <div
+                key={i}
+                className={`Content ${active ? 'Active' : 'Inactive'}`}
+              >
+                {child}
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   }
@@ -78,20 +97,5 @@ export class TabContainer extends React.Component<Props, State> {
 
   setActiveTab_(tab: number) {
     this.setState({ activeTab: tab });
-  }
-
-  renderActiveTabContent_() {
-    const children = React.Children.toArray(this.props.children);
-    if (children.length === 0) {
-      return;
-    }
-
-    let tab = this.state.activeTab;
-    if (tab >= children.length) {
-      this.setActiveTab_(0);
-      return children[0];
-    }
-
-    return children[tab];
   }
 }
