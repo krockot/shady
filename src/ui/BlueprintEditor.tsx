@@ -12,9 +12,9 @@ import ReactFlow, {
 } from 'react-flow-renderer';
 
 import {
+  BindingNodeDescriptor,
+  BindingType,
   Blueprint,
-  ConnectionNodeDescriptor,
-  ConnectionType,
   NodeDescriptor,
 } from '../gpu/Blueprint';
 import { BufferBindingNode } from './nodes/BufferBindingNode';
@@ -184,7 +184,9 @@ export class BlueprintEditor extends React.Component<Props> {
       source.type === 'buffer' &&
       edge.targetHandle === 'bindings'
     ) {
-      this.addBufferBinding_(edge.source!, edge.target!, position);
+      this.addBinding_('buffer', edge.source!, edge.target!, position, {
+        storageType: 'storage-read',
+      });
       this.props.onChange();
       return;
     }
@@ -194,7 +196,7 @@ export class BlueprintEditor extends React.Component<Props> {
       source.type === 'texture' &&
       edge.targetHandle === 'bindings'
     ) {
-      this.addTextureBinding_(edge.source!, edge.target!, position);
+      this.addBinding_('texture', edge.source!, edge.target!, position);
       this.props.onChange();
       return;
     }
@@ -204,7 +206,7 @@ export class BlueprintEditor extends React.Component<Props> {
       source.type === 'sampler' &&
       edge.targetHandle === 'bindings'
     ) {
-      this.addSamplerBinding_(edge.source!, edge.target!, position);
+      this.addBinding_('sampler', edge.source!, edge.target!, position);
       this.props.onChange();
       return;
     }
@@ -214,7 +216,14 @@ export class BlueprintEditor extends React.Component<Props> {
       isPassNode(source) &&
       edge.targetHandle === 'queueIn'
     ) {
-      this.addQueueDependency_(edge.source!, edge.target!);
+      const nodes = this.props.blueprint.nodes;
+      const id = getUnusedKey(nodes, `queue-dep`);
+      nodes[id] = {
+        type: 'connection',
+        // @ts-ignore
+        connectionType: 'queue',
+        position,
+      };
       this.props.onChange();
       return;
     }
@@ -249,24 +258,6 @@ export class BlueprintEditor extends React.Component<Props> {
     this.update_();
   };
 
-  addEdge_ = (
-    type: ConnectionType,
-    connection: Partial<ConnectionNodeDescriptor>
-  ) => {
-    const nodes = this.props.blueprint.nodes;
-    const id = getUnusedKey(nodes, type);
-    nodes[id] = {
-      position: { x: 100, y: 100 },
-
-      ...connection,
-      type: 'connection',
-
-      // @ts-ignore: bug?
-      connectionType: type,
-    };
-    this.update_();
-  };
-
   addBuffer_ = () => {
     this.addNode_('buffer', {
       size: 16384,
@@ -291,57 +282,25 @@ export class BlueprintEditor extends React.Component<Props> {
     });
   };
 
-  addBufferBinding_ = (
-    bufferId: string,
-    passId: string,
-    position: XYPosition
+  addBinding_ = (
+    type: BindingType,
+    source: string,
+    target: string,
+    position: XYPosition,
+    props?: Partial<BindingNodeDescriptor>
   ) => {
-    this.addEdge_('binding', {
-      position,
+    const nodes = this.props.blueprint.nodes;
+    const id = getUnusedKey(nodes, `binding-${type}`);
+    nodes[id] = {
+      type: 'connection',
+      connectionType: 'binding',
       // @ts-ignore
-      bindingType: 'buffer',
-      storageType: 'storage-read',
+      bindingType: type,
+      position,
       group: 0,
       binding: 1,
-      source: bufferId,
-      target: passId,
-    });
-  };
-
-  addTextureBinding_ = (
-    textureId: string,
-    passId: string,
-    position: XYPosition
-  ) => {
-    this.addEdge_('binding', {
-      position,
-      // @ts-ignore
-      bindingType: 'texture',
-      group: 0,
-      binding: 1,
-      source: textureId,
-      target: passId,
-    });
-  };
-
-  addSamplerBinding_ = (
-    textureId: string,
-    passId: string,
-    position: XYPosition
-  ) => {
-    this.addEdge_('binding', {
-      position,
-      // @ts-ignore
-      bindingType: 'sampler',
-      group: 0,
-      binding: 1,
-      source: textureId,
-      target: passId,
-    });
-  };
-
-  addQueueDependency_ = (source: string, target: string) => {
-    this.addEdge_('queue', { source: source, target: target });
+      ...props,
+    };
   };
 
   addRenderPass_ = () => {

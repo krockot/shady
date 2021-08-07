@@ -6,18 +6,20 @@ export interface Blueprint {
 export type NodeMap = Map<string, NodeDescriptor>;
 
 export type NodeDescriptor =
-  | BufferBindingNodeDescriptor
   | BufferNodeDescriptor
   | ComputeNodeDescriptor
-  | QueueNodeDescriptor
+  | ConnectionNodeDescriptor
   | RenderNodeDescriptor
-  | SamplerBindingNodeDescriptor
   | SamplerNodeDescriptor
-  | TextureBindingNodeDescriptor
   | TextureNodeDescriptor;
 
+export type ConnectionNodeDescriptor =
+  | BufferBindingNodeDescriptor
+  | QueueNodeDescriptor
+  | SamplerBindingNodeDescriptor
+  | TextureBindingNodeDescriptor;
+
 export interface NodeDescriptorBase {
-  type: 'buffer' | 'render' | 'compute' | 'texture' | 'sampler' | 'connection';
   name: string;
   position: { x: number; y: number };
 }
@@ -51,8 +53,6 @@ export interface ComputeNodeDescriptor extends NodeDescriptorBase {
   dispatchSize: { x: number; y: number; z: number };
 }
 
-export type BindingType = 'buffer' | 'sampler' | 'texture';
-
 export type BufferInitializer = 'zero' | 'random-floats' | 'random-uints';
 
 export interface BufferNodeDescriptor extends NodeDescriptorBase {
@@ -84,22 +84,19 @@ interface Shader {
 
 export type ConnectionType = 'binding' | 'queue';
 
-export interface ConnectionNodeDescriptor extends NodeDescriptorBase {
+export interface ConnectionNodeDescriptorBase extends NodeDescriptorBase {
   type: 'connection';
-  connectionType: ConnectionType;
   source: string;
   target: string;
 }
 
-export interface BindingNodeDescriptorBase extends ConnectionNodeDescriptor {
+export type BindingType = 'buffer' | 'sampler' | 'texture';
+
+export interface BindingNodeDescriptorBase
+  extends ConnectionNodeDescriptorBase {
   connectionType: 'binding';
-  bindingType: BindingType;
   group: number;
   binding: number;
-}
-
-export interface QueueNodeDescriptor extends ConnectionNodeDescriptor {
-  connectionType: 'queue';
 }
 
 export type BufferBindingStorageType = 'storage-read' | 'storage' | 'uniform';
@@ -119,10 +116,13 @@ export interface SamplerBindingNodeDescriptor
   bindingType: 'sampler';
 }
 
-export function canonicalize(blueprint: Blueprint) {
-  for (const node of Object.values(blueprint.nodes)) {
-    if (!node.position) {
-      node.position = { x: 100, y: 100 };
-    }
-  }
+export type BindingNodeDescriptor =
+  | BufferBindingNodeDescriptor
+  | SamplerBindingNodeDescriptor
+  | TextureBindingNodeDescriptor;
+
+export interface QueueNodeDescriptor extends ConnectionNodeDescriptorBase {
+  connectionType: 'queue';
 }
+
+export function canonicalize(blueprint: Blueprint) {}

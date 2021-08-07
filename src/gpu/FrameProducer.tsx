@@ -6,7 +6,7 @@ import { Gpu } from './Gpu';
 const getContextFromCanvas = (
   canvas: HTMLCanvasElement
 ): null | GPUCanvasContext => {
-  return canvas.getContext('webgpu') as (null | GPUCanvasContext);
+  return canvas.getContext('webgpu') as null | GPUCanvasContext;
 };
 
 export class FrameProducer {
@@ -74,8 +74,9 @@ export class FrameProducer {
     }
 
     const device = this.gpu_.device!;
-    const outputFormat: GPUTextureFormat =
-        context.getPreferredFormat(this.gpu_.adapter!);
+    const outputFormat: GPUTextureFormat = context.getPreferredFormat(
+      this.gpu_.adapter!
+    );
 
     if (
       !this.lastUsedContext_ ||
