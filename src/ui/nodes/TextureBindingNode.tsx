@@ -26,9 +26,6 @@ export const TextureBindingNode = (
         className="Handle BindingStub"
         isValidConnection={c => isValidBindingConnection(c, data.blueprint)}
       />
-      <button className="RemoveButton" onClick={data.destroy}>
-        X
-      </button>
       <div>
         <div className="Row">
           Group

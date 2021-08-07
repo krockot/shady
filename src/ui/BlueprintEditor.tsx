@@ -96,7 +96,7 @@ export class BlueprintEditor extends React.Component<Props> {
               this.props.blueprint,
               this.update_
             )}
-            elementsSelectable={true}
+            elementsSelectable={false}
             nodesConnectable={true}
             nodesDraggable={true}
             onConnect={this.onConnect_}

@@ -16,7 +16,7 @@ export const BufferBindingNode = (
   const data = props.data;
   const node = data.node;
   return (
-    <Node title="" node={node} destroy={data.destroy}>
+    <Node node={node} destroy={data.destroy}>
       <Handle
         type="target"
         position={'top' as Position}
@@ -29,9 +29,6 @@ export const BufferBindingNode = (
         className="Handle BindingStub"
         isValidConnection={c => isValidBindingConnection(c, data.blueprint)}
       />
-      <button className="RemoveButton" onClick={data.destroy}>
-        X
-      </button>
       <select
         value={node.storageType}
         style={{ width: '8em', marginLeft: '1em' }}

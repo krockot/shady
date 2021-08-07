@@ -16,11 +16,11 @@
 }
 
 .Node-buffer {
-  background-color: #9e9;
+  background-color: #9c9;
 }
 
 .Node-render {
-  background-color: #eaa;
+  background-color: #c99;
 }
 
 .Node-render input[type='number'] {
@@ -29,7 +29,7 @@
 }
 
 .Node-compute {
-  background-color: #ccf;
+  background-color: #cce;
 }
 
 .Node-compute .DispatchSize {
@@ -44,29 +44,43 @@
 }
 
 .Node-texture {
-  background-color: #ea4;
+  background-color: #da6;
 }
 
 .Node-sampler {
-  background-color: #eea;
+  background-color: #dd9;
 }
 
 .Node > .Title {
   width: 100%;
-  padding: 3px 0 3px 0;
-  text-align: center;
+  height: 9px;
+  text-align: left;
   font-weight: bold;
-  font-size: 1.1em;
+  font-size: 12px;
+  line-height: 12px;
+  margin: -2px 0 0 6px;
+  padding: 0;
 }
 
-.Node .RemoveButton {
+.RemoveButton {
   position: absolute;
-  top: 5px;
+  top: 4px;
   right: 5px;
-  width: 18px;
-  height: 18px;
+  width: 9px;
+  height: 9px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: #444 1px 1px;
+  color: #600;
   padding: 0;
-  border-radius: 20px;
+  line-height: 6px;
+}
+
+.RemoveButton::after {
+  content: '×';
+  margin: -5px 0 0 -1px;
 }
 
 .Node > .Content {
@@ -74,32 +88,13 @@
   background-color: #ffffffa0;
   text-align: right;
   margin: 4px;
+  padding: 0 2px 4px 2px;
+  font-size: 12px;
 }
 
 .Node .EditableLabel {
   max-width: 8em;
   text-align: right;
-}
-
-.Edge .RemoveButton {
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border-radius: 20px;
-}
-
-.Edge-buffer-binding {
-  display: flex;
-  flex-direction: column;
-  background-color: #999;
-  align-items: stretch;
-  width: 100%;
-}
-
-.Edge-buffer-binding .RemoveButton {
-  position: absolute;
-  top: 5px;
-  right: 5px;
 }
 
 .Edge-queue-dependency {
@@ -166,4 +161,13 @@
   height: 256px;
   border: solid 2px black;
   margin: 8px;
+}
+
+.Node-connection input[type='number'] {
+  width: 3em;
+  margin-left: 1em;
+}
+
+.Node-connection select {
+  margin: 4px;
 }

@@ -10,9 +10,7 @@ export const QueueDependencyEdge = makeEdgeType<QueueDependencyNodeDescriptor>({
   height: 24,
   render: data => (
     <div>
-      <button className="RemoveButton" onClick={data.destroy}>
-        X
-      </button>
+      <button className="RemoveButton" onClick={data.destroy}></button>
     </div>
   ),
 });
