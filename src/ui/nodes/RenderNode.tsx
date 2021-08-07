@@ -1,5 +1,6 @@
 import { Handle, Position } from 'react-flow-renderer';
 
+import { Debouncer } from '../../base/Debouncer';
 import { RenderNodeDescriptor } from '../../gpu/Blueprint';
 import { EditableLabel } from '../EditableLabel';
 import { LabeledField } from '../LabeledField';
@@ -26,6 +27,7 @@ function parseColor(value: string): GPUColorDict {
 export const RenderNode = (props: NodeProps<RenderNodeDescriptor>) => {
   const data = props.data;
   const node = data.node;
+  const debouncer = new Debouncer(30);
   return (
     <Node
       title="Render Pass"
@@ -155,7 +157,7 @@ export const RenderNode = (props: NodeProps<RenderNodeDescriptor>) => {
             type="color"
             value={colorValue(node.clearColor ?? { r: 0, g: 0, b: 0, a: 1 })}
             onChange={e =>
-              data.onChange({ clearColor: parseColor(e.currentTarget.value) })
+              debouncer.invoke(() =>  data.onChange({ clearColor: parseColor(e.currentTarget.value) }))
             }
           />
         </LabeledField>
