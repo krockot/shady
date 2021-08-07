@@ -45,7 +45,7 @@ export class CodeEditor extends React.Component<Props> {
     );
   }
 
-  onChange_ = (e: CodeMirror.Editor, change: CodeMirror.EditorChange[]) => {
+  onChange_ = (e: CodeMirror.Editor, change: CodeMirror.EditorChange) => {
     this.props.onChange(e.getValue());
   };
 
