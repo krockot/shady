@@ -143,6 +143,7 @@ export const BOIDS: Blueprint = {
       target: 'compute1',
     },
     queue1: {
+      name: '',
       position: {
         x: 100,
         y: 100,
@@ -150,10 +151,10 @@ export const BOIDS: Blueprint = {
       source: 'render1',
       target: 'compute1',
       type: 'connection',
-      // @ts-ignore
       connectionType: 'queue',
     },
     queue2: {
+      name: '',
       position: {
         x: 100,
         y: 100,
@@ -161,7 +162,6 @@ export const BOIDS: Blueprint = {
       source: 'compute1',
       target: 'compute2',
       type: 'connection',
-      // @ts-ignore
       connectionType: 'queue',
     },
   },

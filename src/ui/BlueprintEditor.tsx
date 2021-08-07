@@ -12,9 +12,8 @@ import ReactFlow, {
 } from 'react-flow-renderer';
 
 import {
-  BindingNodeDescriptor,
-  BindingType,
   Blueprint,
+  BufferBindingStorageType,
   NodeDescriptor,
 } from '../gpu/Blueprint';
 import { BufferBindingNode } from './nodes/BufferBindingNode';
@@ -184,9 +183,12 @@ export class BlueprintEditor extends React.Component<Props> {
       source.type === 'buffer' &&
       edge.targetHandle === 'bindings'
     ) {
-      this.addBinding_('buffer', edge.source!, edge.target!, position, {
-        storageType: 'storage-read',
-      });
+      this.addBufferBinding_(
+        edge.source!,
+        edge.target!,
+        position,
+        'storage-read'
+      );
       this.props.onChange();
       return;
     }
@@ -196,7 +198,7 @@ export class BlueprintEditor extends React.Component<Props> {
       source.type === 'texture' &&
       edge.targetHandle === 'bindings'
     ) {
-      this.addBinding_('texture', edge.source!, edge.target!, position);
+      this.addTrivialBinding_('texture', edge.source!, edge.target!, position);
       this.props.onChange();
       return;
     }
@@ -206,7 +208,7 @@ export class BlueprintEditor extends React.Component<Props> {
       source.type === 'sampler' &&
       edge.targetHandle === 'bindings'
     ) {
-      this.addBinding_('sampler', edge.source!, edge.target!, position);
+      this.addTrivialBinding_('sampler', edge.source!, edge.target!, position);
       this.props.onChange();
       return;
     }
@@ -219,10 +221,12 @@ export class BlueprintEditor extends React.Component<Props> {
       const nodes = this.props.blueprint.nodes;
       const id = getUnusedKey(nodes, `queue-dep`);
       nodes[id] = {
-        type: 'connection',
-        // @ts-ignore
-        connectionType: 'queue',
+        name: '',
         position,
+        type: 'connection',
+        connectionType: 'queue',
+        source: edge.source!,
+        target: edge.target!,
       };
       this.props.onChange();
       return;
@@ -282,24 +286,46 @@ export class BlueprintEditor extends React.Component<Props> {
     });
   };
 
-  addBinding_ = (
-    type: BindingType,
+  addBufferBinding_ = (
     source: string,
     target: string,
     position: XYPosition,
-    props?: Partial<BindingNodeDescriptor>
+    storageType: BufferBindingStorageType
+  ) => {
+    const nodes = this.props.blueprint.nodes;
+    const id = getUnusedKey(nodes, `binding-buffer`);
+    nodes[id] = {
+      name: '',
+      position,
+      type: 'connection',
+      connectionType: 'binding',
+      bindingType: 'buffer',
+      source,
+      target,
+      group: 0,
+      binding: 1,
+      storageType,
+    };
+  };
+
+  addTrivialBinding_ = (
+    type: 'sampler' | 'texture',
+    source: string,
+    target: string,
+    position: XYPosition
   ) => {
     const nodes = this.props.blueprint.nodes;
     const id = getUnusedKey(nodes, `binding-${type}`);
     nodes[id] = {
+      name: '',
+      position,
       type: 'connection',
       connectionType: 'binding',
-      // @ts-ignore
       bindingType: type,
-      position,
+      source,
+      target,
       group: 0,
       binding: 1,
-      ...props,
     };
   };
 

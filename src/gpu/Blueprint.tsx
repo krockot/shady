@@ -19,9 +19,18 @@ export type ConnectionNodeDescriptor =
   | SamplerBindingNodeDescriptor
   | TextureBindingNodeDescriptor;
 
+export type NodeType =
+  | 'render'
+  | 'compute'
+  | 'buffer'
+  | 'texture'
+  | 'sampler'
+  | 'connection';
+
 export interface NodeDescriptorBase {
   name: string;
   position: { x: number; y: number };
+  type: NodeType;
 }
 
 export interface RenderNodeDescriptor extends NodeDescriptorBase {
@@ -86,6 +95,7 @@ export type ConnectionType = 'binding' | 'queue';
 
 export interface ConnectionNodeDescriptorBase extends NodeDescriptorBase {
   type: 'connection';
+  connectionType: ConnectionType;
   source: string;
   target: string;
 }
@@ -95,6 +105,7 @@ export type BindingType = 'buffer' | 'sampler' | 'texture';
 export interface BindingNodeDescriptorBase
   extends ConnectionNodeDescriptorBase {
   connectionType: 'binding';
+  bindingType: BindingType;
   group: number;
   binding: number;
 }
