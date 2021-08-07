@@ -541,7 +541,7 @@ export class Executable {
     const targets: Map<string, string> = new Map();
     const startNodes: Set<string> = new Set(allPasses.keys());
     for (const node of Object.values(connections)) {
-      if (node.connectionType !== 'queue-dependency') {
+      if (node.connectionType !== 'queue') {
         continue;
       }
       targets.set(node.source, node.target);

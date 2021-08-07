@@ -9,7 +9,7 @@ export type NodeDescriptor =
   | BufferBindingNodeDescriptor
   | BufferNodeDescriptor
   | ComputeNodeDescriptor
-  | QueueDependencyNodeDescriptor
+  | QueueNodeDescriptor
   | RenderNodeDescriptor
   | SamplerBindingNodeDescriptor
   | SamplerNodeDescriptor
@@ -82,7 +82,7 @@ interface Shader {
   code: string;
 }
 
-export type ConnectionType = 'binding' | 'queue-dependency';
+export type ConnectionType = 'binding' | 'queue';
 
 export interface ConnectionNodeDescriptor extends NodeDescriptorBase {
   type: 'connection';
@@ -96,6 +96,10 @@ export interface BindingNodeDescriptorBase extends ConnectionNodeDescriptor {
   bindingType: BindingType;
   group: number;
   binding: number;
+}
+
+export interface QueueNodeDescriptor extends ConnectionNodeDescriptor {
+  connectionType: 'queue';
 }
 
 export type BufferBindingStorageType = 'storage-read' | 'storage' | 'uniform';
@@ -113,11 +117,6 @@ export interface TextureBindingNodeDescriptor
 export interface SamplerBindingNodeDescriptor
   extends BindingNodeDescriptorBase {
   bindingType: 'sampler';
-}
-
-export interface QueueDependencyNodeDescriptor
-  extends ConnectionNodeDescriptor {
-  connectionType: 'queue-dependency';
 }
 
 export function canonicalize(blueprint: Blueprint) {

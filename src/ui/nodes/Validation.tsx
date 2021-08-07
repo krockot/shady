@@ -82,8 +82,9 @@ export function isValidQueueConnection(c: Connection, blueprint: Blueprint) {
   return !Object.values(blueprint.nodes).some((node: NodeDescriptor) => {
     return (
       node.type === 'connection' &&
-      node.connectionType === 'queue-dependency' &&
-      (node.source === data.sourceName || node.target === data.targetName)
+      node.connectionType === 'queue' &&
+      node.source === data.sourceName &&
+      node.target === data.targetName
     );
   });
 }

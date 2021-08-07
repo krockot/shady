@@ -341,7 +341,7 @@ export class BlueprintEditor extends React.Component<Props> {
   };
 
   addQueueDependency_ = (source: string, target: string) => {
-    this.addEdge_('queue-dependency', { source: source, target: target });
+    this.addEdge_('queue', { source: source, target: target });
   };
 
   addRenderPass_ = () => {
@@ -432,7 +432,7 @@ function buildGraphFromBlueprint(
         target: node.target,
         arrowHeadType: 'arrowclosed' as ArrowHeadType,
       });
-    } else if (node.connectionType === 'queue-dependency') {
+    } else if (node.connectionType === 'queue') {
       const data = {
         blueprint,
         node,
