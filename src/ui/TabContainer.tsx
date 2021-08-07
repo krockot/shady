@@ -67,9 +67,7 @@ export class TabContainer extends React.Component<Props, State> {
                     }
                     e.stopPropagation();
                   }}
-                >
-                  x
-                </button>
+                />
               )}
             </div>
           );

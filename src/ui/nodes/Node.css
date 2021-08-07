@@ -60,7 +60,7 @@
   padding: 0;
 }
 
-.RemoveButton {
+.Node .RemoveButton, .Edge .RemoveButton {
   position: absolute;
   top: 4px;
   right: 5px;
