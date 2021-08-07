@@ -155,8 +155,8 @@ export class Executable {
     let messages: string[] = [];
     try {
       messages = await executable.compile_(outputFormat);
-    } catch (e) {
-      console.log('Compilation failed: ' + e.message);
+    } catch (e: any) {
+      console.log('Compilation failed: ', e.message);
       return { shaderInfo: {}, messages: [...messages, e.message] };
     }
     return { executable, shaderInfo, messages };
