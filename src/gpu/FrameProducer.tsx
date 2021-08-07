@@ -6,13 +6,7 @@ import { Gpu } from './Gpu';
 const getContextFromCanvas = (
   canvas: HTMLCanvasElement
 ): null | GPUCanvasContext => {
-  const context = canvas.getContext('webgpu');
-  if (context === null) {
-    return null;
-  }
-
-  // @ts-ignore
-  return context as GPUCanvasContext;
+  return canvas.getContext('webgpu') as (null | GPUCanvasContext);
 };
 
 export class FrameProducer {
@@ -81,8 +75,7 @@ export class FrameProducer {
 
     const device = this.gpu_.device!;
     const outputFormat: GPUTextureFormat =
-      // @ts-ignore
-      context.getPreferredFormat(this.gpu_.adapter!);
+        context.getPreferredFormat(this.gpu_.adapter!);
 
     if (
       !this.lastUsedContext_ ||
@@ -91,7 +84,6 @@ export class FrameProducer {
       this.lastUsedResolution_.width !== resolution.width ||
       this.lastUsedResolution_.height !== resolution.height
     ) {
-      // @ts-ignore
       context.configure({
         device,
         format: outputFormat,
@@ -128,10 +120,7 @@ export class FrameProducer {
       frame: this.frame_++,
       resolution,
     });
-
-    // @ts-ignore
-    const target = context.getCurrentTexture() as GPUTexture;
-    this.executable_.execute(target, resolution);
+    this.executable_.execute(context.getCurrentTexture(), resolution);
   }
 
   onGpuAcquired_ = () => {

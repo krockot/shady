@@ -630,7 +630,6 @@ export class Executable {
         const renderPass = encoder.beginRenderPass({
           colorAttachments: [
             {
-              // @ts-ignore
               view: texture.createView(),
               loadValue,
               storeOp: 'store' as const,
