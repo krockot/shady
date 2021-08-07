@@ -8,7 +8,6 @@ import {
   BufferBindingStorageType,
 } from '../../gpu/Blueprint';
 import { Node, NodeProps } from './Node';
-import { isValidBindingConnection } from './Validation';
 
 export const BufferBindingNode = (
   props: NodeProps<BufferBindingNodeDescriptor>
@@ -16,22 +15,21 @@ export const BufferBindingNode = (
   const data = props.data;
   const node = data.node;
   return (
-    <Node node={node} destroy={data.destroy}>
+    <Node className="BufferBinding" node={node} destroy={data.destroy}>
       <Handle
         type="target"
         position={'top' as Position}
         className="Handle BindingStub"
-        isValidConnection={c => isValidBindingConnection(c, data.blueprint)}
+        isConnectable={false}
       />
       <Handle
         type="source"
         position={'bottom' as Position}
         className="Handle BindingStub"
-        isValidConnection={c => isValidBindingConnection(c, data.blueprint)}
+        isConnectable={false}
       />
       <select
         value={node.storageType}
-        style={{ width: '8em', marginLeft: '1em' }}
         onChange={e =>
           data.onChange({
             storageType: e.currentTarget.value as BufferBindingStorageType,

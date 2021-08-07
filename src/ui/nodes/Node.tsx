@@ -23,6 +23,7 @@ export interface NodeProps<DescriptorType extends NodeDescriptorBase> {
 
 interface Props {
   title?: string;
+  className?: string;
   node: NodeDescriptorBase;
   onRename?: (name: string) => void;
   destroy: () => void;
@@ -31,7 +32,7 @@ interface Props {
 
 export const Node = (props: Props) => {
   return (
-    <div className={`Node Node-${props.node.type}`}>
+    <div className={`Node Node-${props.node.type} ${props.className}`}>
       <button className="RemoveButton" onClick={props.destroy}></button>
       <div className="Title">{props.title}</div>
       <div className="Content">

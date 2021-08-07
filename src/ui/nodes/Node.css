@@ -88,7 +88,7 @@
   background-color: #ffffffa0;
   text-align: right;
   margin: 4px;
-  padding: 0 2px 4px 2px;
+  padding: 2px 2px 4px 2px;
   font-size: 12px;
 }
 
@@ -145,6 +145,12 @@
   background: #5d9 !important;
 }
 
+.Handle.BindingStub.react-flow__handle {
+  width: 4px;
+  height: 4px;
+  background: #444;
+}
+
 .Node-texture input[type='file'] {
   margin-top: 8px;
   width: 256px;
@@ -163,11 +169,25 @@
   margin: 8px;
 }
 
+.Node-connection {
+  width: 120px;
+  height: 64px;
+}
+
 .Node-connection input[type='number'] {
   width: 3em;
   margin-left: 1em;
+  font-weight: bold;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .Node-connection select {
-  margin: 4px;
+  margin: 0 0 4px 0;
+  max-width: 114px;
+}
+
+.Node-connection.BufferBinding {
+  width: 120px;
+  height: 87px;
 }

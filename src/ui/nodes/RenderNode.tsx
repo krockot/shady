@@ -157,7 +157,9 @@ export const RenderNode = (props: NodeProps<RenderNodeDescriptor>) => {
             type="color"
             value={colorValue(node.clearColor ?? { r: 0, g: 0, b: 0, a: 1 })}
             onChange={e =>
-              debouncer.invoke(() =>  data.onChange({ clearColor: parseColor(e.currentTarget.value) }))
+              debouncer.invoke(() =>
+                data.onChange({ clearColor: parseColor(e.currentTarget.value) })
+              )
             }
           />
         </LabeledField>

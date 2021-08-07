@@ -6,6 +6,8 @@ import ReactFlow, {
   Edge,
   FlowElement,
   Node,
+  OnLoadParams,
+  XYPosition,
 } from 'react-flow-renderer';
 
 import {
@@ -71,10 +73,18 @@ const isPassNode = (node: NodeDescriptor) =>
 
 export class BlueprintEditor extends React.Component<Props> {
   private isMounted_: boolean;
+  private instance_: null | OnLoadParams;
+  private flowRef_: React.RefObject<HTMLDivElement>;
+  private lastConnectStart_: null | XYPosition;
+  private lastConnectEnd_: null | XYPosition;
 
   constructor(props: Props) {
     super(props);
     this.isMounted_ = false;
+    this.instance_ = null;
+    this.flowRef_ = React.createRef();
+    this.lastConnectStart_ = null;
+    this.lastConnectEnd_ = null;
   }
 
   componentDidMount() {
@@ -90,6 +100,7 @@ export class BlueprintEditor extends React.Component<Props> {
       <div className="BlueprintEditor">
         <FlowErrorBounary>
           <ReactFlow
+            ref={this.flowRef_}
             nodeTypes={NODE_TYPES}
             edgeTypes={EDGE_TYPES}
             elements={buildGraphFromBlueprint(
@@ -99,6 +110,9 @@ export class BlueprintEditor extends React.Component<Props> {
             elementsSelectable={false}
             nodesConnectable={true}
             nodesDraggable={true}
+            onLoad={this.onLoad_}
+            onConnectStart={this.onConnectStart_}
+            onConnectStop={this.onConnectStop_}
             onConnect={this.onConnect_}
             onElementClick={this.onElementClick_}
             onNodeDragStop={this.onMoveNode_}
@@ -128,6 +142,18 @@ export class BlueprintEditor extends React.Component<Props> {
     this.props.onChange();
   };
 
+  onLoad_ = (instance: OnLoadParams) => {
+    this.instance_ = instance;
+  };
+
+  onConnectStart_ = (e: React.MouseEvent) => {
+    this.lastConnectStart_ = { x: e.clientX, y: e.clientY };
+  };
+
+  onConnectStop_ = (e: any) => {
+    this.lastConnectEnd_ = { x: e.clientX, y: e.clientY };
+  };
+
   onConnect_ = (edge: Edge<any> | Connection) => {
     const source = this.props.blueprint.nodes[edge.source!];
     const target = this.props.blueprint.nodes[edge.target!];
@@ -135,12 +161,29 @@ export class BlueprintEditor extends React.Component<Props> {
       return;
     }
 
+    let position = { x: 100, y: 100 };
+    if (
+      this.instance_ &&
+      this.lastConnectStart_ !== null &&
+      this.lastConnectEnd_ !== null &&
+      this.flowRef_.current
+    ) {
+      const view = this.flowRef_.current.getBoundingClientRect();
+      const midpoint = {
+        x:
+          (this.lastConnectStart_.x + this.lastConnectEnd_.x) / 2 - view.x - 60,
+        y:
+          (this.lastConnectStart_.y + this.lastConnectEnd_.y) / 2 - view.y - 40,
+      };
+      position = this.instance_.project(midpoint);
+    }
+
     if (
       isPassNode(target) &&
       source.type === 'buffer' &&
       edge.targetHandle === 'bindings'
     ) {
-      this.addBufferBinding_(edge.source!, edge.target!);
+      this.addBufferBinding_(edge.source!, edge.target!, position);
       this.props.onChange();
       return;
     }
@@ -150,7 +193,7 @@ export class BlueprintEditor extends React.Component<Props> {
       source.type === 'texture' &&
       edge.targetHandle === 'bindings'
     ) {
-      this.addTextureBinding_(edge.source!, edge.target!);
+      this.addTextureBinding_(edge.source!, edge.target!, position);
       this.props.onChange();
       return;
     }
@@ -160,7 +203,7 @@ export class BlueprintEditor extends React.Component<Props> {
       source.type === 'sampler' &&
       edge.targetHandle === 'bindings'
     ) {
-      this.addSamplerBinding_(edge.source!, edge.target!);
+      this.addSamplerBinding_(edge.source!, edge.target!, position);
       this.props.onChange();
       return;
     }
@@ -212,12 +255,13 @@ export class BlueprintEditor extends React.Component<Props> {
     const nodes = this.props.blueprint.nodes;
     const id = getUnusedKey(nodes, type);
     nodes[id] = {
+      position: { x: 100, y: 100 },
+
       ...connection,
       type: 'connection',
 
       // @ts-ignore: bug?
       connectionType: type,
-      position: { x: 100, y: 100 },
     };
     this.update_();
   };
@@ -246,8 +290,13 @@ export class BlueprintEditor extends React.Component<Props> {
     });
   };
 
-  addBufferBinding_ = (bufferId: string, passId: string) => {
+  addBufferBinding_ = (
+    bufferId: string,
+    passId: string,
+    position: XYPosition
+  ) => {
     this.addEdge_('binding', {
+      position,
       // @ts-ignore
       bindingType: 'buffer',
       storageType: 'storage-read',
@@ -258,8 +307,13 @@ export class BlueprintEditor extends React.Component<Props> {
     });
   };
 
-  addTextureBinding_ = (textureId: string, passId: string) => {
+  addTextureBinding_ = (
+    textureId: string,
+    passId: string,
+    position: XYPosition
+  ) => {
     this.addEdge_('binding', {
+      position,
       // @ts-ignore
       bindingType: 'texture',
       group: 0,
@@ -269,8 +323,13 @@ export class BlueprintEditor extends React.Component<Props> {
     });
   };
 
-  addSamplerBinding_ = (textureId: string, passId: string) => {
+  addSamplerBinding_ = (
+    textureId: string,
+    passId: string,
+    position: XYPosition
+  ) => {
     this.addEdge_('binding', {
+      position,
       // @ts-ignore
       bindingType: 'sampler',
       group: 0,
