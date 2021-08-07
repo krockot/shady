@@ -2,6 +2,7 @@ import './BlueprintEditor.css';
 
 import React from 'react';
 import ReactFlow, {
+  ArrowHeadType,
   Connection,
   Edge,
   FlowElement,
@@ -17,7 +18,7 @@ import {
   NodeDescriptor,
 } from '../gpu/Blueprint';
 import { BufferBindingNode } from './nodes/BufferBindingNode';
-import { QueueDependencyEdge } from './nodes/QueueDependencyEdge';
+import { CustomEdge } from './nodes/CustomEdge';
 import { BufferNode } from './nodes/BufferNode';
 import { ComputeNode } from './nodes/ComputeNode';
 import { RenderNode } from './nodes/RenderNode';
@@ -38,7 +39,7 @@ const NODE_TYPES = {
 };
 
 const EDGE_TYPES = {
-  'queue-dependency': QueueDependencyEdge,
+  'custom-edge': CustomEdge,
 };
 
 interface Props {
@@ -429,6 +430,7 @@ function buildGraphFromBlueprint(
         id: `${id}-target-edge`,
         source: `${id}-node`,
         target: node.target,
+        arrowHeadType: 'arrowclosed' as ArrowHeadType,
       });
     } else if (node.connectionType === 'queue-dependency') {
       const data = {
@@ -448,7 +450,8 @@ function buildGraphFromBlueprint(
         source: node.source,
         target: node.target,
         targetHandle: 'queueIn',
-        type: 'queue-dependency',
+        type: 'custom-edge',
+        arrowHeadType: 'arrowclosed' as ArrowHeadType,
         data,
       });
     }

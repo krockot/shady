@@ -1,5 +1,4 @@
-.Node,
-.Edge {
+.Node {
   padding: 4px 0px 2px 0px;
   background-color: #888;
   border: solid #777 1px;
@@ -10,8 +9,7 @@
   align-items: stretch;
 }
 
-.Node select,
-.Edge select {
+.Node select {
   text-align: right;
 }
 
@@ -149,6 +147,7 @@
   width: 4px;
   height: 4px;
   background: #444;
+  border: solid 1px #888;
 }
 
 .Node-texture input[type='file'] {
@@ -190,4 +189,19 @@
 .Node-connection.BufferBinding {
   width: 120px;
   height: 87px;
+}
+
+.Edge {
+  width: 15px;
+  height: 15px;
+  background-color: #aaa;
+  border-radius: 15px;
+}
+
+.Edge .RemoveButton {
+  padding: 0 0 1px 1px;
+  font-weight: normal;
+  font-size: 20px;
+  text-shadow: none;
+  color: #444;
 }
