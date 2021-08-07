@@ -1,23 +1,39 @@
 import './Node.css';
 
 import React from 'react';
+import { Handle, Position } from 'react-flow-renderer';
 
 import {
-  BufferBindingEdgeDescriptor,
+  BufferBindingNodeDescriptor,
   BufferBindingStorageType,
 } from '../../gpu/Blueprint';
-import { makeEdgeType } from './EdgeTypeFactory';
+import { Node, NodeProps } from './Node';
+import { isValidBindingConnection } from './Validation';
 
-export const BufferBindingEdge = makeEdgeType<BufferBindingEdgeDescriptor>({
-  width: 150,
-  height: 85,
-  render: data => (
-    <div>
+export const BufferBindingNode = (
+  props: NodeProps<BufferBindingNodeDescriptor>
+) => {
+  const data = props.data;
+  const node = data.node;
+  return (
+    <Node title="" node={node} destroy={data.destroy}>
+      <Handle
+        type="target"
+        position={'top' as Position}
+        className="Handle BindingStub"
+        isValidConnection={c => isValidBindingConnection(c, data.blueprint)}
+      />
+      <Handle
+        type="source"
+        position={'bottom' as Position}
+        className="Handle BindingStub"
+        isValidConnection={c => isValidBindingConnection(c, data.blueprint)}
+      />
       <button className="RemoveButton" onClick={data.destroy}>
         X
       </button>
       <select
-        value={data.edge.storageType}
+        value={node.storageType}
         style={{ width: '8em', marginLeft: '1em' }}
         onChange={e =>
           data.onChange({
@@ -36,7 +52,7 @@ export const BufferBindingEdge = makeEdgeType<BufferBindingEdgeDescriptor>({
           Group
           <input
             type="number"
-            value={data.edge.group}
+            value={node.group}
             onChange={e =>
               data.onChange({ group: e.currentTarget.valueAsNumber })
             }
@@ -46,13 +62,13 @@ export const BufferBindingEdge = makeEdgeType<BufferBindingEdgeDescriptor>({
           Binding
           <input
             type="number"
-            value={data.edge.binding}
+            value={node.binding}
             onChange={e =>
               data.onChange({ binding: e.currentTarget.valueAsNumber })
             }
           />
         </div>
       </div>
-    </div>
-  ),
-});
+    </Node>
+  );
+};

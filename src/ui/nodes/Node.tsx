@@ -24,7 +24,7 @@ export interface NodeProps<DescriptorType extends NodeDescriptorBase> {
 interface Props {
   title: string;
   node: NodeDescriptorBase;
-  onRename: (name: string) => void;
+  onRename?: (name: string) => void;
   destroy: () => void;
   children?: ReactNode;
 }
@@ -37,9 +37,13 @@ export const Node = (props: Props) => {
       </button>
       <div className="Title">{props.title}</div>
       <div className="Content">
-        <LabeledField label="Name">
-          <EditableLabel value={props.node.name} onChange={props.onRename} />
-        </LabeledField>
+        {props.onRename ? (
+          <LabeledField label="Name">
+            <EditableLabel value={props.node.name} onChange={props.onRename} />
+          </LabeledField>
+        ) : (
+          <div />
+        )}
         {props.children}
       </div>
     </div>

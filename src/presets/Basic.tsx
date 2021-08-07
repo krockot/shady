@@ -34,7 +34,6 @@ export const BASIC: Blueprint = {
       fragmentEntryPoint: 'main',
     },
   },
-  edges: {},
   shaders: {
     vertex1: {
       name: 'Vertex',

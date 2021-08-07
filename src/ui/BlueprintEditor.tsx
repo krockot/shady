@@ -8,15 +8,20 @@ import ReactFlow, {
   Node,
 } from 'react-flow-renderer';
 
-import { Blueprint, EdgeDescriptor, NodeDescriptor } from '../gpu/Blueprint';
-import { BufferBindingEdge } from './nodes/BufferBindingEdge';
+import {
+  Blueprint,
+  ConnectionNodeDescriptor,
+  ConnectionType,
+  NodeDescriptor,
+} from '../gpu/Blueprint';
+import { BufferBindingNode } from './nodes/BufferBindingNode';
 import { QueueDependencyEdge } from './nodes/QueueDependencyEdge';
 import { BufferNode } from './nodes/BufferNode';
 import { ComputeNode } from './nodes/ComputeNode';
 import { RenderNode } from './nodes/RenderNode';
-import { SamplerBindingEdge } from './nodes/SamplerBindingEdge';
+import { SamplerBindingNode } from './nodes/SamplerBindingNode';
 import { SamplerNode } from './nodes/SamplerNode';
-import { TextureBindingEdge } from './nodes/TextureBindingEdge';
+import { TextureBindingNode } from './nodes/TextureBindingNode';
 import { TextureNode } from './nodes/TextureNode';
 
 const NODE_TYPES = {
@@ -25,13 +30,13 @@ const NODE_TYPES = {
   compute: ComputeNode,
   render: RenderNode,
   sampler: SamplerNode,
+  'buffer-binding': BufferBindingNode,
+  'sampler-binding': SamplerBindingNode,
+  'texture-binding': TextureBindingNode,
 };
 
 const EDGE_TYPES = {
-  'buffer-binding': BufferBindingEdge,
   'queue-dependency': QueueDependencyEdge,
-  'sampler-binding': SamplerBindingEdge,
-  'texture-binding': TextureBindingEdge,
 };
 
 interface Props {
@@ -200,15 +205,20 @@ export class BlueprintEditor extends React.Component<Props> {
     this.update_();
   };
 
-  addEdge_ = (type: string, edge: Partial<EdgeDescriptor>) => {
-    const edges = this.props.blueprint.edges ?? {};
-    this.props.blueprint.edges = edges;
+  addEdge_ = (
+    type: ConnectionType,
+    connection: Partial<ConnectionNodeDescriptor>
+  ) => {
+    const nodes = this.props.blueprint.nodes;
+    const id = getUnusedKey(nodes, type);
+    nodes[id] = {
+      ...connection,
+      type: 'connection',
 
-    const id = getUnusedKey(edges, type);
-    edges[id] = {
-      type,
-      ...edge,
-    } as EdgeDescriptor;
+      // @ts-ignore: bug?
+      connectionType: type,
+      position: { x: 100, y: 100 },
+    };
     this.update_();
   };
 
@@ -238,6 +248,7 @@ export class BlueprintEditor extends React.Component<Props> {
 
   addBufferBinding_ = (bufferId: string, passId: string) => {
     this.addEdge_('binding', {
+      // @ts-ignore
       bindingType: 'buffer',
       storageType: 'storage-read',
       group: 0,
@@ -249,6 +260,7 @@ export class BlueprintEditor extends React.Component<Props> {
 
   addTextureBinding_ = (textureId: string, passId: string) => {
     this.addEdge_('binding', {
+      // @ts-ignore
       bindingType: 'texture',
       group: 0,
       binding: 1,
@@ -259,6 +271,7 @@ export class BlueprintEditor extends React.Component<Props> {
 
   addSamplerBinding_ = (textureId: string, passId: string) => {
     this.addEdge_('binding', {
+      // @ts-ignore
       bindingType: 'sampler',
       group: 0,
       binding: 1,
@@ -301,68 +314,84 @@ function buildGraphFromBlueprint(
 ): FlowElement[] {
   const elements: FlowElement[] = [];
   Object.entries(blueprint.nodes).forEach(([id, node]) => {
-    elements.push({
-      id,
-      type: node.type,
-      data: {
+    if (node.type !== 'connection') {
+      elements.push({
+        id,
+        type: node.type,
+        data: {
+          blueprint,
+          node,
+          onChange: (update: any) => {
+            Object.assign(blueprint.nodes[id], update);
+            onChange();
+          },
+          destroy: () => {
+            delete blueprint.nodes[id];
+            for (const [otherId, otherNode] of Object.entries(
+              blueprint.nodes
+            )) {
+              if (
+                otherNode.type === 'connection' &&
+                (otherNode.source === id || otherNode.target === id)
+              ) {
+                delete blueprint.nodes[otherId];
+              }
+            }
+            onChange();
+          },
+        },
+        position: node.position,
+      });
+    } else if (node.connectionType === 'binding') {
+      const data = {
         blueprint,
         node,
         onChange: (update: any) => {
-          Object.assign(blueprint.nodes[id], update);
+          Object.assign(node, update);
           onChange();
         },
         destroy: () => {
           delete blueprint.nodes[id];
-          if (blueprint.edges) {
-            for (const [edgeId, edge] of Object.entries(blueprint.edges)) {
-              if (edge.source === id || edge.target === id) {
-                delete blueprint.edges[edgeId];
-              }
-            }
-          }
           onChange();
         },
-      },
-      position: node.position,
-    });
-  });
-
-  Object.entries(blueprint.edges ?? {}).forEach(([id, edge]) => {
-    const data = {
-      blueprint,
-      edge,
-      onChange: (update: any) => {
-        Object.assign(blueprint.edges![id], update);
-        onChange();
-      },
-      destroy: () => {
-        delete blueprint.edges![id];
-        onChange();
-      },
-    };
-
-    switch (edge.type) {
-      case 'binding':
-        elements.push({
-          id,
-          source: edge.source,
-          target: edge.target,
-          targetHandle: 'bindings',
-          type: `${edge.bindingType}-binding`,
-          data,
-        });
-        break;
-
-      case 'queue-dependency':
-        elements.push({
-          id,
-          source: edge.source,
-          target: edge.target,
-          targetHandle: 'queueIn',
-          type: 'queue-dependency',
-          data,
-        });
-        break;
+      };
+      elements.push({
+        id: `${id}-node`,
+        type: `${node.bindingType}-binding`,
+        data,
+        position: node.position,
+      });
+      elements.push({
+        id: `${id}-source-edge`,
+        source: node.source,
+        target: `${id}-node`,
+      });
+      elements.push({
+        id: `${id}-target-edge`,
+        source: `${id}-node`,
+        target: node.target,
+      });
+    } else if (node.connectionType === 'queue-dependency') {
+      const data = {
+        blueprint,
+        node,
+        onChange: (update: any) => {
+          Object.assign(node, update);
+          onChange();
+        },
+        destroy: () => {
+          delete blueprint.nodes[id];
+          onChange();
+        },
+      };
+      elements.push({
+        id,
+        source: node.source,
+        target: node.target,
+        targetHandle: 'queueIn',
+        type: 'queue-dependency',
+        data,
+      });
     }
   });
 

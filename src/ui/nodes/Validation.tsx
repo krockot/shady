@@ -1,6 +1,6 @@
 import { Connection } from 'react-flow-renderer';
 
-import { Blueprint, EdgeDescriptor, NodeDescriptor } from '../../gpu/Blueprint';
+import { Blueprint, NodeDescriptor } from '../../gpu/Blueprint';
 
 interface ConnectionData {
   source: NodeDescriptor;
@@ -55,15 +55,12 @@ export function isValidBindingConnection(c: Connection, blueprint: Blueprint) {
     return false;
   }
 
-  if (!blueprint.edges) {
-    return true;
-  }
-
-  return !Object.values(blueprint.edges).some((e: EdgeDescriptor) => {
+  return !Object.values(blueprint.nodes).some((node: NodeDescriptor) => {
     return (
-      e.type === 'binding' &&
-      e.source === data.sourceName &&
-      e.target === data.targetName
+      node.type === 'connection' &&
+      node.connectionType === 'binding' &&
+      node.source === data.sourceName &&
+      node.target === data.targetName
     );
   });
 }
@@ -82,14 +79,11 @@ export function isValidQueueConnection(c: Connection, blueprint: Blueprint) {
     return false;
   }
 
-  if (!blueprint.edges) {
-    return true;
-  }
-
-  return !Object.values(blueprint.edges).some((e: EdgeDescriptor) => {
+  return !Object.values(blueprint.nodes).some((node: NodeDescriptor) => {
     return (
-      e.type === 'queue-dependency' &&
-      (e.source === data.sourceName || e.target === data.targetName)
+      node.type === 'connection' &&
+      node.connectionType === 'queue-dependency' &&
+      (node.source === data.sourceName || node.target === data.targetName)
     );
   });
 }

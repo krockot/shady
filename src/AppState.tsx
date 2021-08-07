@@ -14,7 +14,6 @@ export interface AppState {
 export const DEFAULT_APP_STATE: AppState = {
   blueprint: {
     nodes: {},
-    edges: {},
     shaders: {},
   },
   savedBlueprints: {

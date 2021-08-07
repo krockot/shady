@@ -35,7 +35,7 @@ export const BufferNode = (props: NodeProps<BufferNodeDescriptor>) => {
         <LabeledField label="Init">
           <select
             value={node.init}
-            style={{ width: '10em' }}
+            style={{ width: '9em' }}
             onChange={e =>
               data.onChange({
                 init: e.currentTarget.value as BufferInitializer,

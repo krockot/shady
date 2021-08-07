@@ -1,12 +1,13 @@
 import {
   Blueprint,
-  BufferBindingEdgeDescriptor,
+  BufferBindingNodeDescriptor,
   BufferNodeDescriptor,
   ComputeNodeDescriptor,
+  ConnectionNodeDescriptor,
   RenderNodeDescriptor,
-  SamplerBindingEdgeDescriptor,
+  SamplerBindingNodeDescriptor,
   SamplerNodeDescriptor,
-  TextureBindingEdgeDescriptor,
+  TextureBindingNodeDescriptor,
   TextureNodeDescriptor,
 } from './Blueprint';
 import { Gpu } from './Gpu';
@@ -174,40 +175,40 @@ export class Executable {
       bindings: Map<number, string>;
     }
 
-    const bufferBindingsByPass: Record<string, BufferBindingEdgeDescriptor[]> =
+    const bufferBindingsByPass: Record<string, BufferBindingNodeDescriptor[]> =
       {};
     const textureBindingsByPass: Record<
       string,
-      TextureBindingEdgeDescriptor[]
+      TextureBindingNodeDescriptor[]
     > = {};
     const samplerBindingsByPass: Record<
       string,
-      SamplerBindingEdgeDescriptor[]
+      SamplerBindingNodeDescriptor[]
     > = {};
-    Object.entries(this.blueprint_.edges ?? {}).forEach(([id, edge]) => {
-      if (edge.type !== 'binding') {
+    Object.entries(this.blueprint_.nodes).forEach(([id, node]) => {
+      if (node.type !== 'connection' || node.connectionType !== 'binding') {
         return;
       }
-      switch (edge.bindingType) {
+      switch (node.bindingType) {
         case 'buffer':
-          if (!bufferBindingsByPass[edge.target]) {
-            bufferBindingsByPass[edge.target] = [];
+          if (!bufferBindingsByPass[node.target]) {
+            bufferBindingsByPass[node.target] = [];
           }
-          bufferBindingsByPass[edge.target].push(edge);
+          bufferBindingsByPass[node.target].push(node);
           break;
 
         case 'texture':
-          if (!textureBindingsByPass[edge.target]) {
-            textureBindingsByPass[edge.target] = [];
+          if (!textureBindingsByPass[node.target]) {
+            textureBindingsByPass[node.target] = [];
           }
-          textureBindingsByPass[edge.target].push(edge);
+          textureBindingsByPass[node.target].push(node);
           break;
 
         case 'sampler':
-          if (!samplerBindingsByPass[edge.target]) {
-            samplerBindingsByPass[edge.target] = [];
+          if (!samplerBindingsByPass[node.target]) {
+            samplerBindingsByPass[node.target] = [];
           }
-          samplerBindingsByPass[edge.target].push(edge);
+          samplerBindingsByPass[node.target].push(node);
           break;
       }
     });
@@ -218,8 +219,8 @@ export class Executable {
       pipelineId: string,
       visibility: GPUShaderStageFlags
     ) => {
-      for (const edge of bufferBindingsByPass[pipelineId] ?? []) {
-        const descriptor = edge as BufferBindingEdgeDescriptor;
+      for (const node of bufferBindingsByPass[pipelineId] ?? []) {
+        const descriptor = node as BufferBindingNodeDescriptor;
         let usageFlags = 0;
         const entry: GPUBindGroupLayoutEntry = {
           binding: descriptor.binding,
@@ -232,7 +233,7 @@ export class Executable {
         const bindGroup = groups[group] ?? { layout: [], bindings: new Map() };
         groups[group] = bindGroup;
         bindGroup.layout.push(entry);
-        bindGroup.bindings.set(descriptor.binding, edge.source);
+        bindGroup.bindings.set(descriptor.binding, node.source);
 
         switch (descriptor.storageType) {
           case 'storage-read':
@@ -252,13 +253,13 @@ export class Executable {
         }
 
         if (usageFlags !== 0) {
-          bufferUsageFlags[edge.source] =
-            (bufferUsageFlags[edge.source] ?? 0) | usageFlags;
+          bufferUsageFlags[node.source] =
+            (bufferUsageFlags[node.source] ?? 0) | usageFlags;
         }
       }
 
-      for (const edge of textureBindingsByPass[pipelineId] ?? []) {
-        const descriptor = edge as TextureBindingEdgeDescriptor;
+      for (const node of textureBindingsByPass[pipelineId] ?? []) {
+        const descriptor = node as TextureBindingNodeDescriptor;
         const entry: GPUBindGroupLayoutEntry = {
           binding: descriptor.binding,
           visibility,
@@ -270,12 +271,12 @@ export class Executable {
         const bindGroup = groups[group] ?? { layout: [], bindings: new Map() };
         groups[group] = bindGroup;
         bindGroup.layout.push(entry);
-        bindGroup.bindings.set(descriptor.binding, edge.source);
+        bindGroup.bindings.set(descriptor.binding, node.source);
         entry.texture = {};
       }
 
-      for (const edge of samplerBindingsByPass[pipelineId] ?? []) {
-        const descriptor = edge as SamplerBindingEdgeDescriptor;
+      for (const node of samplerBindingsByPass[pipelineId] ?? []) {
+        const descriptor = node as SamplerBindingNodeDescriptor;
         const entry: GPUBindGroupLayoutEntry = {
           binding: descriptor.binding,
           visibility,
@@ -287,7 +288,7 @@ export class Executable {
         const bindGroup = groups[group] ?? { layout: [], bindings: new Map() };
         groups[group] = bindGroup;
         bindGroup.layout.push(entry);
-        bindGroup.bindings.set(descriptor.binding, edge.source);
+        bindGroup.bindings.set(descriptor.binding, node.source);
         entry.sampler = {};
       }
     };
@@ -297,6 +298,7 @@ export class Executable {
     const samplers: Record<string, SamplerNodeDescriptor> = {};
     const renders: Record<string, RenderNodeDescriptor> = {};
     const computes: Record<string, ComputeNodeDescriptor> = {};
+    const connections: Record<string, ConnectionNodeDescriptor> = {};
     for (const [id, node] of Object.entries(this.blueprint_.nodes)) {
       switch (node.type) {
         case 'buffer':
@@ -322,6 +324,10 @@ export class Executable {
         case 'compute':
           computes[id] = node;
           collectResourceUsage(id, GPUShaderStage.COMPUTE);
+          break;
+
+        case 'connection':
+          connections[id] = node;
           break;
       }
     }
@@ -382,7 +388,7 @@ export class Executable {
       this.textures_[id] = texture;
     }
 
-    for (const [id, node] of Object.entries(samplers)) {
+    for (const [id] of Object.entries(samplers)) {
       this.samplers_[id] = device.createSampler();
     }
 
@@ -532,15 +538,14 @@ export class Executable {
     }
 
     // Build an ordered list of passes based on the queueing dependency graph.
-    const edges = Object.values(this.blueprint_.edges ?? {});
     const targets: Map<string, string> = new Map();
     const startNodes: Set<string> = new Set(allPasses.keys());
-    for (const edge of edges) {
-      if (edge.type !== 'queue-dependency') {
+    for (const node of Object.values(connections)) {
+      if (node.connectionType !== 'queue-dependency') {
         continue;
       }
-      targets.set(edge.source, edge.target);
-      startNodes.delete(edge.target);
+      targets.set(node.source, node.target);
+      startNodes.delete(node.target);
     }
     if (startNodes.size === 0) {
       throw new Error('No usable passes compiled');

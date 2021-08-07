@@ -1,35 +1,28 @@
 export interface Blueprint {
   nodes: Record<string, NodeDescriptor>;
-  edges?: Record<string, EdgeDescriptor>;
   shaders: Record<string, Shader>;
 }
 
 export type NodeMap = Map<string, NodeDescriptor>;
 
 export type NodeDescriptor =
-  | RenderNodeDescriptor
-  | ComputeNodeDescriptor
+  | BufferBindingNodeDescriptor
   | BufferNodeDescriptor
+  | ComputeNodeDescriptor
+  | QueueDependencyNodeDescriptor
+  | RenderNodeDescriptor
+  | SamplerBindingNodeDescriptor
   | SamplerNodeDescriptor
+  | TextureBindingNodeDescriptor
   | TextureNodeDescriptor;
 
-export type EdgeDescriptor =
-  | BufferBindingEdgeDescriptor
-  | QueueDependencyEdgeDescriptor
-  | SamplerBindingEdgeDescriptor
-  | TextureBindingEdgeDescriptor;
-
 export interface NodeDescriptorBase {
-  type: 'buffer' | 'render' | 'compute' | 'texture' | 'sampler' | 'binding';
+  type: 'buffer' | 'render' | 'compute' | 'texture' | 'sampler' | 'connection';
   name: string;
   position: { x: number; y: number };
 }
 
-export interface PipelineNodeDescriptor extends NodeDescriptorBase {
-  bindings?: string[];
-}
-
-export interface RenderNodeDescriptor extends PipelineNodeDescriptor {
+export interface RenderNodeDescriptor extends NodeDescriptorBase {
   type: 'render';
 
   // TODO: Configuration for primitive state, depth/stencil, multisampling
@@ -51,7 +44,7 @@ export interface RenderNodeDescriptor extends PipelineNodeDescriptor {
   depthTest?: GPUCompareFunction;
 }
 
-export interface ComputeNodeDescriptor extends PipelineNodeDescriptor {
+export interface ComputeNodeDescriptor extends NodeDescriptorBase {
   type: 'compute';
   shader: string;
   entryPoint: string;
@@ -89,14 +82,17 @@ interface Shader {
   code: string;
 }
 
-export interface EdgeDescriptorBase {
-  type: 'binding' | 'queue-dependency';
+export type ConnectionType = 'binding' | 'queue-dependency';
+
+export interface ConnectionNodeDescriptor extends NodeDescriptorBase {
+  type: 'connection';
+  connectionType: ConnectionType;
   source: string;
   target: string;
 }
 
-export interface BindingEdgeDescriptorBase extends EdgeDescriptorBase {
-  type: 'binding';
+export interface BindingNodeDescriptorBase extends ConnectionNodeDescriptor {
+  connectionType: 'binding';
   bindingType: BindingType;
   group: number;
   binding: number;
@@ -104,39 +100,30 @@ export interface BindingEdgeDescriptorBase extends EdgeDescriptorBase {
 
 export type BufferBindingStorageType = 'storage-read' | 'storage' | 'uniform';
 
-export interface BufferBindingEdgeDescriptor extends BindingEdgeDescriptorBase {
+export interface BufferBindingNodeDescriptor extends BindingNodeDescriptorBase {
   bindingType: 'buffer';
   storageType: BufferBindingStorageType;
 }
 
-export interface TextureBindingEdgeDescriptor
-  extends BindingEdgeDescriptorBase {
+export interface TextureBindingNodeDescriptor
+  extends BindingNodeDescriptorBase {
   bindingType: 'texture';
 }
 
-export interface SamplerBindingEdgeDescriptor
-  extends BindingEdgeDescriptorBase {
+export interface SamplerBindingNodeDescriptor
+  extends BindingNodeDescriptorBase {
   bindingType: 'sampler';
 }
 
-export interface QueueDependencyEdgeDescriptor extends EdgeDescriptorBase {
-  type: 'queue-dependency';
+export interface QueueDependencyNodeDescriptor
+  extends ConnectionNodeDescriptor {
+  connectionType: 'queue-dependency';
 }
 
 export function canonicalize(blueprint: Blueprint) {
-  for (const [, edge] of Object.entries(blueprint.edges ?? {})) {
-    const d = edge as any;
-    if (d['sourceId']) {
-      d['source'] = d['sourceId'];
-    }
-    if (d['targetId']) {
-      d['target'] = d['targetId'];
-    }
-    if (d['bufferId']) {
-      d['source'] = d['bufferId'];
-    }
-    if (d['passId']) {
-      d['targetId'] = d['passId'];
+  for (const node of Object.values(blueprint.nodes)) {
+    if (!node.position) {
+      node.position = { x: 100, y: 100 };
     }
   }
 }

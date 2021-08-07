@@ -31,6 +31,8 @@ class App extends React.Component<Props, State> {
       compilationInfo: {},
     };
 
+    canonicalize(this.state.blueprint);
+
     this.frameProducer_ = new FrameProducer();
     this.frameProducer_.setBlueprint(this.state.blueprint);
   }

@@ -2,10 +2,10 @@ import './Node.css';
 
 import React from 'react';
 
-import { QueueDependencyEdgeDescriptor } from '../../gpu/Blueprint';
+import { QueueDependencyNodeDescriptor } from '../../gpu/Blueprint';
 import { makeEdgeType } from './EdgeTypeFactory';
 
-export const QueueDependencyEdge = makeEdgeType<QueueDependencyEdgeDescriptor>({
+export const QueueDependencyEdge = makeEdgeType<QueueDependencyNodeDescriptor>({
   width: 24,
   height: 24,
   render: data => (

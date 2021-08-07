@@ -8,30 +8,30 @@ import {
   EdgeProps,
 } from 'react-flow-renderer';
 
-import { Blueprint, EdgeDescriptorBase } from '../../gpu/Blueprint';
+import { Blueprint, ConnectionNodeDescriptor } from '../../gpu/Blueprint';
 
-type UpdateFn<DescriptorType extends EdgeDescriptorBase> = (
+type UpdateFn<DescriptorType extends ConnectionNodeDescriptor> = (
   update: Partial<DescriptorType>
 ) => void;
 
-interface EdgeData<DescriptorType extends EdgeDescriptorBase> {
+interface EdgeData<DescriptorType extends ConnectionNodeDescriptor> {
   blueprint: Blueprint;
-  edge: DescriptorType;
+  node: DescriptorType;
   onChange: UpdateFn<DescriptorType>;
   destroy: () => void;
 }
 
-type RenderFn<DescriptorType extends EdgeDescriptorBase> = (
+type RenderFn<DescriptorType extends ConnectionNodeDescriptor> = (
   data: EdgeData<DescriptorType>
 ) => ReactNode;
 
-interface Params<DescriptorType extends EdgeDescriptorBase> {
+interface Params<DescriptorType extends ConnectionNodeDescriptor> {
   render: RenderFn<DescriptorType>;
   width: number;
   height: number;
 }
 
-export function makeEdgeType<DescriptorType extends EdgeDescriptorBase>(
+export function makeEdgeType<DescriptorType extends ConnectionNodeDescriptor>(
   params: Params<DescriptorType>
 ) {
   return ({
@@ -63,7 +63,7 @@ export function makeEdgeType<DescriptorType extends EdgeDescriptorBase>(
       targetY,
     });
     const data = anyData as EdgeData<DescriptorType>;
-    const edge = data.edge;
+    const node = data.node;
     return (
       <>
         <path
@@ -79,7 +79,9 @@ export function makeEdgeType<DescriptorType extends EdgeDescriptorBase>(
           x={centerX - params.width / 2}
           y={centerY - params.height / 2}
         >
-          <div className={`Edge Edge-${edge.type}`}>{params.render(data)}</div>
+          <div className={`Edge Edge-${node.connectionType}`}>
+            {params.render(data)}
+          </div>
         </foreignObject>
       </>
     );
