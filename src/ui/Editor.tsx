@@ -29,26 +29,34 @@ export const Editor = (props: Props) => {
     props.onBlueprintChange();
   };
 
+  const refreshEditor = (ref: React.RefObject<CodeEditor>) => {
+    if (ref.current) {
+      ref.current.refresh();
+    }
+  };
+
   const shaders = Object.entries(props.blueprint.shaders);
+  const uniformsRef : React.RefObject<CodeEditor> = React.createRef();
   const refs: React.RefObject<CodeEditor>[] = shaders.map(() =>
     React.createRef()
   );
+
   return (
     <div className="Editor">
       <TabContainer
         tabs={[
           { key: 'Blueprint', title: 'Blueprint', mutable: false },
-          { key: 'Uniforms', title: 'Uniforms', mutable: false },
+          {
+            key: 'Uniforms',
+            title: 'Uniforms',
+            mutable: false,
+            onActivate: () => { refreshEditor(uniformsRef); },
+          },
           ...shaders.map(([id, shader], index) => ({
             key: id,
             title: shader.name,
             mutable: true,
-            onActivate: () => {
-              const editor = refs[index].current;
-              if (editor) {
-                editor.refresh();
-              }
-            },
+            onActivate: () => { refreshEditor(refs[index]); },
             onClose: () => removeShader(id),
             onRename: (newName: string) => renameShader(id, newName),
           })),
@@ -59,6 +67,7 @@ export const Editor = (props: Props) => {
           onChange={props.onBlueprintChange}
         />
         <CodeEditor
+          ref={uniformsRef}
           key="Uniforms"
           contents={BUILTIN_UNIFORMS_WGSL}
           mutable={false}
