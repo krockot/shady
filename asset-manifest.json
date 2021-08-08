@@ -12,9 +12,9 @@
     "static/js/4.817f700b.chunk.js.map": "/shady/static/js/4.817f700b.chunk.js.map",
     "static/js/5.762b1f20.chunk.js": "/shady/static/js/5.762b1f20.chunk.js",
     "static/js/5.762b1f20.chunk.js.map": "/shady/static/js/5.762b1f20.chunk.js.map",
-    "main.css": "/shady/static/css/main.91b5deeb.chunk.css",
-    "main.js": "/shady/static/js/main.6a234cf9.chunk.js",
-    "main.js.map": "/shady/static/js/main.6a234cf9.chunk.js.map",
+    "main.css": "/shady/static/css/main.59c32a2a.chunk.css",
+    "main.js": "/shady/static/js/main.c79e0318.chunk.js",
+    "main.js.map": "/shady/static/js/main.c79e0318.chunk.js.map",
     "runtime-main.js": "/shady/static/js/runtime-main.644c6fb4.js",
     "runtime-main.js.map": "/shady/static/js/runtime-main.644c6fb4.js.map",
     "static/css/8.797d2e00.chunk.css": "/shady/static/css/8.797d2e00.chunk.css",
@@ -252,14 +252,14 @@
     "static/js/123.a7d732f9.chunk.js.map": "/shady/static/js/123.a7d732f9.chunk.js.map",
     "index.html": "/shady/index.html",
     "static/css/8.797d2e00.chunk.css.map": "/shady/static/css/8.797d2e00.chunk.css.map",
-    "static/css/main.91b5deeb.chunk.css.map": "/shady/static/css/main.91b5deeb.chunk.css.map",
+    "static/css/main.59c32a2a.chunk.css.map": "/shady/static/css/main.59c32a2a.chunk.css.map",
     "static/js/8.5dc1a74a.chunk.js.LICENSE.txt": "/shady/static/js/8.5dc1a74a.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.644c6fb4.js",
     "static/css/8.797d2e00.chunk.css",
     "static/js/8.5dc1a74a.chunk.js",
-    "static/css/main.91b5deeb.chunk.css",
-    "static/js/main.6a234cf9.chunk.js"
+    "static/css/main.59c32a2a.chunk.css",
+    "static/js/main.c79e0318.chunk.js"
   ]
 }
