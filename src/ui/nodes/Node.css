@@ -1,8 +1,8 @@
 .Node {
   padding: 4px 0px 2px 0px;
-  background-color: #888;
-  border: solid #777 1px;
-  border-radius: 12px;
+  background-image: linear-gradient(20deg, #888, #ddd);
+  border: outset #aaa 2px;
+  border-radius: 8px 12px 12px 1px;
   display: flex;
   user-select: none;
   flex-direction: column;
@@ -14,11 +14,13 @@
 }
 
 .Node-buffer {
-  background-color: #9c9;
+  background-image: linear-gradient(20deg, #9c9, #dfd);
+  border-color: #beb;
 }
 
 .Node-render {
-  background-color: #c99;
+  background-image: linear-gradient(20deg, #955, #fdd);
+  border-color: #ebb;
 }
 
 .Node-render input[type='number'] {
@@ -27,7 +29,8 @@
 }
 
 .Node-compute {
-  background-color: #cce;
+  background-image: linear-gradient(20deg, #99b, #dff);
+  border-color: #eef;
 }
 
 .Node-compute .DispatchSize {
@@ -42,11 +45,13 @@
 }
 
 .Node-texture {
-  background-color: #da6;
+  background-image: linear-gradient(20deg, #d83, #feb);
+  border-color: #ec9;
 }
 
 .Node-sampler {
-  background-color: #dd9;
+  background-image: linear-gradient(20deg, #ee8, #fec);
+  border-color: #ffb;
 }
 
 .Node > .Title {
@@ -84,7 +89,7 @@
 
 .Node > .Content {
   border-radius: 3px;
-  background-color: #ffffffa0;
+  background-color: #ffffff80;
   text-align: right;
   margin: 4px;
   padding: 2px 2px 4px 2px;
@@ -183,7 +188,7 @@
 }
 
 .Node-connection select {
-  margin: 0 0 4px 0;
+  margin: 0 0 0 0;
   max-width: 114px;
 }
 
