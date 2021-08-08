@@ -25,5 +25,5 @@ export const DEFAULT_APP_STATE: AppState = {
     aspect: '1:1',
     resolution: { mode: 'pixel', pixelSize: 1 },
   },
-  codeMirrorTheme: 'monokai',
+  codeMirrorTheme: 'paraiso-dark',
 };
