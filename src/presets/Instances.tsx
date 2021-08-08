@@ -44,10 +44,12 @@ export const INSTANCES: Blueprint = {
   shaders: {
     vertex1: {
       name: 'Vertex',
+      uuid: 'e7338e5f-92c0-4d88-938a-36e2af8266df',
       code: VERTEX,
     },
     fragment1: {
       name: 'Fragment',
+      uuid: 'a68cc9ac-da25-471f-81ec-28b44c28eef3',
       code: FRAGMENT,
     },
   },

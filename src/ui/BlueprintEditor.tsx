@@ -11,6 +11,7 @@ import ReactFlow, {
   XYPosition,
 } from 'react-flow-renderer';
 
+import { randomUUID } from '../base/Uuid';
 import {
   Blueprint,
   BufferBindingStorageType,
@@ -246,7 +247,7 @@ export class BlueprintEditor extends React.Component<Props> {
   addShader_ = () => {
     const shaders = this.props.blueprint.shaders;
     const id = getUnusedKey(shaders, 'shader');
-    shaders[id] = { name: id, code: '' };
+    shaders[id] = { name: id, uuid: randomUUID(), code: '' };
     this.update_();
   };
 
@@ -264,6 +265,7 @@ export class BlueprintEditor extends React.Component<Props> {
 
   addBuffer_ = () => {
     this.addNode_('buffer', {
+      uuid: randomUUID(),
       size: 16384,
       position: { x: 100, y: 100 },
       init: 'zero',
@@ -272,6 +274,7 @@ export class BlueprintEditor extends React.Component<Props> {
 
   addTexture_ = () => {
     this.addNode_('texture', {
+      uuid: randomUUID(),
       position: { x: 100, y: 100 },
       size: { width: 1024, height: 1024 },
       format: 'rgba8unorm',
@@ -282,6 +285,7 @@ export class BlueprintEditor extends React.Component<Props> {
 
   addSampler_ = () => {
     this.addNode_('sampler', {
+      uuid: randomUUID(),
       position: { x: 100, y: 100 },
     });
   };
