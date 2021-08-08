@@ -88,15 +88,15 @@
 }
 
 .TabContainer .ContentArea .Content {
-}
-
-.TabContainer .ContentArea .Content.Active {
   flex: 1 1 auto;
 }
 
+.TabContainer .ContentArea .Content.Active {
+}
+
 .TabContainer .ContentArea .Content.Inactive {
-  visibility: hidden;
   position: absolute;
+  visibility: hidden;
   width: 10px;
   height: 10px;
 }

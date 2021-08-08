@@ -8,6 +8,7 @@ interface TabDescriptor {
   key: string;
   title: string;
   mutable: boolean;
+  onActivate?: () => void;
   onClose?: () => void;
   onRename?: (newName: string) => void;
 }
@@ -33,6 +34,11 @@ export class TabContainer extends React.Component<Props, State> {
     const numChildren = React.Children.count(this.props.children);
     if (this.state.activeTab >= numChildren) {
       this.setState({ activeTab: numChildren - 1 });
+    } else {
+      const tab = this.props.tabs[this.state.activeTab];
+      if (tab.onActivate) {
+        tab.onActivate();
+      }
     }
   }
 
@@ -58,16 +64,13 @@ export class TabContainer extends React.Component<Props, State> {
   }
 
   renderTabs_() {
-    const children = React.Children.toArray(this.props.children);
     return (
       <div className="TabStrip">
         {this.props.tabs.map((tab, i) => {
           const active = this.state.activeTab === i;
-          const z = this.props.tabs.length - i;
           return (
             <div
               key={tab.key + tab.title}
-              style={{ zIndex: active ? children.length : z }}
               className={`${active ? 'Tab Active' : 'Tab Inactive'}
                           ${tab.mutable ? 'Removable' : 'Permanent'}`}
               onClick={_ => this.setActiveTab_(i)}

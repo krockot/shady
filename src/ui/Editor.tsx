@@ -18,60 +18,68 @@ interface Props {
   codeMirrorTheme: string;
 }
 
-export class Editor extends React.Component<Props> {
-  render() {
-    const shaders = Object.entries(this.props.blueprint.shaders);
-    return (
-      <div className="Editor">
-        <TabContainer
-          tabs={[
-            { key: 'Blueprint', title: 'Blueprint', mutable: false },
-            { key: 'Uniforms', title: 'Uniforms', mutable: false },
-            ...shaders.map(([id, shader]) => ({
-              key: id,
-              title: shader.name,
-              mutable: true,
-              onClose: () => this.removeShader_(id),
-              onRename: (newName: string) => this.renameShader_(id, newName),
-            })),
-          ]}
-        >
-          <BlueprintEditor
-            blueprint={this.props.blueprint}
-            onChange={this.props.onBlueprintChange}
-          />
+export const Editor = (props: Props) => {
+  const removeShader = (id: string) => {
+    delete props.blueprint.shaders[id];
+    props.onBlueprintChange();
+  };
+
+  const renameShader = (id: string, newName: string) => {
+    props.blueprint.shaders[id].name = newName;
+    props.onBlueprintChange();
+  };
+
+  const shaders = Object.entries(props.blueprint.shaders);
+  const refs: React.RefObject<CodeEditor>[] = shaders.map(() =>
+    React.createRef()
+  );
+  return (
+    <div className="Editor">
+      <TabContainer
+        tabs={[
+          { key: 'Blueprint', title: 'Blueprint', mutable: false },
+          { key: 'Uniforms', title: 'Uniforms', mutable: false },
+          ...shaders.map(([id, shader], index) => ({
+            key: id,
+            title: shader.name,
+            mutable: true,
+            onActivate: () => {
+              const editor = refs[index].current;
+              if (editor) {
+                editor.refresh();
+              }
+            },
+            onClose: () => removeShader(id),
+            onRename: (newName: string) => renameShader(id, newName),
+          })),
+        ]}
+      >
+        <BlueprintEditor
+          blueprint={props.blueprint}
+          onChange={props.onBlueprintChange}
+        />
+        <CodeEditor
+          key="Uniforms"
+          contents={BUILTIN_UNIFORMS_WGSL}
+          mutable={false}
+          onChange={() => ({})}
+          theme={props.codeMirrorTheme}
+        />
+        {shaders.map(([id, shader], index) => (
           <CodeEditor
-            key="Uniforms"
-            contents={BUILTIN_UNIFORMS_WGSL}
-            mutable={false}
-            onChange={() => ({})}
-            theme={this.props.codeMirrorTheme}
+            key={id}
+            ref={refs[index]}
+            compilationInfo={props.compilationInfo[id]}
+            contents={shader.code}
+            mutable={true}
+            onChange={code => {
+              shader.code = code;
+              props.onBlueprintChange();
+            }}
+            theme={props.codeMirrorTheme}
           />
-          {shaders.map(([id, shader]) => (
-            <CodeEditor
-              key={id}
-              compilationInfo={this.props.compilationInfo[id]}
-              contents={shader.code}
-              mutable={true}
-              onChange={code => {
-                shader.code = code;
-                this.props.onBlueprintChange();
-              }}
-              theme={this.props.codeMirrorTheme}
-            />
-          ))}
-        </TabContainer>
-      </div>
-    );
-  }
-
-  removeShader_ = (id: string) => {
-    delete this.props.blueprint.shaders[id];
-    this.props.onBlueprintChange();
-  };
-
-  renameShader_ = (id: string, newName: string) => {
-    this.props.blueprint.shaders[id].name = newName;
-    this.props.onBlueprintChange();
-  };
-}
+        ))}
+      </TabContainer>
+    </div>
+  );
+};

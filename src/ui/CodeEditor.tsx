@@ -2,7 +2,7 @@ import './CodeEditor.css';
 
 import 'codemirror/keymap/sublime';
 
-import CodeMirror from '@uiw/react-codemirror';
+import CodeMirror, { IEditorInstance } from '@uiw/react-codemirror';
 import React from 'react';
 
 import { BUILTIN_UNIFORMS_WGSL } from '../gpu/BuiltinUniforms';
@@ -20,16 +20,26 @@ interface Props {
 
 export class CodeEditor extends React.Component<Props> {
   private isDecorating_: boolean;
+  private editorRef_: React.RefObject<IEditorInstance>;
 
   constructor(props: Props) {
     super(props);
     this.isDecorating_ = false;
+    this.editorRef_ = React.createRef();
+  }
+
+  refresh() {
+    const cm = this.editorRef_.current;
+    if (cm) {
+      cm.editor.refresh();
+    }
   }
 
   render() {
     return (
       <div className="CodeEditor">
         <CodeMirror
+          ref={this.editorRef_}
           value={this.props.contents}
           onChange={this.onChange_}
           onUpdate={this.onUpdate_}
