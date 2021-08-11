@@ -5,8 +5,8 @@ import React from 'react';
 import { LocalPersistent } from './base/LocalPersistent';
 import { deepCopy } from './base/Util';
 import { Blueprint, canonicalize } from './gpu/Blueprint';
-import { ShaderCompilationInfo } from './gpu/Executable';
 import { FrameProducer } from './gpu/FrameProducer';
+import { ShaderCompilationResults } from './gpu/Program';
 import { ControlPanel } from './ui/ControlPanel';
 import { Display, DisplayConfig } from './ui/Display';
 import { Editor } from './ui/Editor';
@@ -17,7 +17,7 @@ interface Props {
 }
 
 interface State extends AppState {
-  compilationInfo: Record<string, ShaderCompilationInfo>;
+  compilationResults: ShaderCompilationResults;
 }
 
 class App extends React.Component<Props, State> {
@@ -28,7 +28,7 @@ class App extends React.Component<Props, State> {
 
     this.state = {
       ...this.props.appState.value,
-      compilationInfo: {},
+      compilationResults: new Map(),
     };
 
     canonicalize(this.state.blueprint);
@@ -66,10 +66,8 @@ class App extends React.Component<Props, State> {
     this.frameProducer_.setBlueprint(this.state.blueprint);
   };
 
-  onShadersCompiled_ = (
-    compilationInfo: Record<string, ShaderCompilationInfo>
-  ) => {
-    this.setState({ compilationInfo });
+  onShadersCompiled_ = (compilationResults: ShaderCompilationResults) => {
+    this.setState({ compilationResults });
   };
 
   onSaveBlueprint_ = (name: string) => {
@@ -136,7 +134,7 @@ class App extends React.Component<Props, State> {
           </div>
           <div className="App-editor">
             <Editor
-              compilationInfo={this.state.compilationInfo}
+              compilationResults={this.state.compilationResults}
               blueprint={this.state.blueprint}
               onBlueprintChange={this.onBlueprintChange_}
               codeMirrorTheme={this.state.codeMirrorTheme}

@@ -4,7 +4,7 @@ import React from 'react';
 
 import { Blueprint } from '../gpu/Blueprint';
 import { BUILTIN_UNIFORMS_WGSL } from '../gpu/BuiltinUniforms';
-import { ShaderCompilationInfo } from '../gpu/Executable';
+import { ShaderCompilationResults } from '../gpu/Program';
 import { BlueprintEditor } from './BlueprintEditor';
 import { CodeEditor } from './CodeEditor';
 import { TabContainer } from './TabContainer';
@@ -13,7 +13,7 @@ interface Props {
   blueprint: Blueprint;
   onBlueprintChange: () => void;
 
-  compilationInfo: Record<string, ShaderCompilationInfo>;
+  compilationResults: ShaderCompilationResults;
 
   codeMirrorTheme: string;
 }
@@ -36,7 +36,7 @@ export const Editor = (props: Props) => {
   };
 
   const shaders = Object.entries(props.blueprint.shaders);
-  const uniformsRef : React.RefObject<CodeEditor> = React.createRef();
+  const uniformsRef: React.RefObject<CodeEditor> = React.createRef();
   const refs: React.RefObject<CodeEditor>[] = shaders.map(() =>
     React.createRef()
   );
@@ -50,13 +50,17 @@ export const Editor = (props: Props) => {
             key: 'Uniforms',
             title: 'Uniforms',
             mutable: false,
-            onActivate: () => { refreshEditor(uniformsRef); },
+            onActivate: () => {
+              refreshEditor(uniformsRef);
+            },
           },
           ...shaders.map(([id, shader], index) => ({
             key: id,
             title: shader.name,
             mutable: true,
-            onActivate: () => { refreshEditor(refs[index]); },
+            onActivate: () => {
+              refreshEditor(refs[index]);
+            },
             onClose: () => removeShader(id),
             onRename: (newName: string) => renameShader(id, newName),
           })),
@@ -78,7 +82,7 @@ export const Editor = (props: Props) => {
           <CodeEditor
             key={id}
             ref={refs[index]}
-            compilationInfo={props.compilationInfo[id]}
+            compilationMessages={props.compilationResults.get(shader.uuid)}
             contents={shader.code}
             mutable={true}
             onChange={code => {

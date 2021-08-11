@@ -1,7 +1,7 @@
 import { deepCopy, deepEquals } from '../base/Util';
 import { Blueprint } from './Blueprint';
-import { CompileResult, Executable, ShaderCompilationInfo } from './Executable';
 import { Gpu } from './Gpu';
+import { Program, ShadersCompiledHandler } from './Program';
 
 const getContextFromCanvas = (
   canvas: HTMLCanvasElement
@@ -11,7 +11,6 @@ const getContextFromCanvas = (
 
 export class FrameProducer {
   private gpu_: Gpu;
-  private preferredTargetTextureFormat_: GPUTextureFormat;
 
   private lastUsedContext_?: GPUCanvasContext;
   private lastUsedResolution_?: GPUExtent3DDict;
@@ -21,30 +20,25 @@ export class FrameProducer {
   private frame_: number;
 
   private blueprint_: null | Blueprint;
-  private lastCompiledDescriptor_: null | Blueprint;
-  private mostRecentPendingCompile_: null | Promise<CompileResult>;
-  private executable_: null | Executable;
+  private program_: null | Program;
 
-  onShadersCompiled?: (info: Record<string, ShaderCompilationInfo>) => void;
+  private onShadersCompiled_?: ShadersCompiledHandler;
 
   constructor() {
     this.gpu_ = new Gpu();
     this.gpu_.onAcquired = this.onGpuAcquired_;
-
     this.frame_ = 0;
-
     this.blueprint_ = null;
-    this.lastCompiledDescriptor_ = null;
-    this.mostRecentPendingCompile_ = null;
-    this.executable_ = null;
-
-    this.preferredTargetTextureFormat_ = 'bgra8unorm';
+    this.program_ = null;
   }
 
-  reconfigure() {
-    this.lastCompiledDescriptor_ = null;
-    this.executable_ = null;
-    this.tryCompile_();
+  reconfigure() {}
+
+  set onShadersCompiled(handler: ShadersCompiledHandler) {
+    this.onShadersCompiled_ = handler;
+    if (this.program_) {
+      this.program_.onShadersCompiled = handler;
+    }
   }
 
   setBlueprint(blueprint: Blueprint) {
@@ -53,18 +47,19 @@ export class FrameProducer {
     }
 
     this.blueprint_ = deepCopy(blueprint);
-    this.executable_ = null;
-    this.tryCompile_();
+    if (this.program_) {
+      this.program_.setBlueprint(blueprint);
+    }
   }
 
   stop() {
     this.blueprint_ = null;
-    this.executable_ = null;
+    this.program_ = null;
   }
 
   render(canvas: HTMLCanvasElement, resolution: GPUExtent3DDict) {
-    if (!this.gpu_ || !this.gpu_.isAcquired) {
-      return null;
+    if (!this.gpu_ || !this.gpu_.isAcquired || !this.program_) {
+      return;
     }
 
     const context = getContextFromCanvas(canvas);
@@ -93,18 +88,6 @@ export class FrameProducer {
       this.lastUsedResolution_ = { ...resolution };
     }
 
-    if (this.preferredTargetTextureFormat_ !== outputFormat) {
-      this.preferredTargetTextureFormat_ = outputFormat;
-      this.executable_ = null;
-    }
-
-    if (!this.executable_) {
-      if (!this.mostRecentPendingCompile_) {
-        this.tryCompile_();
-      }
-      return;
-    }
-
     // This is an egregious hack to get consistent nearest-neighbor filtering on
     // a scaled-up canvas texture in Chrome. See crbug.com/1044590.
     canvas.style.filter = 'blur(0px)';
@@ -115,49 +98,26 @@ export class FrameProducer {
     }
     const delta = now - (this.lastFrameTime_ ?? now);
     this.lastFrameTime_ = now;
-    this.executable_.updateUniforms({
+
+    this.program_.updateUniforms({
       time: (now - this.startTime_) / 1000,
       timeDelta: delta / 1000,
       frame: this.frame_++,
       resolution,
     });
-    this.executable_.execute(context.getCurrentTexture(), resolution);
+    this.program_.run(context.getCurrentTexture(), resolution, outputFormat);
   }
 
   onGpuAcquired_ = () => {
-    this.executable_ = null;
-    this.tryCompile_();
-  };
-
-  tryCompile_ = async () => {
-    if (!this.gpu_.isAcquired || !this.blueprint_) {
-      return;
+    if (this.program_) {
+      this.program_.dispose();
     }
-
-    if (
-      this.lastCompiledDescriptor_ &&
-      deepEquals(this.lastCompiledDescriptor_, this.blueprint_)
-    ) {
-      return;
+    this.program_ = new Program(this.gpu_.device!);
+    if (this.blueprint_) {
+      this.program_.setBlueprint(this.blueprint_);
     }
-
-    const descriptor = this.blueprint_;
-    const thisCompile = Executable.compile(
-      this.gpu_,
-      descriptor,
-      this.preferredTargetTextureFormat_
-    );
-    this.mostRecentPendingCompile_ = thisCompile;
-    const result = await thisCompile;
-    if (thisCompile !== this.mostRecentPendingCompile_) {
-      return;
+    if (this.onShadersCompiled_) {
+      this.program_.onShadersCompiled = this.onShadersCompiled_;
     }
-
-    this.lastCompiledDescriptor_ = descriptor;
-    this.mostRecentPendingCompile_ = null;
-    if (this.onShadersCompiled) {
-      this.onShadersCompiled(result.shaderInfo);
-    }
-    this.executable_ = result.executable ?? null;
   };
 }

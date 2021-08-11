@@ -5,13 +5,10 @@ import 'codemirror/keymap/sublime';
 import CodeMirror, { IEditorInstance } from '@uiw/react-codemirror';
 import React from 'react';
 
-import { BUILTIN_UNIFORMS_WGSL } from '../gpu/BuiltinUniforms';
-import { ShaderCompilationInfo } from '../gpu/Executable';
-
-const BUILTIN_WGSL_NUM_LINES = BUILTIN_UNIFORMS_WGSL.split(/\r\n|\r|\n/).length;
+import { ShaderCompilationMessage } from '../gpu/program/Shader';
 
 interface Props {
-  compilationInfo?: ShaderCompilationInfo;
+  compilationMessages?: ShaderCompilationMessage[];
   contents: string;
   mutable: boolean;
   onChange: (contents: string) => void;
@@ -67,9 +64,9 @@ export class CodeEditor extends React.Component<Props> {
     this.isDecorating_ = true;
     e.getAllMarks().forEach(m => m.clear());
     e.clearGutter('GutterMessages');
-    for (const m of this.props.compilationInfo?.messages ?? []) {
+    for (const m of this.props.compilationMessages ?? []) {
       const className = `MarkedText-${m.type}`;
-      const line = m.lineNum - BUILTIN_WGSL_NUM_LINES;
+      const line = m.lineNum;
       e.markText(
         { line, ch: m.linePos - 1 },
         { line, ch: m.linePos + m.length - 1 },

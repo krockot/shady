@@ -2,7 +2,7 @@ import { randomUUID } from '../base/Uuid';
 
 export interface Blueprint {
   nodes: Record<string, NodeDescriptor>;
-  shaders: Record<string, Shader>;
+  shaders: Record<string, ShaderDescriptor>;
 }
 
 export type NodeMap = Map<string, NodeDescriptor>;
@@ -91,7 +91,7 @@ export interface SamplerNodeDescriptor extends NodeDescriptorBase {
   // TODO: Filtering, addressing, clamping, comparison, anisotropy.
 }
 
-interface Shader {
+export interface ShaderDescriptor {
   name: string;
   uuid: string;
   code: string;
@@ -146,8 +146,12 @@ export function canonicalize(blueprint: Blueprint) {
   const data = blueprint as any;
   for (const n of Object.values(data.nodes)) {
     const node = n as any;
-    if ((node.type === 'buffer' || node.type === 'texture' ||
-         node.type === 'sampler') && !node.uuid) {
+    if (
+      (node.type === 'buffer' ||
+        node.type === 'texture' ||
+        node.type === 'sampler') &&
+      !node.uuid
+    ) {
       node.uuid = randomUUID();
     }
   }
