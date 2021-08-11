@@ -286,17 +286,14 @@ function computePassOrder(passes: PassMap, queueDeps: QueueDeps): string[] {
   // The initial working set is the set of all passes with no incoming queue
   // dependencies.
   const startNodes: Set<string> = new Set(passes.keys());
-  for (const target of Array.from(queueDeps.incoming.keys())) {
+  for (const target of queueDeps.incoming.keys()) {
     startNodes.delete(target);
   }
-  if (startNodes.size === 0) {
-    return [];
-  }
 
-  // Iteratively append remaining nodes as their dependencies are met.
+  // Iteratively append nodes as their dependencies are met.
   const passOrder: string[] = [];
   let thisPhase = Array.from(startNodes);
-  for (;;) {
+  while (thisPhase.length !== 0) {
     passOrder.push(...thisPhase);
     const nextPhase: string[] = [];
     for (const added of thisPhase) {
@@ -304,7 +301,7 @@ function computePassOrder(passes: PassMap, queueDeps: QueueDeps): string[] {
       if (!targets) {
         continue;
       }
-      for (const target of Array.from(targets.values())) {
+      for (const target of targets.values()) {
         const incomingDeps = queueDeps.incoming.get(target);
         if (incomingDeps) {
           incomingDeps.delete(added);
@@ -314,9 +311,7 @@ function computePassOrder(passes: PassMap, queueDeps: QueueDeps): string[] {
         }
       }
     }
-    if (nextPhase.length === 0) {
-      return passOrder;
-    }
     thisPhase = nextPhase;
   }
+  return passOrder;
 }
