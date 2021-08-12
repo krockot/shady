@@ -2,6 +2,7 @@ import { toByteArray, fromByteArray } from 'base64-js';
 
 import { deepCopy } from '../base/Util';
 
+export type ID = NodeID | ShaderID;
 export type NodeID = string;
 export type ShaderID = string;
 
@@ -195,7 +196,6 @@ function deserializeV1(
   serialized: SerializedBlueprintV1,
   blueprint: Blueprint
 ) {
-  console.log(serialized);
   for (const node of serialized.nodes) {
     blueprint.nodes[node.id] = deepCopy(node);
   }

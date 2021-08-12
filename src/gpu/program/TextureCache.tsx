@@ -1,11 +1,8 @@
 import { TextureNodeDescriptor } from '../Blueprint';
-import {
-  CompiledResource,
-  CompiledResourceCache,
-} from './CompiledResourceCache';
+import { Resource, ResourceCache } from './ResourceCache';
 import { ProgramMap } from './ProgramMap';
 
-export class Texture implements CompiledResource {
+export class Texture implements Resource {
   private readonly imageData_: Blob;
   private readonly bitmap_: ImageBitmap;
   private readonly texture_: GPUTexture;
@@ -40,6 +37,12 @@ export class TextureCompiler {
     this.device_ = device;
   }
 
+  getCurrentDescriptors(
+    programMap: ProgramMap
+  ): Iterable<TextureNodeDescriptor> {
+    return programMap.textures.values();
+  }
+
   needsRecompile(
     newDescriptor: TextureNodeDescriptor,
     texture: Texture,
@@ -72,15 +75,10 @@ export class TextureCompiler {
   }
 }
 
-export type CompiledTextureCache = CompiledResourceCache<
-  TextureNodeDescriptor,
-  Texture
->;
+export type TextureCache = ResourceCache<TextureNodeDescriptor, Texture>;
 
-export function createCompiledTextureCache(
-  device: GPUDevice
-): CompiledTextureCache {
-  return new CompiledResourceCache<TextureNodeDescriptor, Texture>(
+export function createTextureCache(device: GPUDevice): TextureCache {
+  return new ResourceCache<TextureNodeDescriptor, Texture>(
     new TextureCompiler(device)
   );
 }

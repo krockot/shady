@@ -5,7 +5,7 @@ import 'codemirror/keymap/sublime';
 import CodeMirror, { IEditorInstance } from '@uiw/react-codemirror';
 import React from 'react';
 
-import { ShaderCompilationMessage } from '../gpu/program/Shader';
+import { ShaderCompilationMessage } from '../gpu/program/ShaderCache';
 
 interface Props {
   compilationMessages?: ShaderCompilationMessage[];

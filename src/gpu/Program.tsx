@@ -1,8 +1,8 @@
 import { Blueprint, ShaderID } from './Blueprint';
-import { CompiledResourceBundle } from './program/CompiledResourceBundle';
+import { ResourceBundle } from './program/ResourceBundle';
 import { Executable } from './program/Executable';
 import { linkProgram } from './program/Linker';
-import { ShaderCompilationMessage } from './program/Shader';
+import { ShaderCompilationMessage } from './program/ShaderCache';
 
 export type ShaderCompilationResults = Map<
   ShaderID,
@@ -16,7 +16,7 @@ export type ShadersCompiledHandler = (
 export class Program {
   private readonly device_: GPUDevice;
   private readonly builtinUniforms_: GPUBuffer;
-  private resources_: CompiledResourceBundle;
+  private resources_: ResourceBundle;
   private executable_: null | Executable;
   private blueprint_: null | Blueprint;
   private outputFormat_: GPUTextureFormat;
@@ -30,7 +30,7 @@ export class Program {
     });
     this.executable_ = null;
     this.blueprint_ = null;
-    this.resources_ = new CompiledResourceBundle(device);
+    this.resources_ = new ResourceBundle(device);
     this.outputFormat_ = 'bgra8unorm';
     this.onShadersCompiled_ = null;
   }
@@ -45,10 +45,7 @@ export class Program {
 
   dispose() {
     this.builtinUniforms_.destroy();
-    this.resources_.shaders.dispose();
-    this.resources_.buffers.dispose();
-    this.resources_.textures.dispose();
-    this.resources_.samplers.dispose();
+    this.resources_.dispose();
   }
 
   setBlueprint(blueprint: Blueprint) {
@@ -90,10 +87,10 @@ export class Program {
 
   async compile_() {
     const blueprint = this.blueprint_!;
-    this.resources_ = await this.resources_.compile(blueprint);
+    await this.resources_.update(blueprint);
     if (this.onShadersCompiled_) {
       const results = new Map();
-      for (const [id, shader] of this.resources_.shaders.entries) {
+      for (const [id, shader] of this.resources_.shaders.entries()) {
         results.set(id, shader.messages);
       }
       this.onShadersCompiled_(results);

@@ -4,7 +4,7 @@ import {
   NodeID,
   RenderNodeDescriptor,
 } from '../Blueprint';
-import { CompiledResourceBundle } from './CompiledResourceBundle';
+import { ResourceBundle } from './ResourceBundle';
 import {
   LinkedComputePass,
   LinkedPass,
@@ -20,7 +20,7 @@ interface LinkedBindings {
 
 function getResourceForBinding(
   entry: BindGroupEntry,
-  resources: CompiledResourceBundle
+  resources: ResourceBundle
 ): null | GPUBindingResource {
   const node = entry.node;
   switch (node.type) {
@@ -53,7 +53,7 @@ function getResourceForBinding(
 function linkBindings(
   passId: NodeID,
   device: GPUDevice,
-  resources: CompiledResourceBundle,
+  resources: ResourceBundle,
   visibility: GPUShaderStageFlags,
   builtinUniforms: GPUBuffer
 ): LinkedBindings {
@@ -117,7 +117,7 @@ function linkRenderPass(
   node: RenderNodeDescriptor,
   builtinUniforms: GPUBuffer,
   outputFormat: GPUTextureFormat,
-  resources: CompiledResourceBundle,
+  resources: ResourceBundle,
   blueprint: Blueprint
 ): null | LinkedRenderPass {
   if (resources.programMap === null) {
@@ -197,7 +197,7 @@ function linkComputePass(
   id: NodeID,
   node: ComputeNodeDescriptor,
   builtinUniforms: GPUBuffer,
-  resources: CompiledResourceBundle,
+  resources: ResourceBundle,
   blueprint: Blueprint
 ): null | LinkedComputePass {
   if (resources.programMap === null) {
@@ -241,7 +241,7 @@ function linkPass(
   node: PassNode,
   builtinUniforms: GPUBuffer,
   outputFormat: GPUTextureFormat,
-  resources: CompiledResourceBundle,
+  resources: ResourceBundle,
   blueprint: Blueprint
 ): null | LinkedPass {
   if (node.type === 'render') {
@@ -269,7 +269,7 @@ export function linkProgram(
   device: GPUDevice,
   builtinUniforms: GPUBuffer,
   outputFormat: GPUTextureFormat,
-  resources: CompiledResourceBundle,
+  resources: ResourceBundle,
   blueprint: Blueprint
 ): null | Executable {
   if (resources.programMap === null) {

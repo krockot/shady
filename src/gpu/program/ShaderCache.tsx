@@ -1,9 +1,6 @@
 import { ShaderDescriptor } from '../Blueprint';
 import { BUILTIN_UNIFORMS_WGSL } from '../BuiltinUniforms';
-import {
-  CompiledResource,
-  CompiledResourceCache,
-} from './CompiledResourceCache';
+import { Resource, ResourceCache } from './ResourceCache';
 import { ProgramMap } from './ProgramMap';
 
 const BUILTIN_WGSL_NUM_LINES = BUILTIN_UNIFORMS_WGSL.split(/\r\n|\r|\n/).length;
@@ -24,7 +21,7 @@ export interface ShaderCompilationResult {
   messages: ShaderCompilationMessage[];
 }
 
-export class Shader implements CompiledResource {
+export class Shader implements Resource {
   private readonly code_: string;
   private readonly module_: null | GPUShaderModule;
   private readonly messages_: ShaderCompilationMessage[];
@@ -57,6 +54,10 @@ export class ShaderCompiler {
 
   constructor(device: GPUDevice) {
     this.device_ = device;
+  }
+
+  getCurrentDescriptors(programMap: ProgramMap): Iterable<ShaderDescriptor> {
+    return programMap.shaders.values();
   }
 
   needsRecompile(
@@ -92,15 +93,10 @@ export class ShaderCompiler {
   }
 }
 
-export type CompiledShaderCache = CompiledResourceCache<
-  ShaderDescriptor,
-  Shader
->;
+export type ShaderCache = ResourceCache<ShaderDescriptor, Shader>;
 
-export function createCompiledShaderCache(
-  device: GPUDevice
-): CompiledShaderCache {
-  return new CompiledResourceCache<ShaderDescriptor, Shader>(
+export function createShaderCache(device: GPUDevice): ShaderCache {
+  return new ResourceCache<ShaderDescriptor, Shader>(
     new ShaderCompiler(device)
   );
 }

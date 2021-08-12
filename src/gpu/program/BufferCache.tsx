@@ -1,8 +1,5 @@
 import { BufferInitializer, BufferNodeDescriptor } from '../Blueprint';
-import {
-  CompiledResource,
-  CompiledResourceCache,
-} from './CompiledResourceCache';
+import { Resource, ResourceCache } from './ResourceCache';
 import { ProgramMap } from './ProgramMap';
 
 function fillRandomUint32Array(data: Uint32Array) {
@@ -13,7 +10,7 @@ function fillRandomUint32Array(data: Uint32Array) {
   }
 }
 
-export class Buffer implements CompiledResource {
+export class Buffer implements Resource {
   private readonly size_: number;
   private readonly init_: BufferInitializer;
   private readonly usage_: GPUBufferUsageFlags;
@@ -49,11 +46,17 @@ export class Buffer implements CompiledResource {
   }
 }
 
-export class BufferCompiler {
+class BufferCompiler {
   private readonly device_: GPUDevice;
 
   constructor(device: GPUDevice) {
     this.device_ = device;
+  }
+
+  getCurrentDescriptors(
+    programMap: ProgramMap
+  ): Iterable<BufferNodeDescriptor> {
+    return programMap.buffers.values();
   }
 
   needsRecompile(
@@ -107,15 +110,10 @@ export class BufferCompiler {
   }
 }
 
-export type CompiledBufferCache = CompiledResourceCache<
-  BufferNodeDescriptor,
-  Buffer
->;
+export type BufferCache = ResourceCache<BufferNodeDescriptor, Buffer>;
 
-export function createCompiledBufferCache(
-  device: GPUDevice
-): CompiledBufferCache {
-  return new CompiledResourceCache<BufferNodeDescriptor, Buffer>(
+export function createBufferCache(device: GPUDevice): BufferCache {
+  return new ResourceCache<BufferNodeDescriptor, Buffer>(
     new BufferCompiler(device)
   );
 }
