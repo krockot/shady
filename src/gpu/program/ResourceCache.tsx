@@ -25,7 +25,12 @@ export interface ResourceCompiler<
   ): Promise<null | ResourceType>;
 }
 
-type Cache<ResourceType extends Resource> = Map<ID, null | ResourceType>;
+type Cache<ResourceType extends Resource> = Map<ID, ResourceType>;
+
+interface PendingUpdate<ResourceType extends Resource> {
+  id: string;
+  update: Promise<null | ResourceType>;
+}
 
 export class ResourceCache<
   DescriptorType extends ResourceDescriptor,
@@ -44,9 +49,7 @@ export class ResourceCache<
   }
 
   entries() {
-    return Array.from(this.cache_.entries()).filter(
-      ([key, value]) => value !== null
-    ) as [[ID, ResourceType]];
+    return this.cache_.entries();
   }
 
   get(id: ID): null | ResourceType {
@@ -56,7 +59,7 @@ export class ResourceCache<
   replace(newCache: ResourceCache<DescriptorType, ResourceType>) {
     for (const [id, resource] of this.cache_.entries()) {
       const newResource = newCache.get(id);
-      if (!newResource && resource !== null) {
+      if (!newResource) {
         resource.dispose();
       }
     }
@@ -65,9 +68,7 @@ export class ResourceCache<
 
   dispose() {
     for (const resource of Object.values(this.cache_)) {
-      if (resource !== null) {
-        resource.dispose();
-      }
+      resource.dispose();
     }
   }
 
@@ -77,7 +78,7 @@ export class ResourceCache<
     const newCache = new ResourceCache<DescriptorType, ResourceType>(
       this.compiler_
     );
-    const pendingUpdates: Map<ID, Promise<null | ResourceType>> = new Map();
+    const pendingUpdates: PendingUpdate<ResourceType>[] = [];
     for (const descriptor of this.compiler_.getCurrentDescriptors(programMap)) {
       const entry = this.cache_.get(descriptor.id);
       if (
@@ -86,15 +87,18 @@ export class ResourceCache<
       ) {
         newCache.cache_.set(descriptor.id, entry);
       } else {
-        pendingUpdates.set(
-          descriptor.id,
-          this.compiler_.compile(descriptor, programMap)
-        );
+        pendingUpdates.push({
+          id: descriptor.id,
+          update: this.compiler_.compile(descriptor, programMap),
+        });
       }
     }
 
-    for (const [id, update] of pendingUpdates.entries()) {
-      newCache.cache_.set(id, await update);
+    for (const { id, update } of pendingUpdates) {
+      const newResource = await update;
+      if (newResource !== null) {
+        newCache.cache_.set(id, newResource);
+      }
     }
     return newCache;
   }
