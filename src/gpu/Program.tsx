@@ -5,7 +5,7 @@ import {
 } from './program/CompiledResourceBundle';
 import { Executable } from './program/Executable';
 import { linkProgram } from './program/Linker';
-import { generateProgramMap } from './program/ProgramMap';
+import { ProgramMap } from './program/ProgramMap';
 import { ShaderCompilationMessage } from './program/Shader';
 
 export type ShaderCompilationResults = Map<string, ShaderCompilationMessage[]>;
@@ -130,7 +130,7 @@ export class Program {
   }
 
   async doCompile_(blueprint: Blueprint): Promise<CompiledResourceBundle> {
-    const programMap = generateProgramMap(blueprint);
+    const programMap = new ProgramMap(blueprint);
     const shaders = this.resources_.shaders.compile(
       programMap.shaders.values(),
       programMap
