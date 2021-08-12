@@ -64,12 +64,12 @@ export class BufferCompiler {
     return (
       newDescriptor.size !== buffer.size ||
       newDescriptor.init !== buffer.init ||
-      programMap.bufferUsage.get(newDescriptor.uuid) !== buffer.usage
+      programMap.bufferUsage.get(newDescriptor.id) !== buffer.usage
     );
   }
 
   async compile(descriptor: BufferNodeDescriptor, programMap: ProgramMap) {
-    const usage = programMap.bufferUsage.get(descriptor.uuid);
+    const usage = programMap.bufferUsage.get(descriptor.id);
     if (!usage) {
       // No need to do anything, this buffer isn't used by anyone.
       return null;

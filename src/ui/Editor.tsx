@@ -2,7 +2,7 @@ import './Editor.css';
 
 import React from 'react';
 
-import { Blueprint } from '../gpu/Blueprint';
+import { Blueprint, ShaderID } from '../gpu/Blueprint';
 import { BUILTIN_UNIFORMS_WGSL } from '../gpu/BuiltinUniforms';
 import { ShaderCompilationResults } from '../gpu/Program';
 import { BlueprintEditor } from './BlueprintEditor';
@@ -19,12 +19,12 @@ interface Props {
 }
 
 export const Editor = (props: Props) => {
-  const removeShader = (id: string) => {
+  const removeShader = (id: ShaderID) => {
     delete props.blueprint.shaders[id];
     props.onBlueprintChange();
   };
 
-  const renameShader = (id: string, newName: string) => {
+  const renameShader = (id: ShaderID, newName: string) => {
     props.blueprint.shaders[id].name = newName;
     props.onBlueprintChange();
   };
@@ -82,7 +82,7 @@ export const Editor = (props: Props) => {
           <CodeEditor
             key={id}
             ref={refs[index]}
-            compilationMessages={props.compilationResults.get(shader.uuid)}
+            compilationMessages={props.compilationResults.get(shader.id)}
             contents={shader.code}
             mutable={true}
             onChange={code => {

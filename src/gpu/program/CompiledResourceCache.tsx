@@ -1,17 +1,18 @@
+import { NodeID } from '../Blueprint';
 import { ProgramMap } from './ProgramMap';
 
-interface HasUuid {
-  uuid: string;
+interface HasId {
+  id: NodeID;
 }
 
 export interface CompiledResource {
   dispose: () => void;
 }
 
-type Cache<Resource extends CompiledResource> = Map<string, null | Resource>;
+type Cache<Resource extends CompiledResource> = Map<NodeID, null | Resource>;
 
 export interface ResourceCompiler<
-  Props extends HasUuid,
+  Props extends HasId,
   Resource extends CompiledResource
 > {
   needsRecompile(
@@ -23,7 +24,7 @@ export interface ResourceCompiler<
 }
 
 export class CompiledResourceCache<
-  Props extends HasUuid,
+  Props extends HasId,
   Resource extends CompiledResource
 > {
   private readonly compiler_: ResourceCompiler<Props, Resource>;
@@ -41,14 +42,14 @@ export class CompiledResourceCache<
   get entries() {
     return Array.from(this.cache_.entries()).filter(
       ([key, value]) => value !== null
-    ) as [[string, Resource]];
+    ) as [[NodeID, Resource]];
   }
 
-  get(uuid: string): null | Resource {
-    return this.cache_.get(uuid) ?? null;
+  get(id: NodeID): null | Resource {
+    return this.cache_.get(id) ?? null;
   }
 
-  releaseKeysAndDisposeRemainder(keys: Iterable<string>) {
+  releaseKeysAndDisposeRemainder(keys: Iterable<NodeID>) {
     for (const key of keys) {
       this.cache_.delete(key);
     }
@@ -71,16 +72,16 @@ export class CompiledResourceCache<
     const newCache = new CompiledResourceCache<Props, Resource>(this.compiler_);
     const pendingUpdates: Map<Props, Promise<null | Resource>> = new Map();
     for (const props of entries) {
-      const entry = this.cache_.get(props.uuid);
+      const entry = this.cache_.get(props.id);
       if (entry && !this.compiler_.needsRecompile(props, entry, programMap)) {
-        newCache.cache_.set(props.uuid, entry);
+        newCache.cache_.set(props.id, entry);
       } else {
         pendingUpdates.set(props, this.compiler_.compile(props, programMap));
       }
     }
 
     for (const [props, update] of pendingUpdates.entries()) {
-      newCache.cache_.set(props.uuid, await update);
+      newCache.cache_.set(props.id, await update);
     }
     return newCache;
   }

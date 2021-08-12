@@ -1,4 +1,4 @@
-import { Blueprint } from './Blueprint';
+import { Blueprint, ShaderID } from './Blueprint';
 import {
   CompiledResourceBundle,
   createCompiledResourceBundle,
@@ -8,7 +8,10 @@ import { linkProgram } from './program/Linker';
 import { ProgramMap } from './program/ProgramMap';
 import { ShaderCompilationMessage } from './program/Shader';
 
-export type ShaderCompilationResults = Map<string, ShaderCompilationMessage[]>;
+export type ShaderCompilationResults = Map<
+  ShaderID,
+  ShaderCompilationMessage[]
+>;
 
 export type ShadersCompiledHandler = (
   results: ShaderCompilationResults
@@ -115,8 +118,8 @@ export class Program {
     this.resources_ = newResources;
     if (this.onShadersCompiled_) {
       const results = new Map();
-      for (const [uuid, shader] of this.resources_.shaders.entries) {
-        results.set(uuid, shader.messages);
+      for (const [id, shader] of this.resources_.shaders.entries) {
+        results.set(id, shader.messages);
       }
       this.onShadersCompiled_(results);
     }

@@ -1,6 +1,7 @@
 import {
   Blueprint,
   ComputeNodeDescriptor,
+  NodeID,
   RenderNodeDescriptor,
 } from '../Blueprint';
 import { CompiledResourceBundle } from './CompiledResourceBundle';
@@ -24,7 +25,7 @@ function getResourceForBinding(
   const node = entry.node;
   switch (node.type) {
     case 'buffer':
-      const buffer = resources.buffers.get(node.uuid);
+      const buffer = resources.buffers.get(node.id);
       if (!buffer) {
         console.warn(`unable to bind missing buffer ${node.name}`);
         return null;
@@ -32,7 +33,7 @@ function getResourceForBinding(
       return { buffer: buffer.buffer };
 
     case 'texture':
-      const texture = resources.textures.get(node.uuid);
+      const texture = resources.textures.get(node.id);
       if (!texture) {
         console.warn(`unable to bind missing texture ${node.name}`);
         return null;
@@ -40,7 +41,7 @@ function getResourceForBinding(
       return texture.texture.createView();
 
     case 'sampler':
-      const sampler = resources.samplers.get(node.uuid);
+      const sampler = resources.samplers.get(node.id);
       if (!sampler) {
         console.warn(`unable to bind missing sampler ${node.name}`);
         return null;
@@ -50,7 +51,7 @@ function getResourceForBinding(
 }
 
 function linkBindings(
-  passId: string,
+  passId: NodeID,
   device: GPUDevice,
   resources: CompiledResourceBundle,
   visibility: GPUShaderStageFlags,
@@ -112,7 +113,7 @@ function linkBindings(
 
 function linkRenderPass(
   device: GPUDevice,
-  id: string,
+  id: NodeID,
   node: RenderNodeDescriptor,
   builtinUniforms: GPUBuffer,
   outputFormat: GPUTextureFormat,
@@ -128,8 +129,8 @@ function linkRenderPass(
   if (!vertexDescriptor || !fragmentDescriptor) {
     return null;
   }
-  const vertexShader = resources.shaders.get(vertexDescriptor.uuid);
-  const fragmentShader = resources.shaders.get(fragmentDescriptor.uuid);
+  const vertexShader = resources.shaders.get(vertexDescriptor.id);
+  const fragmentShader = resources.shaders.get(fragmentDescriptor.id);
   if (
     !vertexShader ||
     !fragmentShader ||
@@ -193,7 +194,7 @@ function linkRenderPass(
 
 function linkComputePass(
   device: GPUDevice,
-  id: string,
+  id: NodeID,
   node: ComputeNodeDescriptor,
   builtinUniforms: GPUBuffer,
   resources: CompiledResourceBundle,
@@ -207,7 +208,7 @@ function linkComputePass(
   if (!shaderDescriptor) {
     return null;
   }
-  const shader = resources.shaders.get(shaderDescriptor.uuid);
+  const shader = resources.shaders.get(shaderDescriptor.id);
   if (!shader || !shader.module) {
     return null;
   }
@@ -236,7 +237,7 @@ function linkComputePass(
 
 function linkPass(
   device: GPUDevice,
-  id: string,
+  id: NodeID,
   node: PassNode,
   builtinUniforms: GPUBuffer,
   outputFormat: GPUTextureFormat,

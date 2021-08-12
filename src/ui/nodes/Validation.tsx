@@ -1,12 +1,12 @@
 import { Connection } from 'react-flow-renderer';
 
-import { Blueprint, NodeDescriptor } from '../../gpu/Blueprint';
+import { Blueprint, NodeDescriptor, NodeID } from '../../gpu/Blueprint';
 
 interface ConnectionData {
   source: NodeDescriptor;
   target: NodeDescriptor;
-  sourceName: string;
-  targetName: string;
+  sourceName: NodeID;
+  targetName: NodeID;
   targetHandle: string;
 }
 

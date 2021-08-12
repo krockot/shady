@@ -1,11 +1,10 @@
-import { randomUUID } from '../base/Uuid';
+export type NodeID = string;
+export type ShaderID = string;
 
 export interface Blueprint {
-  nodes: Record<string, NodeDescriptor>;
-  shaders: Record<string, ShaderDescriptor>;
+  nodes: Record<NodeID, NodeDescriptor>;
+  shaders: Record<ShaderID, ShaderDescriptor>;
 }
-
-export type NodeMap = Map<string, NodeDescriptor>;
 
 export type NodeDescriptor =
   | BufferNodeDescriptor
@@ -30,6 +29,7 @@ export type NodeType =
   | 'connection';
 
 export interface NodeDescriptorBase {
+  id: NodeID;
   name: string;
   position: { x: number; y: number };
   type: NodeType;
@@ -40,10 +40,10 @@ export interface RenderNodeDescriptor extends NodeDescriptorBase {
 
   // TODO: Configuration for primitive state, depth/stencil, multisampling
 
-  vertexShader: string;
+  vertexShader: ShaderID;
   vertexEntryPoint: string;
 
-  fragmentShader: string;
+  fragmentShader: ShaderID;
   fragmentEntryPoint: string;
 
   topology?: GPUPrimitiveTopology;
@@ -59,7 +59,7 @@ export interface RenderNodeDescriptor extends NodeDescriptorBase {
 
 export interface ComputeNodeDescriptor extends NodeDescriptorBase {
   type: 'compute';
-  shader: string;
+  shader: ShaderID;
   entryPoint: string;
   dispatchSize: { x: number; y: number; z: number };
 }
@@ -68,14 +68,12 @@ export type BufferInitializer = 'zero' | 'random-floats' | 'random-uints';
 
 export interface BufferNodeDescriptor extends NodeDescriptorBase {
   type: 'buffer';
-  uuid: string;
   size: number;
   init?: BufferInitializer;
 }
 
 export interface TextureNodeDescriptor extends NodeDescriptorBase {
   type: 'texture';
-  uuid: string;
   imageData: null | Blob;
   imageDataSerialized: null | string;
   size: GPUExtent3DDict;
@@ -86,14 +84,13 @@ export interface TextureNodeDescriptor extends NodeDescriptorBase {
 
 export interface SamplerNodeDescriptor extends NodeDescriptorBase {
   type: 'sampler';
-  uuid: string;
 
   // TODO: Filtering, addressing, clamping, comparison, anisotropy.
 }
 
 export interface ShaderDescriptor {
   name: string;
-  uuid: string;
+  id: ShaderID;
   code: string;
 }
 
@@ -102,8 +99,8 @@ export type ConnectionType = 'binding' | 'queue';
 export interface ConnectionNodeDescriptorBase extends NodeDescriptorBase {
   type: 'connection';
   connectionType: ConnectionType;
-  source: string;
-  target: string;
+  source: NodeID;
+  target: NodeID;
 }
 
 export type BindingType = 'buffer' | 'sampler' | 'texture';
@@ -143,22 +140,10 @@ export interface QueueNodeDescriptor extends ConnectionNodeDescriptorBase {
 }
 
 export function canonicalize(blueprint: Blueprint) {
-  const data = blueprint as any;
-  for (const n of Object.values(data.nodes)) {
-    const node = n as any;
-    if (
-      (node.type === 'buffer' ||
-        node.type === 'texture' ||
-        node.type === 'sampler') &&
-      !node.uuid
-    ) {
-      node.uuid = randomUUID();
-    }
+  for (const [id, node] of Object.entries(blueprint.nodes)) {
+    node.id = id;
   }
-  for (const s of Object.values(data.shaders)) {
-    const shader = s as any;
-    if (!shader.uuid) {
-      shader.uuid = randomUUID();
-    }
+  for (const [id, shader] of Object.entries(blueprint.shaders)) {
+    shader.id = id;
   }
 }

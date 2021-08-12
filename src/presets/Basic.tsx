@@ -22,6 +22,7 @@ fn main([[builtin(position)]] coord: vec4<f32>)
 export const BASIC: Blueprint = {
   nodes: {
     render1: {
+      id: 'render1',
       name: 'render quad',
       position: { x: 100, y: 100 },
       type: 'render',
@@ -36,13 +37,13 @@ export const BASIC: Blueprint = {
   },
   shaders: {
     vertex1: {
+      id: 'vertex1',
       name: 'Vertex',
-      uuid: '4f57e815-8d09-46f6-b0ca-3e09c83e3ee1',
       code: VERTEX,
     },
     fragment1: {
+      id: 'fragment1',
       name: 'Fragment',
-      uuid: '9328f39e-8906-4736-bd3a-c8bc31b39c6f',
       code: FRAGMENT,
     },
   },

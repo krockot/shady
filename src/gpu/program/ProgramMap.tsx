@@ -5,6 +5,7 @@ import {
   BufferBindingNodeDescriptor,
   BufferNodeDescriptor,
   ComputeNodeDescriptor,
+  NodeID,
   RenderNodeDescriptor,
   SamplerBindingNodeDescriptor,
   SamplerNodeDescriptor,
@@ -18,11 +19,11 @@ const kMaxBindGroups = 4;
 
 export type PassNode = RenderNodeDescriptor | ComputeNodeDescriptor;
 
-export type ShaderMap = Map<string, ShaderDescriptor>;
-export type BufferMap = Map<string, BufferNodeDescriptor>;
-export type TextureMap = Map<string, TextureNodeDescriptor>;
-export type SamplerMap = Map<string, SamplerNodeDescriptor>;
-export type PassMap = Map<string, PassNode>;
+export type ShaderMap = Map<NodeID, ShaderDescriptor>;
+export type BufferMap = Map<NodeID, BufferNodeDescriptor>;
+export type TextureMap = Map<NodeID, TextureNodeDescriptor>;
+export type SamplerMap = Map<NodeID, SamplerNodeDescriptor>;
+export type PassMap = Map<NodeID, PassNode>;
 
 export type BindableNode =
   | BufferNodeDescriptor
@@ -35,19 +36,19 @@ export interface BindGroupEntry {
 }
 
 export type BindGroup = Map<number, BindGroupEntry>;
-export type BindingsMap = Map<string, BindGroup[]>;
+export type BindingsMap = Map<NodeID, BindGroup[]>;
 
 export type PassType = 'render' | 'compute';
 
-export type BufferUsageMap = Map<string, GPUBufferUsageFlags>;
-export type TextureUsageMap = Map<string, GPUTextureUsageFlags>;
+export type BufferUsageMap = Map<NodeID, GPUBufferUsageFlags>;
+export type TextureUsageMap = Map<NodeID, GPUTextureUsageFlags>;
 
 interface QueueDeps {
   // Maps each pass ID to the set of pass IDs which depend upon it.
-  incoming: Map<string, Set<string>>;
+  incoming: Map<NodeID, Set<NodeID>>;
 
   // Maps each pass ID to the set of pass IDs on which it depends.
-  outgoing: Map<string, Set<string>>;
+  outgoing: Map<NodeID, Set<NodeID>>;
 }
 
 export class ProgramMap {
@@ -60,12 +61,12 @@ export class ProgramMap {
   public readonly bindings: BindingsMap;
   public readonly bufferUsage: BufferUsageMap;
   public readonly textureUsage: TextureUsageMap;
-  public readonly passOrder: string[];
+  public readonly passOrder: NodeID[];
 
   constructor(blueprint: Blueprint) {
     this.blueprint = deepCopy(blueprint);
     this.shaders = new Map(
-      Object.values(this.blueprint.shaders).map(s => [s.uuid, s])
+      Object.values(this.blueprint.shaders).map(s => [s.id, s])
     );
     this.buffers = new Map();
     this.textures = new Map();
@@ -84,15 +85,15 @@ export class ProgramMap {
     for (const [id, node] of Object.entries(this.blueprint.nodes)) {
       switch (node.type) {
         case 'buffer':
-          this.buffers.set(node.uuid, node);
+          this.buffers.set(id, node);
           break;
 
         case 'texture':
-          this.textures.set(node.uuid, node);
+          this.textures.set(id, node);
           break;
 
         case 'sampler':
-          this.samplers.set(node.uuid, node);
+          this.samplers.set(id, node);
           break;
 
         case 'connection':
@@ -153,7 +154,7 @@ export class ProgramMap {
       }
       switch (node.bindingType) {
         case 'buffer':
-          const buffer = this.buffers.get(bindingNode.uuid);
+          const buffer = this.buffers.get(bindingNode.id);
           if (!buffer) {
             console.warn(`ignoring unknown buffer: ${node.source}`);
             continue;
@@ -162,7 +163,7 @@ export class ProgramMap {
           break;
 
         case 'texture':
-          const texture = this.textures.get(bindingNode.uuid);
+          const texture = this.textures.get(bindingNode.id);
           if (!texture) {
             console.warn(`ignoring unknown texture: ${node.source}`);
             continue;
@@ -171,7 +172,7 @@ export class ProgramMap {
           break;
 
         case 'sampler':
-          const sampler = this.samplers.get(bindingNode.uuid);
+          const sampler = this.samplers.get(bindingNode.id);
           if (!sampler) {
             console.warn(`ignoring unknown sampler: ${node.source}`);
             continue;
@@ -185,7 +186,7 @@ export class ProgramMap {
   computePassOrder_(queueDeps: QueueDeps) {
     // The initial working set is the set of all passes with no incoming queue
     // dependencies.
-    const startNodes: Set<string> = new Set(this.passes.keys());
+    const startNodes: Set<NodeID> = new Set(this.passes.keys());
     for (const target of queueDeps.incoming.keys()) {
       startNodes.delete(target);
     }
@@ -194,7 +195,7 @@ export class ProgramMap {
     let thisPhase = Array.from(startNodes);
     while (thisPhase.length !== 0) {
       this.passOrder.push(...thisPhase);
-      const nextPhase: string[] = [];
+      const nextPhase: NodeID[] = [];
       for (const added of thisPhase) {
         const targets = queueDeps.outgoing.get(added);
         if (!targets) {
@@ -240,8 +241,8 @@ export class ProgramMap {
     }
 
     this.bufferUsage.set(
-      buffer.uuid,
-      (this.bufferUsage.get(buffer.uuid) ?? 0) | newUsage
+      buffer.id,
+      (this.bufferUsage.get(buffer.id) ?? 0) | newUsage
     );
 
     const layoutEntry: GPUBindGroupLayoutEntry = {

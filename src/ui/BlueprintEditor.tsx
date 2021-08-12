@@ -11,11 +11,12 @@ import ReactFlow, {
   XYPosition,
 } from 'react-flow-renderer';
 
-import { randomUUID } from '../base/Uuid';
 import {
   Blueprint,
   BufferBindingStorageType,
   NodeDescriptor,
+  NodeID,
+  ShaderID,
 } from '../gpu/Blueprint';
 import { BufferBindingNode } from './nodes/BufferBindingNode';
 import { CustomEdge } from './nodes/CustomEdge';
@@ -47,12 +48,12 @@ interface Props {
   onChange: () => void;
 }
 
-function getUnusedKey<T extends Record<string, any>>(
+function getUnusedKey<ID extends ShaderID | NodeID, T extends Record<ID, any>>(
   dict: T,
-  base: string
-): string {
+  base: ID
+): ID {
   for (let i = 1; ; ++i) {
-    const id = `${base}${i}`;
+    const id = `${base}${i}` as ID;
     if (!dict.hasOwnProperty(id)) {
       return id;
     }
@@ -222,6 +223,7 @@ export class BlueprintEditor extends React.Component<Props> {
       const nodes = this.props.blueprint.nodes;
       const id = getUnusedKey(nodes, `queue-dep`);
       nodes[id] = {
+        id,
         name: '',
         position,
         type: 'connection',
@@ -247,7 +249,7 @@ export class BlueprintEditor extends React.Component<Props> {
   addShader_ = () => {
     const shaders = this.props.blueprint.shaders;
     const id = getUnusedKey(shaders, 'shader');
-    shaders[id] = { name: id, uuid: randomUUID(), code: '' };
+    shaders[id] = { name: id, id, code: '' };
     this.update_();
   };
 
@@ -255,6 +257,7 @@ export class BlueprintEditor extends React.Component<Props> {
     const nodes = this.props.blueprint.nodes;
     const id = getUnusedKey(nodes, type);
     nodes[id] = {
+      id,
       name: id,
       type,
       position: { x: 100, y: 100 },
@@ -265,7 +268,6 @@ export class BlueprintEditor extends React.Component<Props> {
 
   addBuffer_ = () => {
     this.addNode_('buffer', {
-      uuid: randomUUID(),
       size: 16384,
       position: { x: 100, y: 100 },
       init: 'zero',
@@ -274,7 +276,6 @@ export class BlueprintEditor extends React.Component<Props> {
 
   addTexture_ = () => {
     this.addNode_('texture', {
-      uuid: randomUUID(),
       position: { x: 100, y: 100 },
       size: { width: 1024, height: 1024 },
       format: 'rgba8unorm',
@@ -285,20 +286,20 @@ export class BlueprintEditor extends React.Component<Props> {
 
   addSampler_ = () => {
     this.addNode_('sampler', {
-      uuid: randomUUID(),
       position: { x: 100, y: 100 },
     });
   };
 
   addBufferBinding_ = (
-    source: string,
-    target: string,
+    source: NodeID,
+    target: NodeID,
     position: XYPosition,
     storageType: BufferBindingStorageType
   ) => {
     const nodes = this.props.blueprint.nodes;
     const id = getUnusedKey(nodes, `binding-buffer`);
     nodes[id] = {
+      id,
       name: '',
       position,
       type: 'connection',
@@ -314,13 +315,14 @@ export class BlueprintEditor extends React.Component<Props> {
 
   addTrivialBinding_ = (
     type: 'sampler' | 'texture',
-    source: string,
-    target: string,
+    source: NodeID,
+    target: NodeID,
     position: XYPosition
   ) => {
     const nodes = this.props.blueprint.nodes;
     const id = getUnusedKey(nodes, `binding-${type}`);
     nodes[id] = {
+      id,
       name: '',
       position,
       type: 'connection',
