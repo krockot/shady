@@ -118,6 +118,8 @@ export class BlueprintEditor extends React.Component<Props> {
             onConnect={this.onConnect_}
             onElementClick={this.onElementClick_}
             onNodeDragStop={this.onMoveNode_}
+            minZoom={0.01}
+            maxZoom={4}
           >
             <div className="Toolbar">
               <button onClick={this.addShader_}>+Shader</button>
