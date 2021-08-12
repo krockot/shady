@@ -49,7 +49,7 @@ export class CompiledResourceCache<
   }
 
   releaseKeysAndDisposeRemainder(keys: Iterable<string>) {
-    for (const key of Array.from(keys)) {
+    for (const key of keys) {
       this.cache_.delete(key);
     }
 
@@ -79,7 +79,7 @@ export class CompiledResourceCache<
       }
     }
 
-    for (const [props, update] of Array.from(pendingUpdates.entries())) {
+    for (const [props, update] of pendingUpdates.entries()) {
       newCache.cache_.set(props.uuid, await update);
     }
     return newCache;
