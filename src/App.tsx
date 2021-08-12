@@ -4,7 +4,12 @@ import React from 'react';
 
 import { LocalPersistent } from './base/LocalPersistent';
 import { deepCopy } from './base/Util';
-import { Blueprint, canonicalize } from './gpu/Blueprint';
+import {
+  Blueprint,
+  deserializeBlueprint,
+  serializeBlueprint,
+  SerializedBlueprint,
+} from './gpu/Blueprint';
 import { FrameProducer } from './gpu/FrameProducer';
 import { ShaderCompilationResults } from './gpu/Program';
 import { ControlPanel } from './ui/ControlPanel';
@@ -22,6 +27,7 @@ interface State extends AppState {
 
 class App extends React.Component<Props, State> {
   private frameProducer_: FrameProducer;
+  private blueprint_: Blueprint;
 
   constructor(props: Props) {
     super(props);
@@ -31,10 +37,10 @@ class App extends React.Component<Props, State> {
       compilationResults: new Map(),
     };
 
-    canonicalize(this.state.blueprint);
+    this.blueprint_ = deserializeBlueprint(this.state.blueprint);
 
     this.frameProducer_ = new FrameProducer();
-    this.frameProducer_.setBlueprint(this.state.blueprint);
+    this.frameProducer_.setBlueprint(this.blueprint_);
   }
 
   componentDidMount() {
@@ -43,7 +49,7 @@ class App extends React.Component<Props, State> {
 
   componentDidUpdate() {
     this.props.appState.value = this.state;
-    this.frameProducer_.setBlueprint(this.state.blueprint);
+    this.frameProducer_.setBlueprint(this.blueprint_);
   }
 
   componentWillUnmount() {
@@ -63,34 +69,44 @@ class App extends React.Component<Props, State> {
   };
 
   onBlueprintChange_ = () => {
-    this.frameProducer_.setBlueprint(this.state.blueprint);
+    this.frameProducer_.setBlueprint(this.blueprint_);
   };
 
   onShadersCompiled_ = (compilationResults: ShaderCompilationResults) => {
     this.setState({ compilationResults });
   };
 
-  onSaveBlueprint_ = (name: string) => {
+  onSaveBlueprint_ = async (name: string) => {
+    const serialized = await serializeBlueprint(this.blueprint_);
     this.setState((state, props) => ({
       savedBlueprints: {
         ...state.savedBlueprints,
-        [name]: deepCopy(state.blueprint),
+        [name]: serialized,
       },
     }));
   };
 
-  onLoadBlueprint_ = (name: string) => {
-    const blueprint = deepCopy(this.state.savedBlueprints[name]);
+  onLoadBlueprint_ = async (name: string) => {
+    const blueprint = this.state.savedBlueprints[name];
     if (!blueprint) {
       return;
     }
 
-    canonicalize(blueprint);
-    this.setState({ blueprint });
+    this.blueprint_ = deserializeBlueprint(blueprint);
+    const reserialized = await serializeBlueprint(this.blueprint_);
+
+    this.setState(state => {
+      const blueprints = state.savedBlueprints;
+      blueprints[name] = reserialized;
+      return {
+        blueprint: deepCopy(blueprint),
+        savedBlueprints: blueprints,
+      };
+    });
   };
 
-  onImportBlueprint_ = (blueprint: Blueprint) => {
-    canonicalize(blueprint);
+  onImportBlueprint_ = (blueprint: SerializedBlueprint) => {
+    this.blueprint_ = deserializeBlueprint(blueprint);
     this.setState({ blueprint });
   };
 
@@ -135,7 +151,7 @@ class App extends React.Component<Props, State> {
           <div className="App-editor">
             <Editor
               compilationResults={this.state.compilationResults}
-              blueprint={this.state.blueprint}
+              blueprint={this.blueprint_}
               onBlueprintChange={this.onBlueprintChange_}
               codeMirrorTheme={this.state.codeMirrorTheme}
             />
@@ -143,7 +159,7 @@ class App extends React.Component<Props, State> {
         </div>
         <div className="App-bottom">
           <ControlPanel
-            blueprint={this.state.blueprint}
+            blueprint={this.blueprint_}
             displayConfig={this.state.displayConfig}
             onDisplayConfigChange={this.onDisplayConfigChange}
             savedBlueprints={this.state.savedBlueprints}

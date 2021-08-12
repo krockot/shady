@@ -1,4 +1,4 @@
-import { Blueprint } from '../gpu/Blueprint';
+import { SerializedBlueprint } from '../gpu/Blueprint';
 
 const VERTEX = `[[stage(vertex)]]
 fn main([[builtin(vertex_index)]] index: u32)
@@ -19,9 +19,10 @@ fn main([[builtin(position)]] coord: vec4<f32>)
 }
 `;
 
-export const BASIC: Blueprint = {
-  nodes: {
-    render1: {
+export const BASIC: SerializedBlueprint = {
+  version: 1,
+  nodes: [
+    {
       id: 'render1',
       name: 'render quad',
       position: { x: 100, y: 100 },
@@ -34,17 +35,17 @@ export const BASIC: Blueprint = {
       fragmentShader: 'fragment1',
       fragmentEntryPoint: 'main',
     },
-  },
-  shaders: {
-    vertex1: {
+  ],
+  shaders: [
+    {
       id: 'vertex1',
       name: 'Vertex',
       code: VERTEX,
     },
-    fragment1: {
+    {
       id: 'fragment1',
       name: 'Fragment',
       code: FRAGMENT,
     },
-  },
+  ],
 };

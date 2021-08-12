@@ -1,10 +1,13 @@
 import './ControlPanel.css';
 
 import React from 'react';
-import { toByteArray, fromByteArray } from 'base64-js';
 
-import { deepCopy } from '../base/Util';
-import { Blueprint } from '../gpu/Blueprint';
+import {
+  Blueprint,
+  deserializeBlueprint,
+  serializeBlueprint,
+  SerializedBlueprint,
+} from '../gpu/Blueprint';
 import { CODE_MIRROR_THEMES } from './CodeMirrorThemes';
 import { DisplayConfig } from './Display';
 import { LabeledField } from './LabeledField';
@@ -13,10 +16,10 @@ interface Props {
   blueprint: Blueprint;
   displayConfig: DisplayConfig;
   onDisplayConfigChange: (change: Partial<DisplayConfig>) => void;
-  savedBlueprints: Record<string, Blueprint>;
+  savedBlueprints: Record<string, SerializedBlueprint>;
   onSaveBlueprint: (name: string) => void;
   onLoadBlueprint: (name: string) => void;
-  onImportBlueprint: (blueprint: Blueprint) => void;
+  onImportBlueprint: (blueprint: SerializedBlueprint) => void;
   onDeleteBlueprint: (name: string) => void;
   codeMirrorTheme: string;
   onCodeMirrorThemeChange: (name: string) => void;
@@ -238,20 +241,11 @@ export class ControlPanel extends React.Component<Props, State> {
   };
 
   copyBlueprintToClipboard_ = async () => {
-    const copy = deepCopy(this.props.blueprint);
-    for (const node of Object.values(copy.nodes)) {
-      if (node.type !== 'texture') {
-        continue;
-      }
-
-      if (node.imageData instanceof Blob) {
-        const bytes = new Uint8Array(await node.imageData.arrayBuffer());
-        node.imageDataSerialized = fromByteArray(bytes);
-        node.imageData = null;
-      }
-    }
-
-    navigator.clipboard.writeText(JSON.stringify(copy));
+    navigator.clipboard.writeText(
+      JSON.stringify(
+        await serializeBlueprint(this.props.blueprint, { serializeBlobs: true })
+      )
+    );
   };
 
   importBlueprintFromClipboard_ = () => {
@@ -262,24 +256,14 @@ export class ControlPanel extends React.Component<Props, State> {
     }
 
     const serializedBlueprint = this.importRef_.current.value;
-    const blueprint = JSON.parse(serializedBlueprint) as null | Blueprint;
-    if (!blueprint) {
+    const serialized = JSON.parse(
+      serializedBlueprint
+    ) as null | SerializedBlueprint;
+    if (!serialized) {
       return;
     }
 
-    for (const node of Object.values(blueprint.nodes)) {
-      if (node.type !== 'texture') {
-        continue;
-      }
-
-      if (node.imageDataSerialized) {
-        const bytes = toByteArray(node.imageDataSerialized);
-        node.imageData = new Blob([bytes]);
-        node.imageDataSerialized = null;
-      }
-    }
-
-    this.props.onImportBlueprint(blueprint);
+    this.props.onImportBlueprint(deserializeBlueprint(serialized));
   };
 
   togglePasteMenu_ = () => {

@@ -1,12 +1,12 @@
-import { Blueprint } from './gpu/Blueprint';
+import { SerializedBlueprint } from './gpu/Blueprint';
 import { BASIC } from './presets/Basic';
 import { BOIDS } from './presets/Boids';
 import { INSTANCES } from './presets/Instances';
 import { DisplayConfig } from './ui/Display';
 
 export interface AppState {
-  blueprint: Blueprint;
-  savedBlueprints: Record<string, Blueprint>;
+  blueprint: SerializedBlueprint;
+  savedBlueprints: Record<string, SerializedBlueprint>;
   displayConfig: DisplayConfig;
   codeMirrorTheme: string;
 }
