@@ -1,4 +1,4 @@
-import './Node.css';
+import './NodePanel.css';
 
 import React, { ReactNode } from 'react';
 
@@ -10,15 +10,15 @@ type UpdateFn<DescriptorType extends NodeDescriptor> = (
   update: Partial<DescriptorType>
 ) => void;
 
-interface NodeData<DescriptorType extends NodeDescriptor> {
+interface NodePanelData<DescriptorType extends NodeDescriptor> {
   blueprint: Blueprint;
   node: DescriptorType;
   onChange: UpdateFn<DescriptorType>;
   destroy: () => void;
 }
 
-export interface NodeProps<DescriptorType extends NodeDescriptor> {
-  data: NodeData<DescriptorType>;
+export interface NodePanelProps<DescriptorType extends NodeDescriptor> {
+  data: NodePanelData<DescriptorType>;
 }
 
 interface Props {
@@ -30,7 +30,7 @@ interface Props {
   children?: ReactNode;
 }
 
-export const Node = (props: Props) => {
+export const NodePanel = (props: Props) => {
   return (
     <div className={`Node Node-${props.node.type} ${props.className}`}>
       <button className="RemoveButton" onClick={props.destroy}></button>

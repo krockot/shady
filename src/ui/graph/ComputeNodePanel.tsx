@@ -3,14 +3,14 @@ import { Handle, Position } from 'react-flow-renderer';
 import { ComputeNodeDescriptor } from '../../gpu/Blueprint';
 import { EditableLabel } from '../EditableLabel';
 import { LabeledField } from '../LabeledField';
-import { Node, NodeProps } from './Node';
+import { NodePanel, NodePanelProps } from './NodePanel';
 import { isValidBindingConnection, isValidQueueConnection } from './Validation';
 
-export const ComputeNode = (props: NodeProps<ComputeNodeDescriptor>) => {
+export const ComputeNodePanel = (props: NodePanelProps<ComputeNodeDescriptor>) => {
   const data = props.data;
   const node = data.node;
   return (
-    <Node
+    <NodePanel
       title="Compute Pass"
       node={node}
       onRename={name => data.onChange({ name })}
@@ -114,6 +114,6 @@ export const ComputeNode = (props: NodeProps<ComputeNodeDescriptor>) => {
           </div>
         </LabeledField>
       </div>
-    </Node>
+    </NodePanel>
   );
 };

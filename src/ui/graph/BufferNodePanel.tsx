@@ -2,14 +2,14 @@ import { Handle, Position } from 'react-flow-renderer';
 
 import { BufferInitializer, BufferNodeDescriptor } from '../../gpu/Blueprint';
 import { LabeledField } from '../LabeledField';
-import { Node, NodeProps } from './Node';
+import { NodePanel, NodePanelProps } from './NodePanel';
 import { isValidBindingConnection } from './Validation';
 
-export const BufferNode = (props: NodeProps<BufferNodeDescriptor>) => {
+export const BufferNodePanel = (props: NodePanelProps<BufferNodeDescriptor>) => {
   const data = props.data;
   const node = data.node;
   return (
-    <Node
+    <NodePanel
       title="Buffer"
       node={node}
       onRename={name => data.onChange({ name })}
@@ -48,6 +48,6 @@ export const BufferNode = (props: NodeProps<BufferNodeDescriptor>) => {
           </select>
         </LabeledField>
       </div>
-    </Node>
+    </NodePanel>
   );
 };

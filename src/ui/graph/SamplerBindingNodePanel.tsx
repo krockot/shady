@@ -1,18 +1,18 @@
-import './Node.css';
+import './NodePanel.css';
 
 import React from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 
 import { SamplerBindingNodeDescriptor } from '../../gpu/Blueprint';
-import { Node, NodeProps } from './Node';
+import { NodePanel, NodePanelProps } from './NodePanel';
 
-export const SamplerBindingNode = (
-  props: NodeProps<SamplerBindingNodeDescriptor>
+export const SamplerBindingNodePanel = (
+  props: NodePanelProps<SamplerBindingNodeDescriptor>
 ) => {
   const data = props.data;
   const node = data.node;
   return (
-    <Node title="" node={node} destroy={data.destroy}>
+    <NodePanel title="" node={node} destroy={data.destroy}>
       <Handle
         type="target"
         position={'top' as Position}
@@ -47,6 +47,6 @@ export const SamplerBindingNode = (
           />
         </div>
       </div>
-    </Node>
+    </NodePanel>
   );
 };

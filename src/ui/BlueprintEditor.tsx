@@ -18,25 +18,25 @@ import {
   NodeID,
   ShaderID,
 } from '../gpu/Blueprint';
-import { BufferBindingNode } from './nodes/BufferBindingNode';
-import { CustomEdge } from './nodes/CustomEdge';
-import { BufferNode } from './nodes/BufferNode';
-import { ComputeNode } from './nodes/ComputeNode';
-import { RenderNode } from './nodes/RenderNode';
-import { SamplerBindingNode } from './nodes/SamplerBindingNode';
-import { SamplerNode } from './nodes/SamplerNode';
-import { TextureBindingNode } from './nodes/TextureBindingNode';
-import { TextureNode } from './nodes/TextureNode';
+import { BufferBindingNodePanel } from './graph/BufferBindingNodePanel';
+import { BufferNodePanel } from './graph/BufferNodePanel';
+import { ComputeNodePanel } from './graph/ComputeNodePanel';
+import { CustomEdge } from './graph/CustomEdge';
+import { RenderNodePanel } from './graph/RenderNodePanel';
+import { SamplerBindingNodePanel } from './graph/SamplerBindingNodePanel';
+import { SamplerNodePanel } from './graph/SamplerNodePanel';
+import { TextureBindingNodePanel } from './graph/TextureBindingNodePanel';
+import { TextureNodePanel } from './graph/TextureNodePanel';
 
 const NODE_TYPES = {
-  buffer: BufferNode,
-  texture: TextureNode,
-  compute: ComputeNode,
-  render: RenderNode,
-  sampler: SamplerNode,
-  'buffer-binding': BufferBindingNode,
-  'sampler-binding': SamplerBindingNode,
-  'texture-binding': TextureBindingNode,
+  buffer: BufferNodePanel,
+  texture: TextureNodePanel,
+  compute: ComputeNodePanel,
+  render: RenderNodePanel,
+  sampler: SamplerNodePanel,
+  'buffer-binding': BufferBindingNodePanel,
+  'sampler-binding': SamplerBindingNodePanel,
+  'texture-binding': TextureBindingNodePanel,
 };
 
 const EDGE_TYPES = {

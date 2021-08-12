@@ -4,7 +4,7 @@ import { Debouncer } from '../../base/Debouncer';
 import { RenderNodeDescriptor } from '../../gpu/Blueprint';
 import { EditableLabel } from '../EditableLabel';
 import { LabeledField } from '../LabeledField';
-import { Node, NodeProps } from './Node';
+import { NodePanel, NodePanelProps } from './NodePanel';
 import { isValidBindingConnection, isValidQueueConnection } from './Validation';
 
 function colorValue(c: GPUColorDict): string {
@@ -24,12 +24,12 @@ function parseColor(value: string): GPUColorDict {
   };
 }
 
-export const RenderNode = (props: NodeProps<RenderNodeDescriptor>) => {
+export const RenderNodePanel = (props: NodePanelProps<RenderNodeDescriptor>) => {
   const data = props.data;
   const node = data.node;
   const debouncer = new Debouncer(30);
   return (
-    <Node
+    <NodePanel
       title="Render Pass"
       node={node}
       onRename={name => data.onChange({ name })}
@@ -183,6 +183,6 @@ export const RenderNode = (props: NodeProps<RenderNodeDescriptor>) => {
           </select>
         </LabeledField>
       </div>
-    </Node>
+    </NodePanel>
   );
 };

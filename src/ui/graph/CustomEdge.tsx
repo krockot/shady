@@ -1,4 +1,4 @@
-import './Node.css';
+import './NodePanel.css';
 
 import {
   getBezierPath,

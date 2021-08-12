@@ -2,7 +2,7 @@ import React from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 
 import { TextureNodeDescriptor } from '../../gpu/Blueprint';
-import { Node, NodeProps } from './Node';
+import { NodePanel, NodePanelProps } from './NodePanel';
 import { isValidBindingConnection } from './Validation';
 
 function getSelectedFile(input: HTMLInputElement): null | File {
@@ -36,7 +36,7 @@ async function updateCanvasImage(
 
 type CanvasRef = React.RefObject<HTMLCanvasElement>;
 
-export const TextureNode = (props: NodeProps<TextureNodeDescriptor>) => {
+export const TextureNodePanel = (props: NodePanelProps<TextureNodeDescriptor>) => {
   const data = props.data;
   const node = data.node;
   const canvasRef = React.useRef(null);
@@ -49,7 +49,7 @@ export const TextureNode = (props: NodeProps<TextureNodeDescriptor>) => {
   });
 
   return (
-    <Node
+    <NodePanel
       title="Texture"
       node={node}
       onRename={name => data.onChange({ name })}
@@ -80,6 +80,6 @@ export const TextureNode = (props: NodeProps<TextureNodeDescriptor>) => {
           height={128}
         />
       </div>
-    </Node>
+    </NodePanel>
   );
 };

@@ -2,14 +2,14 @@ import React from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 
 import { SamplerNodeDescriptor } from '../../gpu/Blueprint';
-import { Node, NodeProps } from './Node';
+import { NodePanel, NodePanelProps } from './NodePanel';
 import { isValidBindingConnection } from './Validation';
 
-export const SamplerNode = (props: NodeProps<SamplerNodeDescriptor>) => {
+export const SamplerNodePanel = (props: NodePanelProps<SamplerNodeDescriptor>) => {
   const data = props.data;
   const node = data.node;
   return (
-    <Node
+    <NodePanel
       title="Sampler"
       node={node}
       onRename={name => data.onChange({ name })}
@@ -23,6 +23,6 @@ export const SamplerNode = (props: NodeProps<SamplerNodeDescriptor>) => {
           isValidConnection={c => isValidBindingConnection(c, data.blueprint)}
         />
       </div>
-    </Node>
+    </NodePanel>
   );
 };
