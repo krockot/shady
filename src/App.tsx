@@ -68,8 +68,9 @@ class App extends React.Component<Props, State> {
     this.frameProducer_.reconfigure();
   };
 
-  onBlueprintChange_ = () => {
+  onBlueprintChange_ = async () => {
     this.frameProducer_.setBlueprint(this.blueprint_);
+    this.setState({ blueprint: await serializeBlueprint(this.blueprint_) });
   };
 
   onShadersCompiled_ = (compilationResults: ShaderCompilationResults) => {
