@@ -11,7 +11,7 @@ import {
   SerializedBlueprint,
 } from './gpu/Blueprint';
 import { FrameProducer } from './gpu/FrameProducer';
-import { ShaderCompilationResults } from './gpu/Program';
+import { ShaderCompilationResults } from './gpu/program/Program';
 import { ControlPanel } from './ui/ControlPanel';
 import { Display, DisplayConfig } from './ui/Display';
 import { Editor } from './ui/Editor';

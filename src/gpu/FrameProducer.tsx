@@ -1,7 +1,7 @@
 import { deepCopy, deepEquals } from '../base/Util';
 import { Blueprint } from './Blueprint';
 import { Gpu } from './Gpu';
-import { Program, ShadersCompiledHandler } from './Program';
+import { Program, ShadersCompiledHandler } from './program/Program';
 
 const getContextFromCanvas = (
   canvas: HTMLCanvasElement

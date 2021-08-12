@@ -4,7 +4,7 @@ import React from 'react';
 
 import { Blueprint, ShaderID } from '../gpu/Blueprint';
 import { BUILTIN_UNIFORMS_WGSL } from '../gpu/BuiltinUniforms';
-import { ShaderCompilationResults } from '../gpu/Program';
+import { ShaderCompilationResults } from '../gpu/program/Program';
 import { BlueprintEditor } from './BlueprintEditor';
 import { CodeEditor } from './CodeEditor';
 import { TabContainer } from './TabContainer';

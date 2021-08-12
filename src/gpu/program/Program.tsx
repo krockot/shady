@@ -1,8 +1,8 @@
-import { Blueprint, ShaderID } from './Blueprint';
-import { ResourceBundle } from './program/ResourceBundle';
-import { Executable } from './program/Executable';
-import { linkProgram } from './program/Linker';
-import { ShaderCompilationMessage } from './program/ShaderCache';
+import { Blueprint, ShaderID } from '../Blueprint';
+import { ResourceBundle } from './ResourceBundle';
+import { Executable } from './Executable';
+import { linkProgram } from './Linker';
+import { ShaderCompilationMessage } from './ShaderCache';
 
 export type ShaderCompilationResults = Map<
   ShaderID,
