@@ -67,3 +67,16 @@ export function deepEquals<T extends Record<string, any>>(a: T, b: T): boolean {
 
   return a === b;
 }
+
+// Awaits all values on an object, and returns a new object with the same keys
+// but all promises resolved.
+export async function objectPromiseAll(object: Record<string, any>) {
+  return Object.fromEntries(
+    await Promise.all(
+      Array.from(Object.entries(object)).map(async ([key, value]) => [
+        key,
+        await value,
+      ])
+    )
+  );
+}

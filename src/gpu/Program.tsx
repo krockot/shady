@@ -1,11 +1,7 @@
 import { Blueprint, ShaderID } from './Blueprint';
-import {
-  CompiledResourceBundle,
-  createCompiledResourceBundle,
-} from './program/CompiledResourceBundle';
+import { CompiledResourceBundle } from './program/CompiledResourceBundle';
 import { Executable } from './program/Executable';
 import { linkProgram } from './program/Linker';
-import { ProgramMap } from './program/ProgramMap';
 import { ShaderCompilationMessage } from './program/Shader';
 
 export type ShaderCompilationResults = Map<
@@ -23,7 +19,6 @@ export class Program {
   private resources_: CompiledResourceBundle;
   private executable_: null | Executable;
   private blueprint_: null | Blueprint;
-  private lastCompile_: null | Promise<CompiledResourceBundle>;
   private outputFormat_: GPUTextureFormat;
   private onShadersCompiled_: null | ShadersCompiledHandler;
 
@@ -35,8 +30,7 @@ export class Program {
     });
     this.executable_ = null;
     this.blueprint_ = null;
-    this.lastCompile_ = null;
-    this.resources_ = createCompiledResourceBundle(device);
+    this.resources_ = new CompiledResourceBundle(device);
     this.outputFormat_ = 'bgra8unorm';
     this.onShadersCompiled_ = null;
   }
@@ -96,26 +90,7 @@ export class Program {
 
   async compile_() {
     const blueprint = this.blueprint_!;
-    const thisCompile = this.doCompile_(blueprint);
-    this.lastCompile_ = thisCompile;
-    const newResources = await thisCompile;
-    if (this.lastCompile_ !== thisCompile) {
-      return;
-    }
-
-    this.resources_.shaders.releaseKeysAndDisposeRemainder(
-      newResources.shaders.keys
-    );
-    this.resources_.buffers.releaseKeysAndDisposeRemainder(
-      newResources.buffers.keys
-    );
-    this.resources_.textures.releaseKeysAndDisposeRemainder(
-      newResources.textures.keys
-    );
-    this.resources_.samplers.releaseKeysAndDisposeRemainder(
-      newResources.samplers.keys
-    );
-    this.resources_ = newResources;
+    this.resources_ = await this.resources_.compile(blueprint);
     if (this.onShadersCompiled_) {
       const results = new Map();
       for (const [id, shader] of this.resources_.shaders.entries) {
@@ -130,32 +105,5 @@ export class Program {
       this.resources_,
       blueprint
     );
-  }
-
-  async doCompile_(blueprint: Blueprint): Promise<CompiledResourceBundle> {
-    const programMap = new ProgramMap(blueprint);
-    const shaders = this.resources_.shaders.compile(
-      programMap.shaders.values(),
-      programMap
-    );
-    const buffers = this.resources_.buffers.compile(
-      programMap.buffers.values(),
-      programMap
-    );
-    const textures = this.resources_.textures.compile(
-      programMap.textures.values(),
-      programMap
-    );
-    const samplers = this.resources_.samplers.compile(
-      programMap.samplers.values(),
-      programMap
-    );
-    return {
-      programMap,
-      shaders: await shaders,
-      buffers: await buffers,
-      textures: await textures,
-      samplers: await samplers,
-    };
   }
 }
