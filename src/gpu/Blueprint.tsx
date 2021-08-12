@@ -152,6 +152,8 @@ interface SerializedBlueprintV1 {
   shaders: Shader[];
 }
 
+const CURRENT_BLUEPRINT_VERSION = 1;
+
 export type SerializedBlueprint =
   | SerializedBlueprintV0
   | VersionedSerializedBlueprint;
@@ -261,4 +263,18 @@ export async function serializeBlueprint(
     }
   }
   return serialized;
+}
+
+export async function modernizeBlueprint(
+  serialized: SerializedBlueprint
+): Promise<SerializedBlueprint> {
+  if (serialized.hasOwnProperty('version')) {
+    const versioned = serialized as VersionedSerializedBlueprint;
+    if (versioned.version === CURRENT_BLUEPRINT_VERSION) {
+      return serialized;
+    }
+  }
+
+  const blueprint = deserializeBlueprint(serialized);
+  return serializeBlueprint(blueprint);
 }
