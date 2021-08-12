@@ -23,6 +23,7 @@ async function init() {
   });
 
   const value = state.value;
+  value.blueprint = await modernizeBlueprint(value.blueprint);
   for (const [id, serialized] of Object.entries(value.savedBlueprints)) {
     value.savedBlueprints[id] = await modernizeBlueprint(serialized);
   }
