@@ -1,10 +1,10 @@
 import { Connection } from 'react-flow-renderer';
 
-import { Blueprint, NodeDescriptor, NodeID } from '../../gpu/Blueprint';
+import { Blueprint, Node, NodeID } from '../../gpu/Blueprint';
 
 interface ConnectionData {
-  source: NodeDescriptor;
-  target: NodeDescriptor;
+  source: Node;
+  target: Node;
   sourceName: NodeID;
   targetName: NodeID;
   targetHandle: string;
@@ -55,7 +55,7 @@ export function isValidBindingConnection(c: Connection, blueprint: Blueprint) {
     return false;
   }
 
-  return !Object.values(blueprint.nodes).some((node: NodeDescriptor) => {
+  return !Object.values(blueprint.nodes).some((node: Node) => {
     return (
       node.type === 'connection' &&
       node.connectionType === 'binding' &&
@@ -79,7 +79,7 @@ export function isValidQueueConnection(c: Connection, blueprint: Blueprint) {
     return false;
   }
 
-  return !Object.values(blueprint.nodes).some((node: NodeDescriptor) => {
+  return !Object.values(blueprint.nodes).some((node: Node) => {
     return (
       node.type === 'connection' &&
       node.connectionType === 'queue' &&

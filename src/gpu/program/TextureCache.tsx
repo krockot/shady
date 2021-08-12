@@ -2,7 +2,7 @@ import { TextureNodeDescriptor } from '../Blueprint';
 import { Resource, ResourceCache } from './ResourceCache';
 import { ProgramMap } from './ProgramMap';
 
-export class Texture implements Resource {
+class TextureResource implements Resource {
   private readonly imageData_: Blob;
   private readonly bitmap_: ImageBitmap;
   private readonly texture_: GPUTexture;
@@ -45,7 +45,7 @@ export class TextureCompiler {
 
   needsRecompile(
     newDescriptor: TextureNodeDescriptor,
-    texture: Texture,
+    texture: TextureResource,
     programMap: ProgramMap
   ) {
     return newDescriptor.imageData !== texture.imageData;
@@ -71,14 +71,17 @@ export class TextureCompiler {
       { texture },
       size
     );
-    return new Texture(descriptor.imageData, bitmap, texture);
+    return new TextureResource(descriptor.imageData, bitmap, texture);
   }
 }
 
-export type TextureCache = ResourceCache<TextureNodeDescriptor, Texture>;
+export type TextureCache = ResourceCache<
+  TextureNodeDescriptor,
+  TextureResource
+>;
 
 export function createTextureCache(device: GPUDevice): TextureCache {
-  return new ResourceCache<TextureNodeDescriptor, Texture>(
+  return new ResourceCache<TextureNodeDescriptor, TextureResource>(
     new TextureCompiler(device)
   );
 }

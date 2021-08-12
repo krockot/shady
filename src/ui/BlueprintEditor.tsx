@@ -6,7 +6,7 @@ import ReactFlow, {
   Connection,
   Edge,
   FlowElement,
-  Node,
+  Node as FlowNode,
   OnLoadParams,
   XYPosition,
 } from 'react-flow-renderer';
@@ -14,7 +14,7 @@ import ReactFlow, {
 import {
   Blueprint,
   BufferBindingStorageType,
-  NodeDescriptor,
+  Node,
   NodeID,
   ShaderID,
 } from '../gpu/Blueprint';
@@ -70,7 +70,7 @@ class FlowErrorBounary extends React.Component {
   }
 }
 
-const isPassNode = (node: NodeDescriptor) =>
+const isPassNode = (node: Node) =>
   node.type === 'render' || node.type === 'compute';
 
 export class BlueprintEditor extends React.Component<Props> {
@@ -238,10 +238,10 @@ export class BlueprintEditor extends React.Component<Props> {
 
   onElementClick_ = (
     event: React.MouseEvent<Element, MouseEvent>,
-    element: Node<any> | Edge<any>
+    element: FlowNode<any> | Edge<any>
   ) => {};
 
-  onMoveNode_ = (event: React.MouseEvent, node: Node) => {
+  onMoveNode_ = (event: React.MouseEvent, node: FlowNode) => {
     node.data.node.position = { ...node.position };
     this.update_();
   };
@@ -253,7 +253,7 @@ export class BlueprintEditor extends React.Component<Props> {
     this.update_();
   };
 
-  addNode_ = (type: string, node: Partial<NodeDescriptor>) => {
+  addNode_ = (type: string, node: Partial<Node>) => {
     const nodes = this.props.blueprint.nodes;
     const id = getUnusedKey(nodes, type);
     nodes[id] = {
@@ -262,7 +262,7 @@ export class BlueprintEditor extends React.Component<Props> {
       type,
       position: { x: 100, y: 100 },
       ...node,
-    } as NodeDescriptor;
+    } as Node;
     this.update_();
   };
 

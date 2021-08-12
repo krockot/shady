@@ -36,7 +36,9 @@ async function updateCanvasImage(
 
 type CanvasRef = React.RefObject<HTMLCanvasElement>;
 
-export const TextureNodePanel = (props: NodePanelProps<TextureNodeDescriptor>) => {
+export const TextureNodePanel = (
+  props: NodePanelProps<TextureNodeDescriptor>
+) => {
   const data = props.data;
   const node = data.node;
   const canvasRef = React.useRef(null);

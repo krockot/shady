@@ -7,11 +7,11 @@ export type NodeID = string;
 export type ShaderID = string;
 
 export interface Blueprint {
-  nodes: Record<NodeID, NodeDescriptor>;
-  shaders: Record<ShaderID, ShaderDescriptor>;
+  nodes: Record<NodeID, Node>;
+  shaders: Record<ShaderID, Shader>;
 }
 
-export type NodeDescriptor =
+export type Node =
   | BufferNodeDescriptor
   | ComputeNodeDescriptor
   | ConnectionNodeDescriptor
@@ -93,7 +93,7 @@ export interface SamplerNodeDescriptor extends NodeDescriptorBase {
   // TODO: Filtering, addressing, clamping, comparison, anisotropy.
 }
 
-export interface ShaderDescriptor {
+export interface Shader {
   name: string;
   id: ShaderID;
   code: string;
@@ -145,14 +145,14 @@ export interface QueueNodeDescriptor extends ConnectionNodeDescriptorBase {
 }
 
 interface SerializedBlueprintV0 {
-  nodes: Record<NodeID, NodeDescriptor>;
-  shaders: Record<ShaderID, ShaderDescriptor>;
+  nodes: Record<NodeID, Node>;
+  shaders: Record<ShaderID, Shader>;
 }
 
 interface SerializedBlueprintV1 {
   version: 1;
-  nodes: NodeDescriptor[];
-  shaders: ShaderDescriptor[];
+  nodes: Node[];
+  shaders: Shader[];
 }
 
 export type SerializedBlueprint =

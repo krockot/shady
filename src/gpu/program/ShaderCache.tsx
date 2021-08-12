@@ -1,4 +1,4 @@
-import { ShaderDescriptor } from '../Blueprint';
+import { Shader } from '../Blueprint';
 import { BUILTIN_UNIFORMS_WGSL } from '../BuiltinUniforms';
 import { Resource, ResourceCache } from './ResourceCache';
 import { ProgramMap } from './ProgramMap';
@@ -21,7 +21,7 @@ export interface ShaderCompilationResult {
   messages: ShaderCompilationMessage[];
 }
 
-export class Shader implements Resource {
+class ShaderResource implements Resource {
   private readonly code_: string;
   private readonly module_: null | GPUShaderModule;
   private readonly messages_: ShaderCompilationMessage[];
@@ -56,19 +56,19 @@ export class ShaderCompiler {
     this.device_ = device;
   }
 
-  getCurrentDescriptors(programMap: ProgramMap): Iterable<ShaderDescriptor> {
+  getCurrentDescriptors(programMap: ProgramMap): Iterable<Shader> {
     return programMap.shaders.values();
   }
 
   needsRecompile(
-    newDescriptor: ShaderDescriptor,
-    shader: Shader,
+    newDescriptor: Shader,
+    shader: ShaderResource,
     programMap: ProgramMap
   ) {
     return newDescriptor.code !== shader.code;
   }
 
-  async compile(descriptor: ShaderDescriptor, programMap: ProgramMap) {
+  async compile(descriptor: Shader, programMap: ProgramMap) {
     const module = this.device_.createShaderModule({
       code: BUILTIN_UNIFORMS_WGSL + descriptor.code,
     });
@@ -89,14 +89,16 @@ export class ShaderCompiler {
       });
     }
 
-    return new Shader(descriptor.code, failed ? null : module, messages);
+    return new ShaderResource(
+      descriptor.code,
+      failed ? null : module,
+      messages
+    );
   }
 }
 
-export type ShaderCache = ResourceCache<ShaderDescriptor, Shader>;
+export type ShaderCache = ResourceCache<Shader, ShaderResource>;
 
 export function createShaderCache(device: GPUDevice): ShaderCache {
-  return new ResourceCache<ShaderDescriptor, Shader>(
-    new ShaderCompiler(device)
-  );
+  return new ResourceCache<Shader, ShaderResource>(new ShaderCompiler(device));
 }

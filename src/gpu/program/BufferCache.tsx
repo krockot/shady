@@ -10,7 +10,7 @@ function fillRandomUint32Array(data: Uint32Array) {
   }
 }
 
-export class Buffer implements Resource {
+class BufferResource implements Resource {
   private readonly size_: number;
   private readonly init_: BufferInitializer;
   private readonly usage_: GPUBufferUsageFlags;
@@ -61,7 +61,7 @@ class BufferCompiler {
 
   needsRecompile(
     newDescriptor: BufferNodeDescriptor,
-    buffer: Buffer,
+    buffer: BufferResource,
     programMap: ProgramMap
   ) {
     return (
@@ -101,7 +101,7 @@ class BufferCompiler {
       buffer.unmap();
     }
 
-    return new Buffer(
+    return new BufferResource(
       descriptor.size,
       descriptor.init ?? 'zero',
       usage,
@@ -110,10 +110,10 @@ class BufferCompiler {
   }
 }
 
-export type BufferCache = ResourceCache<BufferNodeDescriptor, Buffer>;
+export type BufferCache = ResourceCache<BufferNodeDescriptor, BufferResource>;
 
 export function createBufferCache(device: GPUDevice): BufferCache {
-  return new ResourceCache<BufferNodeDescriptor, Buffer>(
+  return new ResourceCache<BufferNodeDescriptor, BufferResource>(
     new BufferCompiler(device)
   );
 }

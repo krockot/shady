@@ -2,29 +2,29 @@ import './NodePanel.css';
 
 import React, { ReactNode } from 'react';
 
-import { Blueprint, NodeDescriptor } from '../../gpu/Blueprint';
+import { Blueprint, Node } from '../../gpu/Blueprint';
 import { EditableLabel } from '../EditableLabel';
 import { LabeledField } from '../LabeledField';
 
-type UpdateFn<DescriptorType extends NodeDescriptor> = (
+type UpdateFn<DescriptorType extends Node> = (
   update: Partial<DescriptorType>
 ) => void;
 
-interface NodePanelData<DescriptorType extends NodeDescriptor> {
+interface NodePanelData<DescriptorType extends Node> {
   blueprint: Blueprint;
   node: DescriptorType;
   onChange: UpdateFn<DescriptorType>;
   destroy: () => void;
 }
 
-export interface NodePanelProps<DescriptorType extends NodeDescriptor> {
+export interface NodePanelProps<DescriptorType extends Node> {
   data: NodePanelData<DescriptorType>;
 }
 
 interface Props {
   title?: string;
   className?: string;
-  node: NodeDescriptor;
+  node: Node;
   onRename?: (name: string) => void;
   destroy: () => void;
   children?: ReactNode;

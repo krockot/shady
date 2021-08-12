@@ -5,7 +5,9 @@ import { LabeledField } from '../LabeledField';
 import { NodePanel, NodePanelProps } from './NodePanel';
 import { isValidBindingConnection } from './Validation';
 
-export const BufferNodePanel = (props: NodePanelProps<BufferNodeDescriptor>) => {
+export const BufferNodePanel = (
+  props: NodePanelProps<BufferNodeDescriptor>
+) => {
   const data = props.data;
   const node = data.node;
   return (

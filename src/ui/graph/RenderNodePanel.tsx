@@ -24,7 +24,9 @@ function parseColor(value: string): GPUColorDict {
   };
 }
 
-export const RenderNodePanel = (props: NodePanelProps<RenderNodeDescriptor>) => {
+export const RenderNodePanel = (
+  props: NodePanelProps<RenderNodeDescriptor>
+) => {
   const data = props.data;
   const node = data.node;
   const debouncer = new Debouncer(30);

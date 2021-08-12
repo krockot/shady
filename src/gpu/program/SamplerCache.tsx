@@ -2,7 +2,7 @@ import { SamplerNodeDescriptor } from '../Blueprint';
 import { Resource, ResourceCache } from './ResourceCache';
 import { ProgramMap } from './ProgramMap';
 
-export class Sampler implements Resource {
+class SamplerResource implements Resource {
   private readonly sampler_: GPUSampler;
 
   constructor(sampler: GPUSampler) {
@@ -31,21 +31,24 @@ export class SamplerCompiler {
 
   needsRecompile(
     newDescriptor: SamplerNodeDescriptor,
-    sampler: Sampler,
+    sampler: SamplerResource,
     programMap: ProgramMap
   ) {
     return false;
   }
 
   async compile(descriptor: SamplerNodeDescriptor, programMap: ProgramMap) {
-    return new Sampler(this.device_.createSampler());
+    return new SamplerResource(this.device_.createSampler());
   }
 }
 
-export type SamplerCache = ResourceCache<SamplerNodeDescriptor, Sampler>;
+export type SamplerCache = ResourceCache<
+  SamplerNodeDescriptor,
+  SamplerResource
+>;
 
 export function createSamplerCache(device: GPUDevice): SamplerCache {
-  return new ResourceCache<SamplerNodeDescriptor, Sampler>(
+  return new ResourceCache<SamplerNodeDescriptor, SamplerResource>(
     new SamplerCompiler(device)
   );
 }

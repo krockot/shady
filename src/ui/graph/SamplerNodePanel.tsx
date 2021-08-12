@@ -5,7 +5,9 @@ import { SamplerNodeDescriptor } from '../../gpu/Blueprint';
 import { NodePanel, NodePanelProps } from './NodePanel';
 import { isValidBindingConnection } from './Validation';
 
-export const SamplerNodePanel = (props: NodePanelProps<SamplerNodeDescriptor>) => {
+export const SamplerNodePanel = (
+  props: NodePanelProps<SamplerNodeDescriptor>
+) => {
   const data = props.data;
   const node = data.node;
   return (

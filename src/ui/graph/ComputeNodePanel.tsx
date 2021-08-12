@@ -6,7 +6,9 @@ import { LabeledField } from '../LabeledField';
 import { NodePanel, NodePanelProps } from './NodePanel';
 import { isValidBindingConnection, isValidQueueConnection } from './Validation';
 
-export const ComputeNodePanel = (props: NodePanelProps<ComputeNodeDescriptor>) => {
+export const ComputeNodePanel = (
+  props: NodePanelProps<ComputeNodeDescriptor>
+) => {
   const data = props.data;
   const node = data.node;
   return (

@@ -9,7 +9,7 @@ import {
   RenderNodeDescriptor,
   SamplerBindingNodeDescriptor,
   SamplerNodeDescriptor,
-  ShaderDescriptor,
+  Shader,
   TextureBindingNodeDescriptor,
   TextureNodeDescriptor,
 } from '../Blueprint';
@@ -19,7 +19,7 @@ const kMaxBindGroups = 4;
 
 export type PassNode = RenderNodeDescriptor | ComputeNodeDescriptor;
 
-export type ShaderMap = Map<NodeID, ShaderDescriptor>;
+export type ShaderMap = Map<NodeID, Shader>;
 export type BufferMap = Map<NodeID, BufferNodeDescriptor>;
 export type TextureMap = Map<NodeID, TextureNodeDescriptor>;
 export type SamplerMap = Map<NodeID, SamplerNodeDescriptor>;
