@@ -1,14 +1,12 @@
 import { Handle, Position } from 'react-flow-renderer';
 
-import { ComputeNodeDescriptor } from '../../gpu/Blueprint';
+import { ComputeNode } from '../../gpu/Blueprint';
 import { EditableLabel } from '../EditableLabel';
 import { LabeledField } from '../LabeledField';
 import { NodePanel, NodePanelProps } from './NodePanel';
 import { isValidBindingConnection, isValidQueueConnection } from './Validation';
 
-export const ComputeNodePanel = (
-  props: NodePanelProps<ComputeNodeDescriptor>
-) => {
+export const ComputeNodePanel = (props: NodePanelProps<ComputeNode>) => {
   const data = props.data;
   const node = data.node;
   return (

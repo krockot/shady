@@ -1,34 +1,31 @@
 import { deepCopy } from '../../base/Util';
 import {
   Blueprint,
-  BindingNodeDescriptor,
-  BufferBindingNodeDescriptor,
-  BufferNodeDescriptor,
-  ComputeNodeDescriptor,
+  BindingNode,
+  BufferBindingNode,
+  BufferNode,
+  ComputeNode,
   NodeID,
-  RenderNodeDescriptor,
-  SamplerBindingNodeDescriptor,
-  SamplerNodeDescriptor,
+  RenderNode,
+  SamplerBindingNode,
+  SamplerNode,
   Shader,
-  TextureBindingNodeDescriptor,
-  TextureNodeDescriptor,
+  TextureBindingNode,
+  TextureNode,
 } from '../Blueprint';
 
 // TODO: This should be devised dynamically from device limits.
 const kMaxBindGroups = 4;
 
-export type PassNode = RenderNodeDescriptor | ComputeNodeDescriptor;
+export type PassNode = RenderNode | ComputeNode;
 
 export type ShaderMap = Map<NodeID, Shader>;
-export type BufferMap = Map<NodeID, BufferNodeDescriptor>;
-export type TextureMap = Map<NodeID, TextureNodeDescriptor>;
-export type SamplerMap = Map<NodeID, SamplerNodeDescriptor>;
+export type BufferMap = Map<NodeID, BufferNode>;
+export type TextureMap = Map<NodeID, TextureNode>;
+export type SamplerMap = Map<NodeID, SamplerNode>;
 export type PassMap = Map<NodeID, PassNode>;
 
-export type BindableNode =
-  | BufferNodeDescriptor
-  | TextureNodeDescriptor
-  | SamplerNodeDescriptor;
+export type BindableNode = BufferNode | TextureNode | SamplerNode;
 
 export interface BindGroupEntry {
   layoutEntry: GPUBindGroupLayoutEntry;
@@ -130,7 +127,7 @@ export class ProgramMap {
     this.computePassOrder_(queueDeps);
   }
 
-  populateBindings_(bindingNodes: BindingNodeDescriptor[]) {
+  populateBindings_(bindingNodes: BindingNode[]) {
     for (const node of bindingNodes) {
       const pass = this.passes.get(node.target);
       if (!pass) {
@@ -218,8 +215,8 @@ export class ProgramMap {
   compileBufferBinding_(
     passType: PassType,
     groups: BindGroup[],
-    buffer: BufferNodeDescriptor,
-    binding: BufferBindingNodeDescriptor
+    buffer: BufferNode,
+    binding: BufferBindingNode
   ) {
     let newUsage = 0;
     let bufferType: GPUBufferBindingType;
@@ -257,8 +254,8 @@ export class ProgramMap {
   compileTextureBinding_(
     passType: PassType,
     groups: BindGroup[],
-    texture: TextureNodeDescriptor,
-    binding: TextureBindingNodeDescriptor
+    texture: TextureNode,
+    binding: TextureBindingNode
   ) {
     const layoutEntry: GPUBindGroupLayoutEntry = {
       binding: binding.binding,
@@ -272,8 +269,8 @@ export class ProgramMap {
   compileSamplerBinding_(
     passType: PassType,
     groups: BindGroup[],
-    sampler: SamplerNodeDescriptor,
-    binding: SamplerBindingNodeDescriptor
+    sampler: SamplerNode,
+    binding: SamplerBindingNode
   ) {
     const layoutEntry: GPUBindGroupLayoutEntry = {
       binding: binding.binding,

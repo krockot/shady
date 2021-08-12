@@ -1,13 +1,11 @@
 import { Handle, Position } from 'react-flow-renderer';
 
-import { BufferInitializer, BufferNodeDescriptor } from '../../gpu/Blueprint';
+import { BufferInitializer, BufferNode } from '../../gpu/Blueprint';
 import { LabeledField } from '../LabeledField';
 import { NodePanel, NodePanelProps } from './NodePanel';
 import { isValidBindingConnection } from './Validation';
 
-export const BufferNodePanel = (
-  props: NodePanelProps<BufferNodeDescriptor>
-) => {
+export const BufferNodePanel = (props: NodePanelProps<BufferNode>) => {
   const data = props.data;
   const node = data.node;
   return (

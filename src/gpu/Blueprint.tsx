@@ -12,18 +12,18 @@ export interface Blueprint {
 }
 
 export type Node =
-  | BufferNodeDescriptor
-  | ComputeNodeDescriptor
-  | ConnectionNodeDescriptor
-  | RenderNodeDescriptor
-  | SamplerNodeDescriptor
-  | TextureNodeDescriptor;
+  | BufferNode
+  | ComputeNode
+  | ConnectionNode
+  | RenderNode
+  | SamplerNode
+  | TextureNode;
 
-export type ConnectionNodeDescriptor =
-  | BufferBindingNodeDescriptor
-  | QueueNodeDescriptor
-  | SamplerBindingNodeDescriptor
-  | TextureBindingNodeDescriptor;
+export type ConnectionNode =
+  | BufferBindingNode
+  | QueueNode
+  | SamplerBindingNode
+  | TextureBindingNode;
 
 export type NodeType =
   | 'render'
@@ -33,14 +33,14 @@ export type NodeType =
   | 'sampler'
   | 'connection';
 
-export interface NodeDescriptorBase {
+export interface NodeBase {
   id: NodeID;
   name: string;
   position: { x: number; y: number };
   type: NodeType;
 }
 
-export interface RenderNodeDescriptor extends NodeDescriptorBase {
+export interface RenderNode extends NodeBase {
   type: 'render';
 
   // TODO: Configuration for primitive state, depth/stencil, multisampling
@@ -62,7 +62,7 @@ export interface RenderNodeDescriptor extends NodeDescriptorBase {
   depthTest?: GPUCompareFunction;
 }
 
-export interface ComputeNodeDescriptor extends NodeDescriptorBase {
+export interface ComputeNode extends NodeBase {
   type: 'compute';
   shader: ShaderID;
   entryPoint: string;
@@ -71,13 +71,13 @@ export interface ComputeNodeDescriptor extends NodeDescriptorBase {
 
 export type BufferInitializer = 'zero' | 'random-floats' | 'random-uints';
 
-export interface BufferNodeDescriptor extends NodeDescriptorBase {
+export interface BufferNode extends NodeBase {
   type: 'buffer';
   size: number;
   init?: BufferInitializer;
 }
 
-export interface TextureNodeDescriptor extends NodeDescriptorBase {
+export interface TextureNode extends NodeBase {
   type: 'texture';
   imageData: null | Blob;
   imageDataSerialized: null | string;
@@ -87,7 +87,7 @@ export interface TextureNodeDescriptor extends NodeDescriptorBase {
   sampleCount: number;
 }
 
-export interface SamplerNodeDescriptor extends NodeDescriptorBase {
+export interface SamplerNode extends NodeBase {
   type: 'sampler';
 
   // TODO: Filtering, addressing, clamping, comparison, anisotropy.
@@ -101,7 +101,7 @@ export interface Shader {
 
 export type ConnectionType = 'binding' | 'queue';
 
-export interface ConnectionNodeDescriptorBase extends NodeDescriptorBase {
+export interface ConnectionNodeBase extends NodeBase {
   type: 'connection';
   connectionType: ConnectionType;
   source: NodeID;
@@ -110,8 +110,7 @@ export interface ConnectionNodeDescriptorBase extends NodeDescriptorBase {
 
 export type BindingType = 'buffer' | 'sampler' | 'texture';
 
-export interface BindingNodeDescriptorBase
-  extends ConnectionNodeDescriptorBase {
+export interface BindingNodeBase extends ConnectionNodeBase {
   connectionType: 'binding';
   bindingType: BindingType;
   group: number;
@@ -120,27 +119,25 @@ export interface BindingNodeDescriptorBase
 
 export type BufferBindingStorageType = 'storage-read' | 'storage' | 'uniform';
 
-export interface BufferBindingNodeDescriptor extends BindingNodeDescriptorBase {
+export interface BufferBindingNode extends BindingNodeBase {
   bindingType: 'buffer';
   storageType: BufferBindingStorageType;
 }
 
-export interface TextureBindingNodeDescriptor
-  extends BindingNodeDescriptorBase {
+export interface TextureBindingNode extends BindingNodeBase {
   bindingType: 'texture';
 }
 
-export interface SamplerBindingNodeDescriptor
-  extends BindingNodeDescriptorBase {
+export interface SamplerBindingNode extends BindingNodeBase {
   bindingType: 'sampler';
 }
 
-export type BindingNodeDescriptor =
-  | BufferBindingNodeDescriptor
-  | SamplerBindingNodeDescriptor
-  | TextureBindingNodeDescriptor;
+export type BindingNode =
+  | BufferBindingNode
+  | SamplerBindingNode
+  | TextureBindingNode;
 
-export interface QueueNodeDescriptor extends ConnectionNodeDescriptorBase {
+export interface QueueNode extends ConnectionNodeBase {
   connectionType: 'queue';
 }
 

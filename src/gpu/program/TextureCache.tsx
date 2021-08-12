@@ -1,4 +1,4 @@
-import { TextureNodeDescriptor } from '../Blueprint';
+import { TextureNode } from '../Blueprint';
 import { Resource, ResourceCache } from './ResourceCache';
 import { ProgramMap } from './ProgramMap';
 
@@ -37,21 +37,19 @@ export class TextureCompiler {
     this.device_ = device;
   }
 
-  getCurrentDescriptors(
-    programMap: ProgramMap
-  ): Iterable<TextureNodeDescriptor> {
+  getCurrentDescriptors(programMap: ProgramMap): Iterable<TextureNode> {
     return programMap.textures.values();
   }
 
   needsRecompile(
-    newDescriptor: TextureNodeDescriptor,
+    newDescriptor: TextureNode,
     texture: TextureResource,
     programMap: ProgramMap
   ) {
     return newDescriptor.imageData !== texture.imageData;
   }
 
-  async compile(descriptor: TextureNodeDescriptor, programMap: ProgramMap) {
+  async compile(descriptor: TextureNode, programMap: ProgramMap) {
     if (!descriptor.imageData) {
       return null;
     }
@@ -75,13 +73,10 @@ export class TextureCompiler {
   }
 }
 
-export type TextureCache = ResourceCache<
-  TextureNodeDescriptor,
-  TextureResource
->;
+export type TextureCache = ResourceCache<TextureNode, TextureResource>;
 
 export function createTextureCache(device: GPUDevice): TextureCache {
-  return new ResourceCache<TextureNodeDescriptor, TextureResource>(
+  return new ResourceCache<TextureNode, TextureResource>(
     new TextureCompiler(device)
   );
 }

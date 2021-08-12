@@ -6,19 +6,17 @@ import { Blueprint, Node } from '../../gpu/Blueprint';
 import { EditableLabel } from '../EditableLabel';
 import { LabeledField } from '../LabeledField';
 
-type UpdateFn<DescriptorType extends Node> = (
-  update: Partial<DescriptorType>
-) => void;
+type UpdateFn<NodeType extends Node> = (update: Partial<NodeType>) => void;
 
-interface NodePanelData<DescriptorType extends Node> {
+interface NodePanelData<NodeType extends Node> {
   blueprint: Blueprint;
-  node: DescriptorType;
-  onChange: UpdateFn<DescriptorType>;
+  node: NodeType;
+  onChange: UpdateFn<NodeType>;
   destroy: () => void;
 }
 
-export interface NodePanelProps<DescriptorType extends Node> {
-  data: NodePanelData<DescriptorType>;
+export interface NodePanelProps<NodeType extends Node> {
+  data: NodePanelData<NodeType>;
 }
 
 interface Props {

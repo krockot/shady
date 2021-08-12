@@ -1,9 +1,4 @@
-import {
-  Blueprint,
-  ComputeNodeDescriptor,
-  NodeID,
-  RenderNodeDescriptor,
-} from '../Blueprint';
+import { Blueprint, ComputeNode, NodeID, RenderNode } from '../Blueprint';
 import { ResourceBundle } from './ResourceBundle';
 import {
   LinkedComputePass,
@@ -114,7 +109,7 @@ function linkBindings(
 function linkRenderPass(
   device: GPUDevice,
   id: NodeID,
-  node: RenderNodeDescriptor,
+  node: RenderNode,
   builtinUniforms: GPUBuffer,
   outputFormat: GPUTextureFormat,
   resources: ResourceBundle,
@@ -124,13 +119,13 @@ function linkRenderPass(
     return null;
   }
 
-  const vertexDescriptor = blueprint.shaders[node.vertexShader];
-  const fragmentDescriptor = blueprint.shaders[node.fragmentShader];
-  if (!vertexDescriptor || !fragmentDescriptor) {
+  const vertex = blueprint.shaders[node.vertexShader];
+  const fragment = blueprint.shaders[node.fragmentShader];
+  if (!vertex || !fragment) {
     return null;
   }
-  const vertexShader = resources.shaders.get(vertexDescriptor.id);
-  const fragmentShader = resources.shaders.get(fragmentDescriptor.id);
+  const vertexShader = resources.shaders.get(vertex.id);
+  const fragmentShader = resources.shaders.get(fragment.id);
   if (
     !vertexShader ||
     !fragmentShader ||
@@ -187,7 +182,7 @@ function linkRenderPass(
   encoder.draw(node.numVertices, node.numInstances);
   return {
     type: 'render',
-    descriptor: node,
+    node,
     bundle: encoder.finish(),
   };
 }
@@ -195,7 +190,7 @@ function linkRenderPass(
 function linkComputePass(
   device: GPUDevice,
   id: NodeID,
-  node: ComputeNodeDescriptor,
+  node: ComputeNode,
   builtinUniforms: GPUBuffer,
   resources: ResourceBundle,
   blueprint: Blueprint
@@ -229,7 +224,7 @@ function linkComputePass(
   });
   return {
     type: 'compute',
-    descriptor: node,
+    node,
     bindGroups: bindings.bindGroups,
     pipeline,
   };

@@ -1,13 +1,11 @@
 import React from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 
-import { SamplerNodeDescriptor } from '../../gpu/Blueprint';
+import { SamplerNode } from '../../gpu/Blueprint';
 import { NodePanel, NodePanelProps } from './NodePanel';
 import { isValidBindingConnection } from './Validation';
 
-export const SamplerNodePanel = (
-  props: NodePanelProps<SamplerNodeDescriptor>
-) => {
+export const SamplerNodePanel = (props: NodePanelProps<SamplerNode>) => {
   const data = props.data;
   const node = data.node;
   return (

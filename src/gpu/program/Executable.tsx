@@ -1,4 +1,4 @@
-import { ComputeNodeDescriptor, RenderNodeDescriptor } from '../Blueprint';
+import { ComputeNode, RenderNode } from '../Blueprint';
 
 export type PassType = 'render' | 'compute';
 
@@ -6,13 +6,13 @@ export type LinkedPass = LinkedRenderPass | LinkedComputePass;
 
 export interface LinkedRenderPass {
   type: 'render';
-  descriptor: RenderNodeDescriptor;
+  node: RenderNode;
   bundle: GPURenderBundle;
 }
 
 export interface LinkedComputePass {
   type: 'compute';
-  descriptor: ComputeNodeDescriptor;
+  node: ComputeNode;
   bindGroups: GPUBindGroup[];
   pipeline: GPUComputePipeline;
 }
@@ -76,8 +76,8 @@ export class Executable {
     encoder: GPUCommandEncoder,
     texture: GPUTexture
   ) {
-    const loadValue = pass.descriptor.clear
-      ? pass.descriptor.clearColor ?? { r: 0, g: 0, b: 0, a: 1 }
+    const loadValue = pass.node.clear
+      ? pass.node.clearColor ?? { r: 0, g: 0, b: 0, a: 1 }
       : ('load' as const);
     const depthStencilTexture = this.outputDepthStencilTexture_!;
     const renderPass = encoder.beginRenderPass({
@@ -90,7 +90,7 @@ export class Executable {
       ],
       depthStencilAttachment: {
         view: depthStencilTexture.createView(),
-        depthLoadValue: pass.descriptor.clear ? 1 : 'load',
+        depthLoadValue: pass.node.clear ? 1 : 'load',
         depthStoreOp: 'store',
         stencilLoadValue: 1,
         stencilStoreOp: 'store',
@@ -102,7 +102,7 @@ export class Executable {
 
   encodeComputeCommands_(pass: LinkedComputePass, encoder: GPUCommandEncoder) {
     const computePass = encoder.beginComputePass();
-    const dispatchSize = pass.descriptor.dispatchSize;
+    const dispatchSize = pass.node.dispatchSize;
     computePass.setPipeline(pass.pipeline);
     pass.bindGroups.forEach((group, i) => {
       computePass.setBindGroup(i, group);

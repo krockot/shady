@@ -1,4 +1,4 @@
-import { BufferInitializer, BufferNodeDescriptor } from '../Blueprint';
+import { BufferInitializer, BufferNode } from '../Blueprint';
 import { Resource, ResourceCache } from './ResourceCache';
 import { ProgramMap } from './ProgramMap';
 
@@ -53,14 +53,12 @@ class BufferCompiler {
     this.device_ = device;
   }
 
-  getCurrentDescriptors(
-    programMap: ProgramMap
-  ): Iterable<BufferNodeDescriptor> {
+  getCurrentDescriptors(programMap: ProgramMap): Iterable<BufferNode> {
     return programMap.buffers.values();
   }
 
   needsRecompile(
-    newDescriptor: BufferNodeDescriptor,
+    newDescriptor: BufferNode,
     buffer: BufferResource,
     programMap: ProgramMap
   ) {
@@ -71,7 +69,7 @@ class BufferCompiler {
     );
   }
 
-  async compile(descriptor: BufferNodeDescriptor, programMap: ProgramMap) {
+  async compile(descriptor: BufferNode, programMap: ProgramMap) {
     const usage = programMap.bufferUsage.get(descriptor.id);
     if (!usage) {
       // No need to do anything, this buffer isn't used by anyone.
@@ -110,10 +108,10 @@ class BufferCompiler {
   }
 }
 
-export type BufferCache = ResourceCache<BufferNodeDescriptor, BufferResource>;
+export type BufferCache = ResourceCache<BufferNode, BufferResource>;
 
 export function createBufferCache(device: GPUDevice): BufferCache {
-  return new ResourceCache<BufferNodeDescriptor, BufferResource>(
+  return new ResourceCache<BufferNode, BufferResource>(
     new BufferCompiler(device)
   );
 }

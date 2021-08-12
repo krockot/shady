@@ -1,7 +1,7 @@
 import { Handle, Position } from 'react-flow-renderer';
 
 import { Debouncer } from '../../base/Debouncer';
-import { RenderNodeDescriptor } from '../../gpu/Blueprint';
+import { RenderNode } from '../../gpu/Blueprint';
 import { EditableLabel } from '../EditableLabel';
 import { LabeledField } from '../LabeledField';
 import { NodePanel, NodePanelProps } from './NodePanel';
@@ -24,9 +24,7 @@ function parseColor(value: string): GPUColorDict {
   };
 }
 
-export const RenderNodePanel = (
-  props: NodePanelProps<RenderNodeDescriptor>
-) => {
+export const RenderNodePanel = (props: NodePanelProps<RenderNode>) => {
   const data = props.data;
   const node = data.node;
   const debouncer = new Debouncer(30);

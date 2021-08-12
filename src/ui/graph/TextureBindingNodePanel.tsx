@@ -3,11 +3,11 @@ import './NodePanel.css';
 import React from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 
-import { TextureBindingNodeDescriptor } from '../../gpu/Blueprint';
+import { TextureBindingNode } from '../../gpu/Blueprint';
 import { NodePanel, NodePanelProps } from './NodePanel';
 
 export const TextureBindingNodePanel = (
-  props: NodePanelProps<TextureBindingNodeDescriptor>
+  props: NodePanelProps<TextureBindingNode>
 ) => {
   const data = props.data;
   const node = data.node;

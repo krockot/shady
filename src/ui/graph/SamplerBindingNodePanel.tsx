@@ -3,11 +3,11 @@ import './NodePanel.css';
 import React from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 
-import { SamplerBindingNodeDescriptor } from '../../gpu/Blueprint';
+import { SamplerBindingNode } from '../../gpu/Blueprint';
 import { NodePanel, NodePanelProps } from './NodePanel';
 
 export const SamplerBindingNodePanel = (
-  props: NodePanelProps<SamplerBindingNodeDescriptor>
+  props: NodePanelProps<SamplerBindingNode>
 ) => {
   const data = props.data;
   const node = data.node;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 
-import { TextureNodeDescriptor } from '../../gpu/Blueprint';
+import { TextureNode } from '../../gpu/Blueprint';
 import { NodePanel, NodePanelProps } from './NodePanel';
 import { isValidBindingConnection } from './Validation';
 
@@ -36,9 +36,7 @@ async function updateCanvasImage(
 
 type CanvasRef = React.RefObject<HTMLCanvasElement>;
 
-export const TextureNodePanel = (
-  props: NodePanelProps<TextureNodeDescriptor>
-) => {
+export const TextureNodePanel = (props: NodePanelProps<TextureNode>) => {
   const data = props.data;
   const node = data.node;
   const canvasRef = React.useRef(null);

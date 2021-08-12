@@ -4,13 +4,13 @@ import React from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 
 import {
-  BufferBindingNodeDescriptor,
+  BufferBindingNode,
   BufferBindingStorageType,
 } from '../../gpu/Blueprint';
 import { NodePanel, NodePanelProps } from './NodePanel';
 
 export const BufferBindingNodePanel = (
-  props: NodePanelProps<BufferBindingNodeDescriptor>
+  props: NodePanelProps<BufferBindingNode>
 ) => {
   const data = props.data;
   const node = data.node;

@@ -1,4 +1,4 @@
-import { SamplerNodeDescriptor } from '../Blueprint';
+import { SamplerNode } from '../Blueprint';
 import { Resource, ResourceCache } from './ResourceCache';
 import { ProgramMap } from './ProgramMap';
 
@@ -23,32 +23,27 @@ export class SamplerCompiler {
     this.device_ = device;
   }
 
-  getCurrentDescriptors(
-    programMap: ProgramMap
-  ): Iterable<SamplerNodeDescriptor> {
+  getCurrentDescriptors(programMap: ProgramMap): Iterable<SamplerNode> {
     return programMap.samplers.values();
   }
 
   needsRecompile(
-    newDescriptor: SamplerNodeDescriptor,
+    newDescriptor: SamplerNode,
     sampler: SamplerResource,
     programMap: ProgramMap
   ) {
     return false;
   }
 
-  async compile(descriptor: SamplerNodeDescriptor, programMap: ProgramMap) {
+  async compile(descriptor: SamplerNode, programMap: ProgramMap) {
     return new SamplerResource(this.device_.createSampler());
   }
 }
 
-export type SamplerCache = ResourceCache<
-  SamplerNodeDescriptor,
-  SamplerResource
->;
+export type SamplerCache = ResourceCache<SamplerNode, SamplerResource>;
 
 export function createSamplerCache(device: GPUDevice): SamplerCache {
-  return new ResourceCache<SamplerNodeDescriptor, SamplerResource>(
+  return new ResourceCache<SamplerNode, SamplerResource>(
     new SamplerCompiler(device)
   );
 }
