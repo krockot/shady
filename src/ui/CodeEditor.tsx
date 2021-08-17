@@ -25,6 +25,10 @@ export class CodeEditor extends React.Component<Props> {
     this.editorRef_ = React.createRef();
   }
 
+  shouldComponentUpdate() {
+    return false;
+  }
+
   refresh() {
     const cm = this.editorRef_.current;
     if (cm) {

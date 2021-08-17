@@ -2,6 +2,7 @@ import './Editor.css';
 
 import React from 'react';
 
+import { deepCopy } from '../base/Util';
 import { Blueprint, ShaderID } from '../gpu/Blueprint';
 import { BUILTIN_UNIFORMS_WGSL } from '../gpu/BuiltinUniforms';
 import { ShaderCompilationResults } from '../gpu/program/Program';
@@ -11,7 +12,7 @@ import { TabContainer } from './TabContainer';
 
 interface Props {
   blueprint: Blueprint;
-  onBlueprintChange: () => void;
+  onBlueprintChange: (blueprint: Blueprint) => void;
 
   compilationResults: ShaderCompilationResults;
 
@@ -20,13 +21,15 @@ interface Props {
 
 export const Editor = (props: Props) => {
   const removeShader = (id: ShaderID) => {
-    delete props.blueprint.shaders[id];
-    props.onBlueprintChange();
+    const blueprint = deepCopy(props.blueprint);
+    delete blueprint.shaders[id];
+    props.onBlueprintChange(blueprint);
   };
 
   const renameShader = (id: ShaderID, newName: string) => {
-    props.blueprint.shaders[id].name = newName;
-    props.onBlueprintChange();
+    const blueprint = deepCopy(props.blueprint);
+    blueprint.shaders[id].name = newName;
+    props.onBlueprintChange(blueprint);
   };
 
   const refreshEditor = (ref: React.RefObject<CodeEditor>) => {
@@ -86,8 +89,9 @@ export const Editor = (props: Props) => {
             contents={shader.code}
             mutable={true}
             onChange={code => {
-              shader.code = code;
-              props.onBlueprintChange();
+              const blueprint = deepCopy(props.blueprint);
+              blueprint.shaders[id].code = code;
+              props.onBlueprintChange(blueprint);
             }}
             theme={props.codeMirrorTheme}
           />

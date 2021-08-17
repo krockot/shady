@@ -32,8 +32,6 @@ export class FrameProducer {
     this.program_ = null;
   }
 
-  reconfigure() {}
-
   set onShadersCompiled(handler: ShadersCompiledHandler) {
     this.onShadersCompiled_ = handler;
     if (this.program_) {

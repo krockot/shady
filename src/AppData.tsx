@@ -4,14 +4,14 @@ import { BOIDS } from './presets/Boids';
 import { INSTANCES } from './presets/Instances';
 import { DisplayConfig } from './ui/Display';
 
-export interface AppState {
+export interface AppData {
   blueprint: SerializedBlueprint;
   savedBlueprints: Record<string, SerializedBlueprint>;
   displayConfig: DisplayConfig;
   codeMirrorTheme: string;
 }
 
-export const DEFAULT_APP_STATE: AppState = {
+export const DEFAULT_APP_DATA: AppData = {
   blueprint: {
     version: 1,
     nodes: [],

@@ -11,11 +11,14 @@ import ReactFlow, {
   XYPosition,
 } from 'react-flow-renderer';
 
+import { deepCopy, deepUpdate, DeepPartial } from '../base/Util';
 import {
   Blueprint,
   BufferBindingStorageType,
+  ID,
   Node,
   NodeID,
+  NodeType,
   ShaderID,
 } from '../gpu/Blueprint';
 import { BufferBindingNodePanel } from './graph/BufferBindingNodePanel';
@@ -45,19 +48,7 @@ const EDGE_TYPES = {
 
 interface Props {
   blueprint: Blueprint;
-  onChange: () => void;
-}
-
-function getUnusedKey<ID extends ShaderID | NodeID, T extends Record<ID, any>>(
-  dict: T,
-  base: ID
-): ID {
-  for (let i = 1; ; ++i) {
-    const id = `${base}${i}` as ID;
-    if (!dict.hasOwnProperty(id)) {
-      return id;
-    }
-  }
+  onChange: (blueprint: Blueprint) => void;
 }
 
 class FlowErrorBounary extends React.Component {
@@ -74,7 +65,6 @@ const isPassNode = (node: Node) =>
   node.type === 'render' || node.type === 'compute';
 
 export class BlueprintEditor extends React.Component<Props> {
-  private isMounted_: boolean;
   private instance_: null | OnLoadParams;
   private flowRef_: React.RefObject<HTMLDivElement>;
   private lastConnectStart_: null | XYPosition;
@@ -82,19 +72,10 @@ export class BlueprintEditor extends React.Component<Props> {
 
   constructor(props: Props) {
     super(props);
-    this.isMounted_ = false;
     this.instance_ = null;
     this.flowRef_ = React.createRef();
     this.lastConnectStart_ = null;
     this.lastConnectEnd_ = null;
-  }
-
-  componentDidMount() {
-    this.isMounted_ = true;
-  }
-
-  componentWillUnmount() {
-    this.isMounted_ = false;
   }
 
   render() {
@@ -105,10 +86,7 @@ export class BlueprintEditor extends React.Component<Props> {
             ref={this.flowRef_}
             nodeTypes={NODE_TYPES}
             edgeTypes={EDGE_TYPES}
-            elements={buildGraphFromBlueprint(
-              this.props.blueprint,
-              this.update_
-            )}
+            elements={this.createGraph_(this.props.blueprint)}
             elementsSelectable={false}
             nodesConnectable={true}
             nodesDraggable={true}
@@ -134,17 +112,6 @@ export class BlueprintEditor extends React.Component<Props> {
       </div>
     );
   }
-
-  update_ = () => {
-    if (!this.isMounted_) {
-      return;
-    }
-
-    this.setState({
-      elements: buildGraphFromBlueprint(this.props.blueprint, this.update_),
-    });
-    this.props.onChange();
-  };
 
   onLoad_ = (instance: OnLoadParams) => {
     this.instance_ = instance;
@@ -193,7 +160,6 @@ export class BlueprintEditor extends React.Component<Props> {
         position,
         'storage-read'
       );
-      this.props.onChange();
       return;
     }
 
@@ -203,7 +169,6 @@ export class BlueprintEditor extends React.Component<Props> {
       edge.targetHandle === 'bindings'
     ) {
       this.addTrivialBinding_('texture', edge.source!, edge.target!, position);
-      this.props.onChange();
       return;
     }
 
@@ -213,7 +178,6 @@ export class BlueprintEditor extends React.Component<Props> {
       edge.targetHandle === 'bindings'
     ) {
       this.addTrivialBinding_('sampler', edge.source!, edge.target!, position);
-      this.props.onChange();
       return;
     }
 
@@ -222,21 +186,47 @@ export class BlueprintEditor extends React.Component<Props> {
       isPassNode(source) &&
       edge.targetHandle === 'queueIn'
     ) {
-      const nodes = this.props.blueprint.nodes;
-      const id = getUnusedKey(nodes, `queue-dep`);
-      nodes[id] = {
+      const id = this.newNodeKey_('queue-dep');
+      this.updateNode_(id, {
         id,
         name: '',
         position,
-        type: 'connection',
-        connectionType: 'queue',
+        type: 'connection' as const,
+        connectionType: 'queue' as const,
         source: edge.source!,
         target: edge.target!,
-      };
-      this.props.onChange();
+      });
       return;
     }
   };
+
+  newNodeKey_(prefix: NodeID): NodeID {
+    for (let i = 1; ; ++i) {
+      const id = `${prefix}${i}` as NodeID;
+      if (!this.props.blueprint.nodes.hasOwnProperty(id)) {
+        return id;
+      }
+    }
+  }
+
+  newShaderKey_(): ShaderID {
+    for (let i = 1; ; ++i) {
+      const id = `shader${i}` as ShaderID;
+      if (!this.props.blueprint.shaders.hasOwnProperty(id)) {
+        return id;
+      }
+    }
+  }
+
+  updateBlueprint_(update: DeepPartial<Blueprint>) {
+    const copy = deepCopy(this.props.blueprint);
+    deepUpdate(copy, update);
+    this.props.onChange(copy);
+  }
+
+  updateNode_(id: NodeID, update: Partial<Node>) {
+    this.updateBlueprint_({ nodes: { [id]: update } });
+  }
 
   onElementClick_ = (
     event: React.MouseEvent<Element, MouseEvent>,
@@ -244,28 +234,23 @@ export class BlueprintEditor extends React.Component<Props> {
   ) => {};
 
   onMoveNode_ = (event: React.MouseEvent, node: FlowNode) => {
-    node.data.node.position = { ...node.position };
-    this.update_();
+    this.updateNode_(node.data.node.id, { position: { ...node.position } });
   };
 
   addShader_ = () => {
-    const shaders = this.props.blueprint.shaders;
-    const id = getUnusedKey(shaders, 'shader');
-    shaders[id] = { name: id, id, code: '' };
-    this.update_();
+    const id = this.newShaderKey_();
+    this.updateBlueprint_({ shaders: { [id]: { name: id, id, code: '' } } });
   };
 
-  addNode_ = (type: string, node: Partial<Node>) => {
-    const nodes = this.props.blueprint.nodes;
-    const id = getUnusedKey(nodes, type);
-    nodes[id] = {
+  addNode_ = (type: NodeType, node: Partial<Node>) => {
+    const id = this.newNodeKey_(type);
+    this.updateNode_(id, {
       id,
       name: id,
       type,
       position: { x: 100, y: 100 },
       ...node,
-    } as Node;
-    this.update_();
+    } as Node);
   };
 
   addBuffer_ = () => {
@@ -298,9 +283,8 @@ export class BlueprintEditor extends React.Component<Props> {
     position: XYPosition,
     storageType: BufferBindingStorageType
   ) => {
-    const nodes = this.props.blueprint.nodes;
-    const id = getUnusedKey(nodes, `binding-buffer`);
-    nodes[id] = {
+    const id = this.newNodeKey_('binding-buffer');
+    this.updateNode_(id, {
       id,
       name: '',
       position,
@@ -312,7 +296,7 @@ export class BlueprintEditor extends React.Component<Props> {
       group: 0,
       binding: 1,
       storageType,
-    };
+    });
   };
 
   addTrivialBinding_ = (
@@ -321,9 +305,8 @@ export class BlueprintEditor extends React.Component<Props> {
     target: NodeID,
     position: XYPosition
   ) => {
-    const nodes = this.props.blueprint.nodes;
-    const id = getUnusedKey(nodes, `binding-${type}`);
-    nodes[id] = {
+    const id = this.newNodeKey_(`binding-${type}`);
+    this.updateNode_(id, {
       id,
       name: '',
       position,
@@ -334,7 +317,7 @@ export class BlueprintEditor extends React.Component<Props> {
       target,
       group: 0,
       binding: 1,
-    };
+    });
   };
 
   addRenderPass_ = () => {
@@ -359,96 +342,85 @@ export class BlueprintEditor extends React.Component<Props> {
       dispatchSize: { x: 1, y: 1, z: 1 },
     });
   };
-}
 
-function buildGraphFromBlueprint(
-  blueprint: Blueprint,
-  onChange: () => void
-): FlowElement[] {
-  const elements: FlowElement[] = [];
-  Object.entries(blueprint.nodes).forEach(([id, node]) => {
-    if (node.type !== 'connection') {
-      elements.push({
-        id,
-        type: node.type,
-        data: {
+  createGraph_(blueprint: Blueprint): FlowElement[] {
+    const elements: FlowElement[] = [];
+    Object.entries(blueprint.nodes).forEach(([id, node]) => {
+      if (node.type !== 'connection') {
+        elements.push({
+          id,
+          type: node.type,
+          data: {
+            blueprint,
+            node,
+            onChange: (update: any) => this.updateNode_(id, update),
+            destroy: () => {
+              const copy = deepCopy(blueprint);
+              delete copy.nodes[id];
+              for (const [otherId, otherNode] of Object.entries(copy.nodes)) {
+                if (
+                  otherNode.type === 'connection' &&
+                  (otherNode.source === id || otherNode.target === id)
+                ) {
+                  delete copy.nodes[otherId];
+                }
+              }
+              this.props.onChange(copy);
+            },
+          },
+          position: node.position,
+        });
+      } else if (node.connectionType === 'binding') {
+        const data = {
           blueprint,
           node,
-          onChange: (update: any) => {
-            Object.assign(blueprint.nodes[id], update);
-            onChange();
-          },
+          onChange: (update: any) => this.updateNode_(id, update),
           destroy: () => {
-            delete blueprint.nodes[id];
-            for (const [otherId, otherNode] of Object.entries(
-              blueprint.nodes
-            )) {
-              if (
-                otherNode.type === 'connection' &&
-                (otherNode.source === id || otherNode.target === id)
-              ) {
-                delete blueprint.nodes[otherId];
-              }
-            }
-            onChange();
+            const copy = deepCopy(blueprint);
+            delete copy.nodes[id];
+            this.props.onChange(copy);
           },
-        },
-        position: node.position,
-      });
-    } else if (node.connectionType === 'binding') {
-      const data = {
-        blueprint,
-        node,
-        onChange: (update: any) => {
-          Object.assign(node, update);
-          onChange();
-        },
-        destroy: () => {
-          delete blueprint.nodes[id];
-          onChange();
-        },
-      };
-      elements.push({
-        id: `${id}-node`,
-        type: `${node.bindingType}-binding`,
-        data,
-        position: node.position,
-      });
-      elements.push({
-        id: `${id}-source-edge`,
-        source: node.source,
-        target: `${id}-node`,
-      });
-      elements.push({
-        id: `${id}-target-edge`,
-        source: `${id}-node`,
-        target: node.target,
-        arrowHeadType: 'arrowclosed' as ArrowHeadType,
-      });
-    } else if (node.connectionType === 'queue') {
-      const data = {
-        blueprint,
-        node,
-        onChange: (update: any) => {
-          Object.assign(node, update);
-          onChange();
-        },
-        destroy: () => {
-          delete blueprint.nodes[id];
-          onChange();
-        },
-      };
-      elements.push({
-        id,
-        source: node.source,
-        target: node.target,
-        targetHandle: 'queueIn',
-        type: 'custom-edge',
-        arrowHeadType: 'arrowclosed' as ArrowHeadType,
-        data,
-      });
-    }
-  });
+        };
+        elements.push({
+          id: `${id}-node`,
+          type: `${node.bindingType}-binding`,
+          data,
+          position: node.position,
+        });
+        elements.push({
+          id: `${id}-source-edge`,
+          source: node.source,
+          target: `${id}-node`,
+        });
+        elements.push({
+          id: `${id}-target-edge`,
+          source: `${id}-node`,
+          target: node.target,
+          arrowHeadType: 'arrowclosed' as ArrowHeadType,
+        });
+      } else if (node.connectionType === 'queue') {
+        const data = {
+          blueprint,
+          node,
+          onChange: (update: any) => this.updateNode_(id, update),
+          destroy: () => {
+            const copy = deepCopy(blueprint);
+            delete copy.nodes[id];
+            this.props.onChange(copy);
+          },
+        };
+        elements.push({
+          id,
+          source: node.source,
+          target: node.target,
+          targetHandle: 'queueIn',
+          type: 'custom-edge',
+          arrowHeadType: 'arrowclosed' as ArrowHeadType,
+          data,
+        });
+      }
+    });
 
-  return elements;
+    return elements;
+  }
 }

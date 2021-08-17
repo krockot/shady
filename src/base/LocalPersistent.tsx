@@ -1,4 +1,5 @@
 import { Debouncer } from './Debouncer';
+import { deepUpdate } from './Util';
 
 import localForage from 'localforage';
 
@@ -8,24 +9,6 @@ interface Options<Type> {
   key: string;
   default: Type;
   debounceMs?: number;
-}
-
-function deepUpdate(target: any, source: any): any {
-  const isObject = (x: any) => typeof x === 'object' && x !== null;
-  for (const [key, value] of Object.entries(source)) {
-    if (!target.hasOwnProperty(key)) {
-      if (Array.isArray(value)) {
-        target[key] = [...value];
-      } else if (isObject(value)) {
-        target[key] = deepUpdate({}, value);
-      } else {
-        target[key] = value;
-      }
-    } else if (isObject(value) && isObject(target[key])) {
-      deepUpdate(target[key], value);
-    }
-  }
-  return target;
 }
 
 export class LocalPersistent<Type> {

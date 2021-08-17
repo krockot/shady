@@ -15,41 +15,61 @@ import { ShaderCompilationResults } from './gpu/program/Program';
 import { ControlPanel } from './ui/ControlPanel';
 import { Display, DisplayConfig } from './ui/Display';
 import { Editor } from './ui/Editor';
-import { AppState } from './AppState';
+import { AppData } from './AppData';
 
 interface Props {
-  appState: LocalPersistent<AppState>;
+  data: LocalPersistent<AppData>;
 }
 
-interface State extends AppState {
+export interface AppState {
+  blueprint: Blueprint;
+  savedBlueprints: Record<string, SerializedBlueprint>;
+  displayConfig: DisplayConfig;
+  codeMirrorTheme: string;
   compilationResults: ShaderCompilationResults;
 }
 
-class App extends React.Component<Props, State> {
+class App extends React.Component<Props, AppState> {
   private frameProducer_: FrameProducer;
-  private blueprint_: Blueprint;
 
   constructor(props: Props) {
     super(props);
 
     this.state = {
-      ...this.props.appState.value,
+      blueprint: deserializeBlueprint(this.data.blueprint),
+      savedBlueprints: this.data.savedBlueprints,
+      displayConfig: this.data.displayConfig,
+      codeMirrorTheme: this.data.codeMirrorTheme,
       compilationResults: new Map(),
     };
 
-    this.blueprint_ = deserializeBlueprint(this.state.blueprint);
-
     this.frameProducer_ = new FrameProducer();
-    this.frameProducer_.setBlueprint(this.blueprint_);
+    this.frameProducer_.setBlueprint(this.state.blueprint);
+  }
+
+  get data() {
+    return this.props.data.value;
+  }
+
+  updateData_(update: Partial<AppData>) {
+    const data = this.props.data.value;
+    Object.assign(data, update);
+    this.props.data.value = data;
   }
 
   componentDidMount() {
     this.frameProducer_.onShadersCompiled = this.onShadersCompiled_;
   }
 
-  componentDidUpdate() {
-    this.props.appState.value = this.state;
-    this.frameProducer_.setBlueprint(this.blueprint_);
+  async componentDidUpdate() {
+    const blueprint = this.state.blueprint;
+    this.frameProducer_.setBlueprint(blueprint);
+    this.updateData_({
+      blueprint: await serializeBlueprint(blueprint),
+      savedBlueprints: this.state.savedBlueprints,
+      displayConfig: this.state.displayConfig,
+      codeMirrorTheme: this.state.codeMirrorTheme,
+    });
   }
 
   componentWillUnmount() {
@@ -57,20 +77,15 @@ class App extends React.Component<Props, State> {
   }
 
   onDisplayConfigChange = (change: Partial<DisplayConfig>) => {
-    this.setState((state, props) => {
+    this.setState(state => {
       return {
         displayConfig: Object.assign({ ...state.displayConfig }, change),
       };
     });
   };
 
-  onFullscreenChange_ = () => {
-    this.frameProducer_.reconfigure();
-  };
-
-  onBlueprintChange_ = async () => {
-    this.frameProducer_.setBlueprint(this.blueprint_);
-    this.setState({ blueprint: await serializeBlueprint(this.blueprint_) });
+  onBlueprintChange_ = (blueprint: Blueprint) => {
+    this.setState({ blueprint });
   };
 
   onShadersCompiled_ = (compilationResults: ShaderCompilationResults) => {
@@ -78,8 +93,8 @@ class App extends React.Component<Props, State> {
   };
 
   onSaveBlueprint_ = async (name: string) => {
-    const serialized = await serializeBlueprint(this.blueprint_);
-    this.setState((state, props) => ({
+    const serialized = await serializeBlueprint(this.state.blueprint);
+    this.setState(state => ({
       savedBlueprints: {
         ...state.savedBlueprints,
         [name]: serialized,
@@ -92,27 +107,15 @@ class App extends React.Component<Props, State> {
     if (!blueprint) {
       return;
     }
-
-    this.blueprint_ = deserializeBlueprint(blueprint);
-    const reserialized = await serializeBlueprint(this.blueprint_);
-
-    this.setState(state => {
-      const blueprints = state.savedBlueprints;
-      blueprints[name] = reserialized;
-      return {
-        blueprint: deepCopy(blueprint),
-        savedBlueprints: blueprints,
-      };
-    });
+    this.onBlueprintChange_(deserializeBlueprint(blueprint));
   };
 
   onImportBlueprint_ = (blueprint: SerializedBlueprint) => {
-    this.blueprint_ = deserializeBlueprint(blueprint);
-    this.setState({ blueprint });
+    this.onBlueprintChange_(deserializeBlueprint(blueprint));
   };
 
   onDeleteBlueprint_ = (name: string) => {
-    this.setState((state, props) => {
+    this.setState(state => {
       delete state.savedBlueprints[name];
       return { savedBlueprints: state.savedBlueprints };
     });
@@ -152,7 +155,7 @@ class App extends React.Component<Props, State> {
           <div className="App-editor">
             <Editor
               compilationResults={this.state.compilationResults}
-              blueprint={this.blueprint_}
+              blueprint={this.state.blueprint}
               onBlueprintChange={this.onBlueprintChange_}
               codeMirrorTheme={this.state.codeMirrorTheme}
             />
@@ -160,7 +163,7 @@ class App extends React.Component<Props, State> {
         </div>
         <div className="App-bottom">
           <ControlPanel
-            blueprint={this.blueprint_}
+            blueprint={this.state.blueprint}
             displayConfig={this.state.displayConfig}
             onDisplayConfigChange={this.onDisplayConfigChange}
             savedBlueprints={this.state.savedBlueprints}

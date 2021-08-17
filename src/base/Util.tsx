@@ -80,3 +80,31 @@ export async function objectPromiseAll(object: Record<string, any>) {
     )
   );
 }
+
+export function deepUpdate(target: any, source: any): any {
+  const isObject = (x: any) => typeof x === 'object' && x !== null;
+  for (const [key, value] of Object.entries(source)) {
+    if (!target.hasOwnProperty(key)) {
+      if (Array.isArray(value)) {
+        target[key] = [...value];
+      } else if (isObject(value)) {
+        target[key] = deepUpdate({}, value);
+      } else {
+        target[key] = value;
+      }
+    } else if (isObject(value) && isObject(target[key])) {
+      deepUpdate(target[key], value);
+    } else if (Array.isArray(value)) {
+      target[key] = deepCopy(value);
+    } else {
+      target[key] = value;
+    }
+  }
+  return target;
+}
+
+export type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends Array<infer U>
+    ? Array<DeepPartial<U>>
+    : DeepPartial<T[K]>;
+};
