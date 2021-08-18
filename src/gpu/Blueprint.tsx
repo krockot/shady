@@ -208,7 +208,7 @@ export function deserializeBlueprint(
 ): Blueprint {
   const blueprint: Blueprint = { nodes: {}, shaders: {} };
 
-  if (!serialized.hasOwnProperty('version')) {
+  if (!Array.isArray(serialized.nodes)) {
     deserializeV0(serialized as SerializedBlueprintV0, blueprint);
   } else {
     const versioned = serialized as VersionedSerializedBlueprint;
