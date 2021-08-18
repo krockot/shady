@@ -25,8 +25,8 @@ export class CodeEditor extends React.Component<Props> {
     this.editorRef_ = React.createRef();
   }
 
-  shouldComponentUpdate() {
-    return false;
+  shouldComponentUpdate(nextProps: Props) {
+    return nextProps.theme !== this.props.theme;
   }
 
   refresh() {
