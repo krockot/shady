@@ -71,7 +71,7 @@ export const ComputeNodePanel = (props: NodePanelProps<ComputeNode>) => {
                 onChange={e =>
                   data.onChange({
                     dispatchSize: {
-                      x: e.currentTarget.valueAsNumber,
+                      x: Math.max(0, e.currentTarget.valueAsNumber),
                       y: node.dispatchSize.y,
                       z: node.dispatchSize.z,
                     },
@@ -88,7 +88,7 @@ export const ComputeNodePanel = (props: NodePanelProps<ComputeNode>) => {
                   data.onChange({
                     dispatchSize: {
                       x: node.dispatchSize.x,
-                      y: e.currentTarget.valueAsNumber,
+                      y: Math.max(0, e.currentTarget.valueAsNumber),
                       z: node.dispatchSize.z,
                     },
                   })
@@ -105,7 +105,7 @@ export const ComputeNodePanel = (props: NodePanelProps<ComputeNode>) => {
                     dispatchSize: {
                       x: node.dispatchSize.x,
                       y: node.dispatchSize.y,
-                      z: e.currentTarget.valueAsNumber,
+                      z: Math.max(0, e.currentTarget.valueAsNumber),
                     },
                   })
                 }

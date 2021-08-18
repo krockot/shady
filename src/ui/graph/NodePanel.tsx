@@ -8,7 +8,7 @@ import { LabeledField } from '../LabeledField';
 
 type UpdateFn<NodeType extends Node> = (update: Partial<NodeType>) => void;
 
-interface NodePanelData<NodeType extends Node> {
+export interface NodePanelData<NodeType extends Node> {
   blueprint: Blueprint;
   node: NodeType;
   onChange: UpdateFn<NodeType>;

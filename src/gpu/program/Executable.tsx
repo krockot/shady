@@ -107,7 +107,11 @@ export class Executable {
     pass.bindGroups.forEach((group, i) => {
       computePass.setBindGroup(i, group);
     });
-    computePass.dispatch(dispatchSize.x, dispatchSize.y, dispatchSize.z);
+    computePass.dispatch(
+      Math.max(0, dispatchSize.x),
+      Math.max(0, dispatchSize.y),
+      Math.max(0, dispatchSize.z)
+    );
     computePass.endPass();
   }
 }

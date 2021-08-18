@@ -60,9 +60,6 @@ class FlowErrorBounary extends React.Component {
   }
 }
 
-const isPassNode = (node: Node) =>
-  node.type === 'render' || node.type === 'compute';
-
 type NewNode<T> = T extends Node
   ? Omit<T, 'id' | 'position' | 'name'> | Omit<T, 'id' | 'name'>
   : never;
@@ -131,66 +128,45 @@ export class BlueprintEditor extends React.Component<Props> {
   };
 
   onConnect_ = (edge: Edge<any> | Connection) => {
-    const source = this.props.blueprint.nodes[edge.source!];
-    const target = this.props.blueprint.nodes[edge.target!];
+    const sourceId = edge.source!;
+    const targetId = edge.target!;
+    const source = this.props.blueprint.nodes[sourceId];
+    const target = this.props.blueprint.nodes[targetId];
+    const handle = edge.targetHandle;
     if (!source || !target) {
       return;
     }
 
+    const isPass = ({ type }: Node) => type === 'render' || type === 'compute';
+    if (!isPass(target)) {
+      return;
+    }
+
+    const instance = this.instance_;
+    const start = this.lastConnectStart_;
+    const end = this.lastConnectEnd_;
+    const flow = this.flowRef_.current;
     let position = { x: 100, y: 100 };
-    if (
-      this.instance_ &&
-      this.lastConnectStart_ !== null &&
-      this.lastConnectEnd_ !== null &&
-      this.flowRef_.current
-    ) {
-      const view = this.flowRef_.current.getBoundingClientRect();
+    if (instance && start !== null && end !== null && flow) {
+      const kBindingPanelWidth = 120;
+      const kBindingPanelHeight = 80;
+      const view = flow.getBoundingClientRect();
       const midpoint = {
-        x:
-          (this.lastConnectStart_.x + this.lastConnectEnd_.x) / 2 - view.x - 60,
-        y:
-          (this.lastConnectStart_.y + this.lastConnectEnd_.y) / 2 - view.y - 40,
+        x: (start.x + end.x - kBindingPanelWidth) / 2 - view.x,
+        y: (start.y + end.y - kBindingPanelHeight) / 2 - view.y,
       };
-      position = this.instance_.project(midpoint);
+      position = instance.project(midpoint);
     }
 
-    if (
-      isPassNode(target) &&
-      source.type === 'buffer' &&
-      edge.targetHandle === 'bindings'
-    ) {
-      this.addBufferBinding_(
-        edge.source!,
-        edge.target!,
-        position,
-        'storage-read'
-      );
+    if (source.type === 'buffer' && handle === 'bindings') {
+      this.addBufferBinding_(sourceId, targetId, position, 'storage-read');
+    } else if (source.type === 'texture' && handle === 'bindings') {
+      this.addTextureBinding_(sourceId, targetId, position);
       return;
-    }
-
-    if (
-      isPassNode(target) &&
-      source.type === 'texture' &&
-      edge.targetHandle === 'bindings'
-    ) {
-      this.addTextureBinding_(edge.source!, edge.target!, position);
+    } else if (source.type === 'sampler' && handle === 'bindings') {
+      this.addSamplerBinding_(sourceId, targetId, position);
       return;
-    }
-
-    if (
-      isPassNode(target) &&
-      source.type === 'sampler' &&
-      edge.targetHandle === 'bindings'
-    ) {
-      this.addSamplerBinding_(edge.source!, edge.target!, position);
-      return;
-    }
-
-    if (
-      isPassNode(target) &&
-      isPassNode(source) &&
-      edge.targetHandle === 'queueIn'
-    ) {
+    } else if (isPass(source) && handle === 'queueIn') {
       const id = this.newNodeKey_('queue-dep');
       this.updateNode_(id, {
         id,
@@ -201,7 +177,6 @@ export class BlueprintEditor extends React.Component<Props> {
         source: edge.source!,
         target: edge.target!,
       });
-      return;
     }
   };
 
@@ -217,10 +192,14 @@ export class BlueprintEditor extends React.Component<Props> {
     return this.newKey_(this.props.blueprint.shaders, 'shader');
   }
 
+  replaceBlueprint_(blueprint: Blueprint) {
+    this.props.onChange(blueprint);
+  }
+
   updateBlueprint_(update: DeepPartial<Blueprint>) {
     const copy = deepCopy(this.props.blueprint);
     deepUpdate(copy, update);
-    this.props.onChange(copy);
+    this.replaceBlueprint_(copy);
   }
 
   updateNode_(id: NodeID, update: Partial<Node>) {
@@ -285,6 +264,7 @@ export class BlueprintEditor extends React.Component<Props> {
       bindingType: 'buffer',
       source,
       target,
+      position,
       group: 0,
       binding: 1,
       storageType,
@@ -350,72 +330,56 @@ export class BlueprintEditor extends React.Component<Props> {
     });
   };
 
+  removeNode_ = (removedId: NodeID) => {
+    const blueprint = this.props.blueprint;
+    const removedIds: Set<NodeID> = new Set([removedId]);
+    for (const [id, node] of Object.entries(blueprint.nodes)) {
+      if (
+        node.type === 'connection' &&
+        (node.source === removedId || node.target === removedId)
+      ) {
+        removedIds.add(id);
+      }
+    }
+
+    const remainingNodes: Record<string, Node> = {};
+    for (const [id, node] of Object.entries(blueprint.nodes)) {
+      if (!removedIds.has(id)) {
+        remainingNodes[id] = deepCopy(node);
+      }
+    }
+    this.replaceBlueprint_({
+      nodes: remainingNodes,
+      shaders: blueprint.shaders,
+    });
+  };
+
   createGraph_(blueprint: Blueprint): FlowElement[] {
     const elements: FlowElement[] = [];
     Object.entries(blueprint.nodes).forEach(([id, node]) => {
+      const data = {
+        blueprint,
+        node,
+        onChange: (update: any) => this.updateNode_(id, update),
+        destroy: () => this.removeNode_(id),
+      };
+      const position = node.position;
       if (node.type !== 'connection') {
-        elements.push({
-          id,
-          type: node.type,
-          data: {
-            blueprint,
-            node,
-            onChange: (update: any) => this.updateNode_(id, update),
-            destroy: () => {
-              const copy = deepCopy(blueprint);
-              delete copy.nodes[id];
-              for (const [otherId, otherNode] of Object.entries(copy.nodes)) {
-                if (
-                  otherNode.type === 'connection' &&
-                  (otherNode.source === id || otherNode.target === id)
-                ) {
-                  delete copy.nodes[otherId];
-                }
-              }
-              this.props.onChange(copy);
-            },
-          },
-          position: node.position,
-        });
+        elements.push({ id, type: node.type, position, data });
       } else if (node.connectionType === 'binding') {
-        const data = {
-          blueprint,
-          node,
-          onChange: (update: any) => this.updateNode_(id, update),
-          destroy: () => {
-            const copy = deepCopy(blueprint);
-            delete copy.nodes[id];
-            this.props.onChange(copy);
-          },
-        };
+        const type = `${node.bindingType}-binding`;
+        const binding = `${id}-node`;
+        const sourceEdge = `${id}-source-edge`;
+        const targetEdge = `${id}-target-edge`;
+        elements.push({ id: binding, type, position, data });
+        elements.push({ id: sourceEdge, source: node.source, target: binding });
         elements.push({
-          id: `${id}-node`,
-          type: `${node.bindingType}-binding`,
-          data,
-          position: node.position,
-        });
-        elements.push({
-          id: `${id}-source-edge`,
-          source: node.source,
-          target: `${id}-node`,
-        });
-        elements.push({
-          id: `${id}-target-edge`,
-          source: `${id}-node`,
+          id: targetEdge,
+          source: binding,
           target: node.target,
           arrowHeadType: 'arrowclosed' as ArrowHeadType,
         });
       } else if (node.connectionType === 'queue') {
-        const data = {
-          blueprint,
-          node,
-          onChange: (update: any) => this.updateNode_(id, update),
-          destroy: () => {
-            const copy = deepCopy(blueprint);
-            delete copy.nodes[id];
-            this.props.onChange(copy);
-          },
-        };
         elements.push({
           id,
           source: node.source,
@@ -427,7 +391,6 @@ export class BlueprintEditor extends React.Component<Props> {
         });
       }
     });
-
     return elements;
   }
 }

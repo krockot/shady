@@ -1,33 +1,18 @@
 import './NodePanel.css';
 
-import React from 'react';
-import { Handle, Position } from 'react-flow-renderer';
-
 import {
   BufferBindingNode,
   BufferBindingStorageType,
 } from '../../gpu/Blueprint';
+import { BindingPanel } from './BindingPanel';
 import { NodePanel, NodePanelProps } from './NodePanel';
 
-export const BufferBindingNodePanel = (
-  props: NodePanelProps<BufferBindingNode>
-) => {
-  const data = props.data;
+export const BufferBindingNodePanel = ({
+  data,
+}: NodePanelProps<BufferBindingNode>) => {
   const node = data.node;
   return (
     <NodePanel className="BufferBinding" node={node} destroy={data.destroy}>
-      <Handle
-        type="target"
-        position={'top' as Position}
-        className="Handle BindingStub"
-        isConnectable={false}
-      />
-      <Handle
-        type="source"
-        position={'bottom' as Position}
-        className="Handle BindingStub"
-        isConnectable={false}
-      />
       <select
         value={node.storageType}
         onChange={e =>
@@ -42,28 +27,7 @@ export const BufferBindingNodePanel = (
         <option value="sampler">Sampler</option>
         <option value="texture">Texture</option>
       </select>
-      <div>
-        <div className="Row">
-          Group
-          <input
-            type="number"
-            value={node.group}
-            onChange={e =>
-              data.onChange({ group: e.currentTarget.valueAsNumber })
-            }
-          />
-        </div>
-        <div className="Row">
-          Binding
-          <input
-            type="number"
-            value={node.binding}
-            onChange={e =>
-              data.onChange({ binding: e.currentTarget.valueAsNumber })
-            }
-          />
-        </div>
-      </div>
+      <BindingPanel data={data} />
     </NodePanel>
   );
 };
