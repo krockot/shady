@@ -6,6 +6,7 @@ import ReactFlow, {
   Connection,
   Edge,
   FlowElement,
+  FlowTransform,
   Node as FlowNode,
   OnLoadParams,
   XYPosition,
@@ -47,7 +48,9 @@ const EDGE_TYPES = {
 
 interface Props {
   blueprint: Blueprint;
+  transform: FlowTransform;
   onChange: (blueprint: Blueprint) => void;
+  onTransformChange: (transform: FlowTransform) => void;
 }
 
 class FlowErrorBounary extends React.Component {
@@ -81,6 +84,7 @@ export class BlueprintEditor extends React.Component<Props> {
   }
 
   render() {
+    const transform = this.props.transform;
     return (
       <div className="BlueprintEditor">
         <FlowErrorBounary>
@@ -89,6 +93,8 @@ export class BlueprintEditor extends React.Component<Props> {
             nodeTypes={NODE_TYPES}
             edgeTypes={EDGE_TYPES}
             elements={this.createGraph_(this.props.blueprint)}
+            defaultZoom={transform.zoom}
+            defaultPosition={[transform.x, transform.y]}
             elementsSelectable={false}
             nodesConnectable={true}
             nodesDraggable={true}
@@ -96,7 +102,8 @@ export class BlueprintEditor extends React.Component<Props> {
             onConnectStart={this.onConnectStart_}
             onConnectStop={this.onConnectStop_}
             onConnect={this.onConnect_}
-            onElementClick={this.onElementClick_}
+            onElementClick={() => {}}
+            onMoveEnd={this.onMoveEnd_}
             onNodeDragStop={this.onMoveNode_}
             minZoom={0.01}
             maxZoom={4}
@@ -206,10 +213,11 @@ export class BlueprintEditor extends React.Component<Props> {
     this.updateBlueprint_({ nodes: { [id]: update } });
   }
 
-  onElementClick_ = (
-    event: React.MouseEvent<Element, MouseEvent>,
-    element: FlowNode<any> | Edge<any>
-  ) => {};
+  onMoveEnd_ = (transform?: FlowTransform) => {
+    if (transform) {
+      this.props.onTransformChange({ ...transform });
+    }
+  };
 
   onMoveNode_ = (event: React.MouseEvent, node: FlowNode) => {
     this.updateNode_(node.data.node.id, { position: { ...node.position } });

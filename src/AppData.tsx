@@ -1,3 +1,5 @@
+import { FlowTransform } from 'react-flow-renderer';
+
 import { SerializedBlueprint } from './gpu/Blueprint';
 import { BASIC } from './presets/Basic';
 import { BOIDS } from './presets/Boids';
@@ -9,6 +11,7 @@ export interface AppData {
   savedBlueprints: Record<string, SerializedBlueprint>;
   displayConfig: DisplayConfig;
   codeMirrorTheme: string;
+  editorViewTransform: FlowTransform;
 }
 
 export const DEFAULT_APP_DATA: AppData = {
@@ -27,4 +30,5 @@ export const DEFAULT_APP_DATA: AppData = {
     resolution: { mode: 'pixel', pixelSize: 1 },
   },
   codeMirrorTheme: 'paraiso-dark',
+  editorViewTransform: { x: 0, y: 0, zoom: 1 },
 };

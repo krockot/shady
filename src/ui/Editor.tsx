@@ -1,6 +1,7 @@
 import './Editor.css';
 
 import React from 'react';
+import { FlowTransform } from 'react-flow-renderer';
 
 import { deepCopy } from '../base/Util';
 import { Blueprint, ShaderID } from '../gpu/Blueprint';
@@ -13,9 +14,9 @@ import { TabContainer } from './TabContainer';
 interface Props {
   blueprint: Blueprint;
   onBlueprintChange: (blueprint: Blueprint) => void;
-
   compilationResults: ShaderCompilationResults;
-
+  viewTransform: FlowTransform;
+  onViewTransformChange: (transform: FlowTransform) => void;
   codeMirrorTheme: string;
 }
 
@@ -71,7 +72,9 @@ export const Editor = (props: Props) => {
       >
         <BlueprintEditor
           blueprint={props.blueprint}
+          transform={props.viewTransform}
           onChange={props.onBlueprintChange}
+          onTransformChange={props.onViewTransformChange}
         />
         <CodeEditor
           ref={uniformsRef}

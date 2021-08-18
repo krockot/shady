@@ -1,6 +1,7 @@
 import './App.css';
 
 import React from 'react';
+import { FlowTransform } from 'react-flow-renderer';
 
 import { LocalPersistent } from './base/LocalPersistent';
 import {
@@ -25,6 +26,7 @@ export interface AppState {
   savedBlueprints: Record<string, SerializedBlueprint>;
   displayConfig: DisplayConfig;
   codeMirrorTheme: string;
+  editorViewTransform: FlowTransform;
   compilationResults: ShaderCompilationResults;
 }
 
@@ -39,6 +41,7 @@ class App extends React.Component<Props, AppState> {
       savedBlueprints: this.data.savedBlueprints,
       displayConfig: this.data.displayConfig,
       codeMirrorTheme: this.data.codeMirrorTheme,
+      editorViewTransform: this.data.editorViewTransform,
       compilationResults: new Map(),
     };
 
@@ -68,6 +71,7 @@ class App extends React.Component<Props, AppState> {
       savedBlueprints: this.state.savedBlueprints,
       displayConfig: this.state.displayConfig,
       codeMirrorTheme: this.state.codeMirrorTheme,
+      editorViewTransform: this.state.editorViewTransform,
     });
   }
 
@@ -85,6 +89,10 @@ class App extends React.Component<Props, AppState> {
 
   onBlueprintChange_ = (blueprint: Blueprint) => {
     this.setState({ blueprint });
+  };
+
+  onViewTransformChange_ = (transform: FlowTransform) => {
+    this.setState({ editorViewTransform: transform });
   };
 
   onShadersCompiled_ = (compilationResults: ShaderCompilationResults) => {
@@ -157,6 +165,8 @@ class App extends React.Component<Props, AppState> {
               blueprint={this.state.blueprint}
               onBlueprintChange={this.onBlueprintChange_}
               codeMirrorTheme={this.state.codeMirrorTheme}
+              viewTransform={this.state.editorViewTransform}
+              onViewTransformChange={this.onViewTransformChange_}
             />
           </div>
         </div>
