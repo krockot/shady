@@ -3,7 +3,6 @@ import './App.css';
 import React from 'react';
 
 import { LocalPersistent } from './base/LocalPersistent';
-import { deepCopy } from './base/Util';
 import {
   Blueprint,
   deserializeBlueprint,

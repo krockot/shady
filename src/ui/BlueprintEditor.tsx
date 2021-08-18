@@ -11,14 +11,13 @@ import ReactFlow, {
   XYPosition,
 } from 'react-flow-renderer';
 
+import { KeyGenerator } from '../base/KeyGenerator';
 import { deepCopy, deepUpdate, DeepPartial } from '../base/Util';
 import {
   Blueprint,
   BufferBindingStorageType,
-  ID,
   Node,
   NodeID,
-  NodeType,
   ShaderID,
 } from '../gpu/Blueprint';
 import { BufferBindingNodePanel } from './graph/BufferBindingNodePanel';
@@ -64,7 +63,12 @@ class FlowErrorBounary extends React.Component {
 const isPassNode = (node: Node) =>
   node.type === 'render' || node.type === 'compute';
 
+type NewNode<T> = T extends Node
+  ? Omit<T, 'id' | 'position' | 'name'> | Omit<T, 'id' | 'name'>
+  : never;
+
 export class BlueprintEditor extends React.Component<Props> {
+  private keyGenerator_: KeyGenerator;
   private instance_: null | OnLoadParams;
   private flowRef_: React.RefObject<HTMLDivElement>;
   private lastConnectStart_: null | XYPosition;
@@ -72,6 +76,7 @@ export class BlueprintEditor extends React.Component<Props> {
 
   constructor(props: Props) {
     super(props);
+    this.keyGenerator_ = new KeyGenerator();
     this.instance_ = null;
     this.flowRef_ = React.createRef();
     this.lastConnectStart_ = null;
@@ -168,7 +173,7 @@ export class BlueprintEditor extends React.Component<Props> {
       source.type === 'texture' &&
       edge.targetHandle === 'bindings'
     ) {
-      this.addTrivialBinding_('texture', edge.source!, edge.target!, position);
+      this.addTextureBinding_(edge.source!, edge.target!, position);
       return;
     }
 
@@ -177,7 +182,7 @@ export class BlueprintEditor extends React.Component<Props> {
       source.type === 'sampler' &&
       edge.targetHandle === 'bindings'
     ) {
-      this.addTrivialBinding_('sampler', edge.source!, edge.target!, position);
+      this.addSamplerBinding_(edge.source!, edge.target!, position);
       return;
     }
 
@@ -200,22 +205,16 @@ export class BlueprintEditor extends React.Component<Props> {
     }
   };
 
+  newKey_(object: Record<string, any>, prefix: string): string {
+    return this.keyGenerator_.generateKey(object, prefix);
+  }
+
   newNodeKey_(prefix: NodeID): NodeID {
-    for (let i = 1; ; ++i) {
-      const id = `${prefix}${i}` as NodeID;
-      if (!this.props.blueprint.nodes.hasOwnProperty(id)) {
-        return id;
-      }
-    }
+    return this.newKey_(this.props.blueprint.nodes, prefix);
   }
 
   newShaderKey_(): ShaderID {
-    for (let i = 1; ; ++i) {
-      const id = `shader${i}` as ShaderID;
-      if (!this.props.blueprint.shaders.hasOwnProperty(id)) {
-        return id;
-      }
-    }
+    return this.newKey_(this.props.blueprint.shaders, 'shader');
   }
 
   updateBlueprint_(update: DeepPartial<Blueprint>) {
@@ -242,40 +241,37 @@ export class BlueprintEditor extends React.Component<Props> {
     this.updateBlueprint_({ shaders: { [id]: { name: id, id, code: '' } } });
   };
 
-  addNode_ = (type: NodeType, node: Partial<Node>) => {
-    const id = this.newNodeKey_(type);
+  addNode_ = <T extends Node>(node: NewNode<T>) => {
+    const id = this.newNodeKey_(node.type);
     this.updateNode_(id, {
       id,
       name: id,
-      type,
       position: { x: 100, y: 100 },
       ...node,
-    } as Node);
+    });
   };
 
   addBuffer_ = () => {
-    this.addNode_('buffer', {
+    this.addNode_({
+      type: 'buffer',
       size: 16384,
-      position: { x: 100, y: 100 },
       init: 'zero',
     });
   };
 
   addTexture_ = () => {
-    this.addNode_('texture', {
-      position: { x: 100, y: 100 },
+    this.addNode_({
+      type: 'texture',
       size: { width: 1024, height: 1024 },
       format: 'rgba8unorm',
       mipLevelCount: 1,
       sampleCount: 1,
+      imageData: null,
+      imageDataSerialized: null,
     });
   };
 
-  addSampler_ = () => {
-    this.addNode_('sampler', {
-      position: { x: 100, y: 100 },
-    });
-  };
+  addSampler_ = () => this.addNode_({ type: 'sampler' });
 
   addBufferBinding_ = (
     source: NodeID,
@@ -283,11 +279,7 @@ export class BlueprintEditor extends React.Component<Props> {
     position: XYPosition,
     storageType: BufferBindingStorageType
   ) => {
-    const id = this.newNodeKey_('binding-buffer');
-    this.updateNode_(id, {
-      id,
-      name: '',
-      position,
+    this.addNode_({
       type: 'connection',
       connectionType: 'binding',
       bindingType: 'buffer',
@@ -299,29 +291,43 @@ export class BlueprintEditor extends React.Component<Props> {
     });
   };
 
-  addTrivialBinding_ = (
-    type: 'sampler' | 'texture',
+  addTextureBinding_ = (
     source: NodeID,
     target: NodeID,
     position: XYPosition
   ) => {
-    const id = this.newNodeKey_(`binding-${type}`);
-    this.updateNode_(id, {
-      id,
-      name: '',
-      position,
+    this.addNode_({
       type: 'connection',
       connectionType: 'binding',
-      bindingType: type,
+      bindingType: 'texture',
       source,
       target,
+      position,
+      group: 0,
+      binding: 1,
+    });
+  };
+
+  addSamplerBinding_ = (
+    source: NodeID,
+    target: NodeID,
+    position: XYPosition
+  ) => {
+    this.addNode_({
+      type: 'connection',
+      connectionType: 'binding',
+      bindingType: 'sampler',
+      source,
+      target,
+      position,
       group: 0,
       binding: 1,
     });
   };
 
   addRenderPass_ = () => {
-    this.addNode_('render', {
+    this.addNode_({
+      type: 'render',
       vertexShader: '',
       vertexEntryPoint: '',
       fragmentShader: '',
@@ -336,7 +342,8 @@ export class BlueprintEditor extends React.Component<Props> {
   };
 
   addComputePass_ = () => {
-    this.addNode_('compute', {
+    this.addNode_({
+      type: 'compute',
       shader: '',
       entryPoint: '',
       dispatchSize: { x: 1, y: 1, z: 1 },
