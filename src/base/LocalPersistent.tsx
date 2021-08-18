@@ -1,5 +1,5 @@
 import { Debouncer } from './Debouncer';
-import { deepUpdate } from './Util';
+import { deepCopy, deepUpdate } from './Util';
 
 import localForage from 'localforage';
 
@@ -58,7 +58,7 @@ export async function restoreLocalPersistent<Type>(
   }
   return new LocalPersistent<Type>(
     options.key,
-    deepUpdate(restoredValue, options.default),
+    deepUpdate(deepCopy(options.default), restoredValue),
     options.debounceMs ?? DEFAULT_DEBOUNCE_MS
   );
 }

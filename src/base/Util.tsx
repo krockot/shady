@@ -82,19 +82,19 @@ export async function objectPromiseAll(object: Record<string, any>) {
 }
 
 export function deepUpdate(target: any, source: any): any {
-  const isObject = (x: any) => typeof x === 'object' && x !== null;
+  function isDict(x: any): x is Record<string, any> {
+    return typeof x === 'object' && x !== null && x.constructor === Object;
+  }
   for (const [key, value] of Object.entries(source)) {
     if (!target.hasOwnProperty(key)) {
-      if (Array.isArray(value)) {
-        target[key] = [...value];
-      } else if (isObject(value)) {
-        target[key] = deepUpdate({}, value);
+      if (isDict(value) || Array.isArray(value)) {
+        target[key] = deepCopy(value);
       } else {
         target[key] = value;
       }
-    } else if (isObject(value) && isObject(target[key])) {
+    } else if (isDict(value) && isDict(target[key])) {
       deepUpdate(target[key], value);
-    } else if (Array.isArray(value)) {
+    } else if (isDict(value) || Array.isArray(value)) {
       target[key] = deepCopy(value);
     } else {
       target[key] = value;
