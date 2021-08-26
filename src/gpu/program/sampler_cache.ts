@@ -1,4 +1,4 @@
-import { SamplerNode } from '../blueprint';
+import { SamplerNode } from '../../blueprint/blueprint';
 import { Resource, ResourceCache } from './resource_cache';
 import { ProgramMap } from './program_map';
 

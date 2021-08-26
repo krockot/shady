@@ -1,5 +1,5 @@
 import { deepCopy, deepEquals } from '../base/util';
-import { Blueprint } from './blueprint';
+import { Blueprint } from '../blueprint/blueprint';
 import { Gpu } from './gpu';
 import { Program, ShadersCompiledHandler } from './program/program';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 
-import { SamplerNode } from '../../gpu/blueprint';
+import { SamplerNode } from '../../blueprint/blueprint';
 import { Panel, PanelProps } from './panel';
 import { isValidBindingConnection } from './connection_validation';
 

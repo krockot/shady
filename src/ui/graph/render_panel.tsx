@@ -1,11 +1,14 @@
 import { Handle, Position } from 'react-flow-renderer';
 
 import { Debouncer } from '../../base/debouncer';
-import { RenderNode } from '../../gpu/blueprint';
+import { RenderNode } from '../../blueprint/blueprint';
 import { EditableLabel } from '../editable_label';
 import { LabeledField } from '../labeled_field';
 import { Panel, PanelProps } from './panel';
-import { isValidBindingConnection, isValidQueueConnection } from './connection_validation';
+import {
+  isValidBindingConnection,
+  isValidQueueConnection,
+} from './connection_validation';
 
 function colorValue(c: GPUColorDict): string {
   const p = (x: number) => `${x < 16 ? '0' : ''}${x.toString(16)}`;

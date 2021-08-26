@@ -1,10 +1,13 @@
 import { Handle, Position } from 'react-flow-renderer';
 
-import { ComputeNode } from '../../gpu/blueprint';
+import { ComputeNode } from '../../blueprint/blueprint';
 import { EditableLabel } from '../editable_label';
 import { LabeledField } from '../labeled_field';
 import { Panel, PanelProps } from './panel';
-import { isValidBindingConnection, isValidQueueConnection } from './connection_validation';
+import {
+  isValidBindingConnection,
+  isValidQueueConnection,
+} from './connection_validation';
 
 export const ComputePanel = (props: PanelProps<ComputeNode>) => {
   const data = props.data;

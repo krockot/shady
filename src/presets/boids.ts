@@ -1,4 +1,4 @@
-import { SerializedBlueprint } from '../gpu/blueprint';
+import { SerializedBlueprint } from '../blueprint/blueprint';
 
 export const BOIDS: SerializedBlueprint = {
   version: 1,

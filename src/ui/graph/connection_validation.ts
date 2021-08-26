@@ -1,6 +1,6 @@
 import { Connection } from 'react-flow-renderer';
 
-import { Blueprint, Node, NodeID } from '../../gpu/blueprint';
+import { Blueprint, Node, NodeID } from '../../blueprint/blueprint';
 
 interface ConnectionData {
   source: Node;

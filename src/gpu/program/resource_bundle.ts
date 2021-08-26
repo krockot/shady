@@ -1,5 +1,5 @@
 import { objectPromiseAll } from '../../base/util';
-import { Blueprint } from '../blueprint';
+import { Blueprint } from '../../blueprint/blueprint';
 import { BufferCache, createBufferCache } from './buffer_cache';
 import { SamplerCache, createSamplerCache } from './sampler_cache';
 import { ShaderCache, createShaderCache } from './shader_cache';

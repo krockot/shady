@@ -1,4 +1,4 @@
-import { ID } from '../blueprint';
+import { ID } from '../../blueprint/blueprint';
 import { ProgramMap } from './program_map';
 
 interface ResourceDescriptor {

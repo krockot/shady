@@ -1,6 +1,6 @@
 import './panel.css';
 
-import { SamplerBindingNode } from '../../gpu/blueprint';
+import { SamplerBindingNode } from '../../blueprint/blueprint';
 import { BindingPanel } from './binding_panel';
 import { Panel, PanelProps } from './panel';
 

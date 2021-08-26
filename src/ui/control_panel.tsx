@@ -7,7 +7,7 @@ import {
   deserializeBlueprint,
   serializeBlueprint,
   SerializedBlueprint,
-} from '../gpu/blueprint';
+} from '../blueprint/blueprint';
 import { CODE_MIRROR_THEMES } from './code_mirror_themes';
 import { DisplayConfig } from './display';
 import { LabeledField } from './labeled_field';

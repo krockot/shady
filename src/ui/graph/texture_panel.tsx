@@ -1,7 +1,7 @@
 import React from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 
-import { TextureNode } from '../../gpu/blueprint';
+import { TextureNode } from '../../blueprint/blueprint';
 import { Panel, PanelProps } from './panel';
 import { isValidBindingConnection } from './connection_validation';
 

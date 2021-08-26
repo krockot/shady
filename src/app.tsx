@@ -9,7 +9,7 @@ import {
   deserializeBlueprint,
   serializeBlueprint,
   SerializedBlueprint,
-} from './gpu/blueprint';
+} from './blueprint/blueprint';
 import { FrameProducer } from './gpu/frame_producer';
 import { ShaderCompilationResults } from './gpu/program/program';
 import { ControlPanel } from './ui/control_panel';

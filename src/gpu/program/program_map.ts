@@ -12,7 +12,7 @@ import {
   Shader,
   TextureBindingNode,
   TextureNode,
-} from '../blueprint';
+} from '../../blueprint/blueprint';
 
 // TODO: This should be devised dynamically from device limits.
 const kMaxBindGroups = 4;

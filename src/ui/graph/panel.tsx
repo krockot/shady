@@ -2,7 +2,7 @@ import './panel.css';
 
 import React, { ReactNode } from 'react';
 
-import { Blueprint, Node } from '../../gpu/blueprint';
+import { Blueprint, Node } from '../../blueprint/blueprint';
 import { EditableLabel } from '../editable_label';
 import { LabeledField } from '../labeled_field';
 

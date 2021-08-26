@@ -2,7 +2,7 @@ import './panel.css';
 
 import { Handle, Position } from 'react-flow-renderer';
 
-import { BindingNode } from '../../gpu/blueprint';
+import { BindingNode } from '../../blueprint/blueprint';
 import { PanelData } from './panel';
 
 export type BindingId = { group: number; binding: number };

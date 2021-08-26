@@ -1,4 +1,9 @@
-import { Blueprint, ComputeNode, NodeID, RenderNode } from '../blueprint';
+import {
+  Blueprint,
+  ComputeNode,
+  NodeID,
+  RenderNode,
+} from '../../blueprint/blueprint';
 import { ResourceBundle } from './resource_bundle';
 import {
   LinkedComputePass,

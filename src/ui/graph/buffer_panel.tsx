@@ -1,6 +1,6 @@
 import { Handle, Position } from 'react-flow-renderer';
 
-import { BufferInitializer, BufferNode } from '../../gpu/blueprint';
+import { BufferInitializer, BufferNode } from '../../blueprint/blueprint';
 import { LabeledField } from '../labeled_field';
 import { Panel, PanelProps } from './panel';
 import { isValidBindingConnection } from './connection_validation';

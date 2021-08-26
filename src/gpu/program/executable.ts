@@ -1,4 +1,4 @@
-import { ComputeNode, RenderNode } from '../blueprint';
+import { ComputeNode, RenderNode } from '../../blueprint/blueprint';
 
 export type PassType = 'render' | 'compute';
 

@@ -3,13 +3,11 @@ import './panel.css';
 import {
   BufferBindingNode,
   BufferBindingStorageType,
-} from '../../gpu/blueprint';
+} from '../../blueprint/blueprint';
 import { BindingPanel } from './binding_panel';
 import { Panel, PanelProps } from './panel';
 
-export const BufferBindingPanel = ({
-  data,
-}: PanelProps<BufferBindingNode>) => {
+export const BufferBindingPanel = ({ data }: PanelProps<BufferBindingNode>) => {
   const node = data.node;
   return (
     <Panel className="BufferBinding" node={node} destroy={data.destroy}>

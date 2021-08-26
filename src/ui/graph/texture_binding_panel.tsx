@@ -1,6 +1,6 @@
 import './panel.css';
 
-import { TextureBindingNode } from '../../gpu/blueprint';
+import { TextureBindingNode } from '../../blueprint/blueprint';
 import { BindingPanel } from './binding_panel';
 import { Panel, PanelProps } from './panel';
 

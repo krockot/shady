@@ -1,4 +1,4 @@
-import { Shader } from '../blueprint';
+import { Shader } from '../../blueprint/blueprint';
 import { BUILTIN_UNIFORMS_WGSL } from '../builtin_uniforms';
 import { Resource, ResourceCache } from './resource_cache';
 import { ProgramMap } from './program_map';

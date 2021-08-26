@@ -20,7 +20,7 @@ import {
   Node,
   NodeID,
   ShaderID,
-} from '../gpu/blueprint';
+} from '../blueprint/blueprint';
 import { BufferBindingPanel } from './graph/buffer_binding_panel';
 import { BufferPanel } from './graph/buffer_panel';
 import { ComputePanel } from './graph/compute_panel';

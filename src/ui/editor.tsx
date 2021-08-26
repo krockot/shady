@@ -4,7 +4,7 @@ import React from 'react';
 import { FlowTransform } from 'react-flow-renderer';
 
 import { deepCopy } from '../base/util';
-import { Blueprint, ShaderID } from '../gpu/blueprint';
+import { Blueprint, ShaderID } from '../blueprint/blueprint';
 import { BUILTIN_UNIFORMS_WGSL } from '../gpu/builtin_uniforms';
 import { ShaderCompilationResults } from '../gpu/program/program';
 import { BlueprintEditor } from './blueprint_editor';

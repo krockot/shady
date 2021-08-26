@@ -1,4 +1,4 @@
-import { Blueprint, ShaderID } from '../blueprint';
+import { Blueprint, ShaderID } from '../../blueprint/blueprint';
 import { ResourceBundle } from './resource_bundle';
 import { Executable } from './executable';
 import { linkProgram } from './linker';
