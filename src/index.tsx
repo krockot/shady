@@ -4,10 +4,10 @@ import localForage from 'localforage';
 import React from 'react';
 import { render } from 'react-dom';
 
-import App from './App';
-import { AppData, DEFAULT_APP_DATA } from './AppData';
-import { restoreLocalPersistent } from './base/LocalPersistent';
-import { modernizeBlueprint } from './gpu/Blueprint';
+import App from './app';
+import { AppData, DEFAULT_APP_DATA } from './app_data';
+import { restoreLocalPersistent } from './base/local_persistent';
+import { modernizeBlueprint } from './gpu/blueprint';
 
 localForage.config({
   driver: localForage.INDEXEDDB,
