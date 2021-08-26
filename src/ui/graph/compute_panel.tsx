@@ -46,7 +46,7 @@ export const ComputePanel = (props: PanelProps<ComputeNode>) => {
         />
         <LabeledField label="Shader">
           <select
-            value={node.shader}
+            value={node.shader ?? ''}
             onChange={e => data.onChange({ shader: e.currentTarget.value })}
           >
             <option value=""></option>
@@ -60,7 +60,7 @@ export const ComputePanel = (props: PanelProps<ComputeNode>) => {
         <LabeledField label="Entry Point">
           <EditableLabel
             emptyText="None"
-            value={node.entryPoint}
+            value={node.entryPoint ?? ''}
             onChange={value => data.onChange({ entryPoint: value })}
           />
         </LabeledField>

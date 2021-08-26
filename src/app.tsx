@@ -4,12 +4,12 @@ import React from 'react';
 import { FlowTransform } from 'react-flow-renderer';
 
 import { LocalPersistent } from './base/local_persistent';
+import { Blueprint } from './blueprint/blueprint';
 import {
-  Blueprint,
   deserializeBlueprint,
   serializeBlueprint,
   SerializedBlueprint,
-} from './blueprint/blueprint';
+} from './blueprint/serialization';
 import { FrameProducer } from './gpu/frame_producer';
 import { ShaderCompilationResults } from './gpu/program/program';
 import { ControlPanel } from './ui/control_panel';

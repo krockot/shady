@@ -254,7 +254,6 @@ export class BlueprintEditor extends React.Component<Props> {
       mipLevelCount: 1,
       sampleCount: 1,
       imageData: null,
-      imageDataSerialized: null,
     });
   };
 
@@ -316,16 +315,17 @@ export class BlueprintEditor extends React.Component<Props> {
   addRenderPass_ = () => {
     this.addNode_({
       type: 'render',
-      vertexShader: '',
-      vertexEntryPoint: '',
-      fragmentShader: '',
-      fragmentEntryPoint: '',
+      vertexShader: null,
+      vertexEntryPoint: null,
+      fragmentShader: null,
+      fragmentEntryPoint: null,
       topology: 'triangle-list',
       numVertices: 4,
       numInstances: 1,
       indexed: false,
       clear: true,
       clearColor: { r: 0, g: 0, b: 0, a: 1 },
+      depthTest: 'always',
     });
   };
 

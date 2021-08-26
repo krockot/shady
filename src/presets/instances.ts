@@ -1,4 +1,4 @@
-import { SerializedBlueprint } from '../blueprint/blueprint';
+import { SerializedBlueprint } from '../blueprint/serialization';
 
 const VERTEX = `[[stage(vertex)]]
 fn main([[builtin(vertex_index)]] index: u32,

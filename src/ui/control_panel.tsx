@@ -2,12 +2,11 @@ import './control_panel.css';
 
 import React from 'react';
 
+import { Blueprint } from '../blueprint/blueprint';
 import {
-  Blueprint,
-  deserializeBlueprint,
   serializeBlueprint,
   SerializedBlueprint,
-} from '../blueprint/blueprint';
+} from '../blueprint/serialization';
 import { CODE_MIRROR_THEMES } from './code_mirror_themes';
 import { DisplayConfig } from './display';
 import { LabeledField } from './labeled_field';
@@ -263,7 +262,7 @@ export class ControlPanel extends React.Component<Props, State> {
       return;
     }
 
-    this.props.onImportBlueprint(deserializeBlueprint(serialized));
+    this.props.onImportBlueprint(serialized);
   };
 
   togglePasteMenu_ = () => {

@@ -66,7 +66,7 @@ export const RenderPanel = (props: PanelProps<RenderNode>) => {
 
         <LabeledField label="Vertex Shader">
           <select
-            value={node.vertexShader}
+            value={node.vertexShader ?? ''}
             onChange={e =>
               data.onChange({ vertexShader: e.currentTarget.value })
             }
@@ -81,14 +81,14 @@ export const RenderPanel = (props: PanelProps<RenderNode>) => {
         </LabeledField>
         <LabeledField label="Vertex Entry Point">
           <EditableLabel
-            value={node.vertexEntryPoint}
+            value={node.vertexEntryPoint ?? ''}
             emptyText="None"
             onChange={value => data.onChange({ vertexEntryPoint: value })}
           />
         </LabeledField>
         <LabeledField label="Fragment Shader">
           <select
-            value={node.fragmentShader}
+            value={node.fragmentShader ?? ''}
             onChange={e =>
               data.onChange({
                 fragmentShader: e.currentTarget.value,
@@ -105,7 +105,7 @@ export const RenderPanel = (props: PanelProps<RenderNode>) => {
         </LabeledField>
         <LabeledField label="Fragment Entry Point">
           <EditableLabel
-            value={node.fragmentEntryPoint}
+            value={node.fragmentEntryPoint ?? ''}
             emptyText="None"
             onChange={value => data.onChange({ fragmentEntryPoint: value })}
           />

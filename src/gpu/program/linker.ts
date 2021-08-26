@@ -120,7 +120,13 @@ function linkRenderPass(
   resources: ResourceBundle,
   blueprint: Blueprint
 ): null | LinkedRenderPass {
-  if (resources.programMap === null) {
+  if (
+    resources.programMap === null ||
+    node.vertexShader === null ||
+    node.fragmentShader === null ||
+    node.vertexEntryPoint === null ||
+    node.fragmentEntryPoint === null
+  ) {
     return null;
   }
 
@@ -200,7 +206,11 @@ function linkComputePass(
   resources: ResourceBundle,
   blueprint: Blueprint
 ): null | LinkedComputePass {
-  if (resources.programMap === null) {
+  if (
+    resources.programMap === null ||
+    node.shader === null ||
+    node.entryPoint === null
+  ) {
     return null;
   }
 

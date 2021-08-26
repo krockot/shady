@@ -1,6 +1,6 @@
 import { FlowTransform } from 'react-flow-renderer';
 
-import { SerializedBlueprint } from './blueprint/blueprint';
+import { SerializedBlueprint } from './blueprint/serialization';
 import { BASIC } from './presets/basic';
 import { BOIDS } from './presets/boids';
 import { INSTANCES } from './presets/instances';
