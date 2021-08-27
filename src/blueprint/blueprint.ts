@@ -1,7 +1,3 @@
-import { toByteArray, fromByteArray } from 'base64-js';
-
-import { deepCopy } from '../base/util';
-
 export type ID = NodeID | ShaderID;
 export type NodeID = string;
 export type ShaderID = string;
